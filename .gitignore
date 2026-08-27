@@ -36,3 +36,6 @@ appsettings.*.local.json
 # ---- Logs ----
 *.log
 logs/
+
+# ---- Uploaded files (local dev storage) ----
+storage/

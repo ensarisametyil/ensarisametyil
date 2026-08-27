@@ -45,7 +45,8 @@ public class AppDbContext : DbContext
             entity.HasOne(c => c.User)
                   .WithMany(u => u.Cvs)
                   .HasForeignKey(c => c.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(c => c.UserId);
         });
