@@ -9,4 +9,10 @@ public interface IFileStorageService
     /// Cv entity — never an absolute filesystem path.
     /// </summary>
     Task<string> SaveAsync(Stream content, string fileExtension, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reads back the bytes for a previously saved file by its storage key. Throws
+    /// <see cref="FileNotFoundException"/> if the key doesn't resolve to an existing file.
+    /// </summary>
+    Task<byte[]> ReadAsync(string storageKey, CancellationToken cancellationToken = default);
 }

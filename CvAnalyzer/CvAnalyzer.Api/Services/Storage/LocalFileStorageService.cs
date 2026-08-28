@@ -26,4 +26,16 @@ public class LocalFileStorageService : IFileStorageService
 
         return storageKey;
     }
+
+    public async Task<byte[]> ReadAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        var fullPath = Path.Combine(_rootPath, storageKey);
+
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException("Stored file was not found.", fullPath);
+        }
+
+        return await File.ReadAllBytesAsync(fullPath, cancellationToken);
+    }
 }

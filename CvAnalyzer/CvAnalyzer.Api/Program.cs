@@ -1,6 +1,7 @@
 using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
+using CvAnalyzer.Api.Services.AI;
 using CvAnalyzer.Api.Services.FileProcessing;
 using CvAnalyzer.Api.Services.Storage;
 using CvAnalyzer.Api.Validators;
@@ -32,6 +33,12 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddSingleton<ICvFileValidator, CvFileValidator>();
 builder.Services.AddSingleton<IFileParserService, FileParserService>();
+
+builder.Services.Configure<AiOptions>(builder.Configuration.GetSection(AiOptions.SectionName));
+builder.Services.AddSingleton<ICvTextNormalizer, CvTextNormalizer>();
+builder.Services.AddSingleton<IAnthropicMessagesGateway, AnthropicMessagesGateway>();
+builder.Services.AddSingleton<ICvAnalysisResponseParser, CvAnalysisResponseParser>();
+builder.Services.AddSingleton<IAiCvAnalysisService, AnthropicCvAnalysisService>();
 
 var app = builder.Build();
 
