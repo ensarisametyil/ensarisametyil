@@ -1,8 +1,30 @@
 :root {
   --text: #3f3f46;
+  --text-muted: #71717a;
   --text-heading: #18181b;
   --bg: #ffffff;
   --accent: #6d28d9;
+  --accent-soft: #ede9fe;
+
+  --surface: #ffffff;
+  --surface-muted: #f4f4f5;
+  --border: #e4e4e7;
+  --shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 4px 12px rgba(24, 24, 27, 0.06);
+
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --info: #1d4ed8;
+  --info-soft: #dbeafe;
+
+  /* Score tiers: 0-49 low, 50-69 improvable, 70-84 good, 85-100 excellent */
+  --score-low: var(--danger);
+  --score-mid: var(--warning);
+  --score-good: var(--info);
+  --score-excellent: var(--success);
 
   font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
@@ -15,9 +37,25 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #d4d4d8;
+    --text-muted: #a1a1aa;
     --text-heading: #fafafa;
     --bg: #0f0f12;
     --accent: #a78bfa;
+    --accent-soft: #2e1f4d;
+
+    --surface: #18181b;
+    --surface-muted: #1f1f23;
+    --border: #2e2e33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.35);
+
+    --success: #4ade80;
+    --success-soft: #14301f;
+    --warning: #fbbf24;
+    --warning-soft: #3a2a0d;
+    --danger: #f87171;
+    --danger-soft: #3a1414;
+    --info: #60a5fa;
+    --info-soft: #132548;
   }
 }
 
@@ -39,25 +77,6 @@ h1 {
   font-weight: 600;
 }
 
-.home {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  padding: 24px;
-}
-
-.home h1 {
-  font-size: 2.5rem;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.home p {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--text);
+button {
+  font-family: inherit;
 }
