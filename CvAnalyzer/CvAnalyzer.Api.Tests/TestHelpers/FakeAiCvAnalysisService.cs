@@ -36,8 +36,13 @@ public class FakeAiCvAnalysisService : IAiCvAnalysisService
 
     public static FakeAiCvAnalysisService Throwing(Exception exception) => new(result: null, exception);
 
+    /// <summary>Number of times <see cref="AnalyzeCvAsync"/> was called — lets tests assert the AI provider was never reached (e.g. quota already exhausted).</summary>
+    public int CallCount { get; private set; }
+
     public Task<CvAnalysisResult> AnalyzeCvAsync(string cvText, CancellationToken cancellationToken = default)
     {
+        CallCount++;
+
         if (string.IsNullOrWhiteSpace(cvText))
         {
             throw new ArgumentException("CV text to analyze cannot be empty.", nameof(cvText));

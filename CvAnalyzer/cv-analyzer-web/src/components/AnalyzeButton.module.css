@@ -1,3 +1,15 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.disabledReason {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 .button {
   display: inline-flex;
   align-items: center;

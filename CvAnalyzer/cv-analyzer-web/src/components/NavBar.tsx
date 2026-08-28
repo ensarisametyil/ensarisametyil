@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import PlanBadge from './PlanBadge'
 import styles from './NavBar.module.css'
 
 /** Top navigation — shown only for authenticated users (rendered inside ProtectedRoute pages). */
@@ -25,6 +26,7 @@ function NavBar() {
       </div>
 
       <div className={styles.right}>
+        <PlanBadge />
         {user && <span className={styles.email}>{user.email}</span>}
         <button type="button" className={styles.logoutButton} onClick={handleLogout}>
           Çıkış Yap

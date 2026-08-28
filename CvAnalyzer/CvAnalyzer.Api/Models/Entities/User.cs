@@ -20,4 +20,8 @@ public class User
     public ICollection<Cv> Cvs { get; set; } = new List<Cv>();
 
     public ICollection<Analysis> Analyses { get; set; } = new List<Analysis>();
+
+    public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+    public ICollection<AnalysisUsage> AnalysisUsages { get; set; } = new List<AnalysisUsage>();
 }

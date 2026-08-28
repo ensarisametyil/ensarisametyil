@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import HomePage from './HomePage'
+import { AuthProvider } from '../context/AuthContext'
+import { BillingProvider } from '../context/BillingContext'
+import { setToken } from '../api/tokenStorage'
 import { API_BASE_URL } from '../api/config'
 import type { CvAnalysisResult } from '../types/cv'
 
@@ -10,6 +13,16 @@ function jsonResponse(status: number, body: unknown): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+function renderHomePage() {
+  return render(
+    <AuthProvider>
+      <BillingProvider>
+        <HomePage />
+      </BillingProvider>
+    </AuthProvider>,
+  )
 }
 
 function makePdfFile(name = 'cv.pdf'): File {
@@ -48,7 +61,7 @@ describe('HomePage upload -> analyze flow', () => {
       .mockResolvedValueOnce(jsonResponse(200, ANALYSIS_RESULT))
     vi.stubGlobal('fetch', fetchMock)
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
@@ -72,7 +85,7 @@ describe('HomePage upload -> analyze flow', () => {
         .mockReturnValueOnce(analyzePromise),
     )
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     expect(await screen.findByText('CV analiz ediliyor...')).toBeInTheDocument()
@@ -92,7 +105,7 @@ describe('HomePage upload -> analyze flow', () => {
         .mockResolvedValueOnce(jsonResponse(200, ANALYSIS_RESULT)),
     )
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     expect(await screen.findByText(ANALYSIS_RESULT.summary)).toBeInTheDocument()
@@ -113,7 +126,7 @@ describe('HomePage upload -> analyze flow', () => {
         .mockResolvedValueOnce(jsonResponse(status, { code: 'X', message: 'internal backend detail' })),
     )
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     expect(await screen.findByText(expectedMessage)).toBeInTheDocument()
@@ -130,7 +143,7 @@ describe('HomePage upload -> analyze flow', () => {
         .mockRejectedValueOnce(new TypeError('Failed to fetch')),
     )
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     expect(await screen.findByText('Sunucuya bağlanılamadı.')).toBeInTheDocument()
@@ -145,10 +158,70 @@ describe('HomePage upload -> analyze flow', () => {
         .mockResolvedValueOnce(jsonResponse(500, { code: 'INTERNAL_SERVER_ERROR', message: 'Beklenmeyen bir sunucu hatası oluştu.' })),
     )
 
-    render(<HomePage />)
+    renderHomePage()
     await uploadAndClickAnalyze()
 
     expect(await screen.findByText('Beklenmeyen bir sunucu hatası oluştu.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: "CV'yi Analiz Et" })).toBeEnabled()
+  })
+
+  it('shows the backend quota-exceeded message when analyze returns 402', async () => {
+    const quotaMessage = "Aylık analiz hakkınızı doldurdunuz (2 analiz). Daha fazla analiz için Premium'a geçebilirsiniz."
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, { cvId: 'cv-1', fileName: 'cv.pdf' }))
+        .mockResolvedValueOnce(jsonResponse(402, { code: 'QUOTA_EXCEEDED', message: quotaMessage })),
+    )
+
+    renderHomePage()
+    await uploadAndClickAnalyze()
+
+    expect(await screen.findByText(quotaMessage)).toBeInTheDocument()
+  })
+})
+
+describe('HomePage quota-aware Analyze button', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('disables the Analyze button with an explanation once the monthly quota is exhausted', async () => {
+    setToken('existing-token')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/api/auth/me')) {
+          return Promise.resolve(jsonResponse(200, { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z' }))
+        }
+        if (url.includes('/api/billing/usage')) {
+          return Promise.resolve(
+            jsonResponse(200, { plan: 'FREE', used: 2, limit: 2, remaining: 0, periodStart: '2026-08-01T00:00:00Z', periodEnd: '2026-09-01T00:00:00Z' }),
+          )
+        }
+        if (url.includes('/api/cv/upload')) {
+          return Promise.resolve(jsonResponse(200, { cvId: 'cv-1', fileName: 'cv.pdf' }))
+        }
+        throw new Error(`unexpected fetch to ${url}`)
+      }),
+    )
+
+    render(
+      <AuthProvider>
+        <BillingProvider>
+          <HomePage />
+        </BillingProvider>
+      </AuthProvider>,
+    )
+
+    const user = userEvent.setup()
+    await user.upload(screen.getByTestId('cv-file-input'), makePdfFile())
+
+    const analyzeButton = await screen.findByRole('button', { name: "CV'yi Analiz Et" })
+    expect(analyzeButton).toBeDisabled()
+    expect(screen.getByText(/Premium'a geçerek daha fazla analiz yapabilirsiniz/)).toBeInTheDocument()
   })
 })

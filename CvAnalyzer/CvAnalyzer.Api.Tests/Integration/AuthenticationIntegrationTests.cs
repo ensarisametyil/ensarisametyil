@@ -72,6 +72,14 @@ public class AuthenticationIntegrationTests : IClassFixture<CustomWebApplication
     }
 
     [Fact]
+    public async Task BillingUsage_WithoutToken_ReturnsUnauthorized()
+    {
+        var response = await _client.GetAsync("/api/billing/usage");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task RegisterThenLoginThenMe_FullFlow_Works()
     {
         var email = $"user-{Guid.NewGuid():N}@example.com";

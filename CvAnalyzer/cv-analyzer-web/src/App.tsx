@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { BillingProvider } from './context/BillingContext'
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -11,24 +12,26 @@ import HistoryDetailPage from './pages/HistoryDetailPage'
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      <BillingProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<HomePage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/history/:id" element={<HistoryDetailPage />} />
-        </Route>
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<HomePage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/history/:id" element={<HistoryDetailPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BillingProvider>
     </AuthProvider>
   )
 }

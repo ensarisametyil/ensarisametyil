@@ -17,6 +17,10 @@ public class AppDbContext : DbContext
 
     public DbSet<Analysis> Analyses => Set<Analysis>();
 
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+
+    public DbSet<AnalysisUsage> AnalysisUsages => Set<AnalysisUsage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var stringListComparer = new ValueComparer<List<string>>(
@@ -91,6 +95,55 @@ public class AppDbContext : DbContext
 
             entity.HasIndex(a => a.CvId);
             entity.HasIndex(a => a.UserId);
+        });
+
+        modelBuilder.Entity<Subscription>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Plan).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(s => s.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(s => s.StartDate).IsRequired();
+            entity.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(s => s.UpdatedAt).HasDefaultValueSql("now()");
+            entity.Property(s => s.Provider).HasMaxLength(50);
+            entity.Property(s => s.ProviderCustomerId).HasMaxLength(255);
+            entity.Property(s => s.ProviderSubscriptionId).HasMaxLength(255);
+
+            // No other path cascades a Subscription when its User is deleted, so this one must.
+            entity.HasOne(s => s.User)
+                  .WithMany(u => u.Subscriptions)
+                  .HasForeignKey(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // The exact lookup SubscriptionService.GetEffectivePlanAsync performs.
+            entity.HasIndex(s => new { s.UserId, s.Status });
+        });
+
+        modelBuilder.Entity<AnalysisUsage>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.PeriodStart).IsRequired();
+            entity.Property(u => u.PeriodEnd).IsRequired();
+            entity.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
+
+            // No other path cascades an AnalysisUsage when its User is deleted, so this one must
+            // (unlike Analysis.User, which can be Restrict because the CvId cascade already
+            // covers it — AnalysisUsage has no such alternate path).
+            entity.HasOne(u => u.User)
+                  .WithMany(usr => usr.AnalysisUsages)
+                  .HasForeignKey(u => u.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // SetNull (not Cascade): if the underlying Analysis is later deleted (e.g. the user
+            // deletes that CV), the billing fact "a credit was spent this period" must survive —
+            // otherwise deleting a CV would silently refund a used credit.
+            entity.HasOne(u => u.Analysis)
+                  .WithMany()
+                  .HasForeignKey(u => u.AnalysisId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            // The exact lookup AnalysisQuotaService's usage count performs.
+            entity.HasIndex(u => new { u.UserId, u.PeriodStart });
         });
     }
 }

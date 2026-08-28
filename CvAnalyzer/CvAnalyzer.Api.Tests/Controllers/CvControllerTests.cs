@@ -39,7 +39,7 @@ public class CvControllerTests
             new FileParserService(),
             new CvTextNormalizer(Options.Create(new AiOptions())),
             aiService,
-            new UnlimitedAnalysisQuotaService(),
+            new FakeAnalysisQuotaService(),
             NullLogger<CvController>.Instance);
 
         controller.ControllerContext = new ControllerContext

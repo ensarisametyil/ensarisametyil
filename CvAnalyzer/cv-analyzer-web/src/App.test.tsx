@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import type { AuthResponse } from './types/auth'
+import type { Usage } from './types/billing'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -17,6 +18,42 @@ const AUTH_RESPONSE: AuthResponse = {
   tokenType: 'Bearer',
   expiresInSeconds: 3600,
   user: { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z' },
+}
+
+const DEFAULT_USAGE: Usage = {
+  plan: 'FREE',
+  used: 0,
+  limit: 2,
+  remaining: 2,
+  periodStart: '2026-08-01T00:00:00Z',
+  periodEnd: '2026-09-01T00:00:00Z',
+}
+
+/**
+ * BillingProvider fetches GET /api/billing/usage as soon as a login/register succeeds, which
+ * means the exact ordering of fetch calls after login is no longer predictable relative to
+ * whatever the test does next (e.g. clicking into History). Route by URL instead of by call
+ * index so these tests don't depend on that ordering.
+ */
+function mockFetchRoutes(routes: Record<string, () => Response>) {
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    const match = Object.entries(routes).find(([pattern]) => url.includes(pattern))
+    if (!match) {
+      throw new Error(`No mocked route for ${url}`)
+    }
+    return Promise.resolve(match[1]())
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+function findCall(fetchMock: ReturnType<typeof mockFetchRoutes>, urlPattern: string) {
+  const call = fetchMock.mock.calls.find(([input]) => (typeof input === 'string' ? input : input.toString()).includes(urlPattern))
+  if (!call) {
+    throw new Error(`fetch was never called for ${urlPattern}`)
+  }
+  return call
 }
 
 function renderApp(initialPath = '/') {
@@ -41,7 +78,7 @@ describe('Authentication flow', () => {
   })
 
   it('redirects an unauthenticated visitor away from a protected route to /login', async () => {
-    vi.stubGlobal('fetch', vi.fn())
+    mockFetchRoutes({})
 
     renderApp('/')
 
@@ -49,7 +86,10 @@ describe('Authentication flow', () => {
   })
 
   it('logs in successfully, stores the session, and shows the authenticated app shell', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, AUTH_RESPONSE)))
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+    })
     const user = userEvent.setup()
 
     renderApp('/login')
@@ -60,10 +100,9 @@ describe('Authentication flow', () => {
   })
 
   it('shows an error and stays on the login page for wrong credentials', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValueOnce(jsonResponse(401, { code: 'INVALID_CREDENTIALS', message: 'E-posta veya parola hatalı.' })),
-    )
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(401, { code: 'INVALID_CREDENTIALS', message: 'E-posta veya parola hatalı.' }),
+    })
     const user = userEvent.setup()
 
     renderApp('/login')
@@ -77,7 +116,10 @@ describe('Authentication flow', () => {
   })
 
   it('logs out, clears the stored session, and redirects to /login', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, AUTH_RESPONSE)))
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+    })
     const user = userEvent.setup()
 
     renderApp('/login')
@@ -90,10 +132,10 @@ describe('Authentication flow', () => {
   })
 
   it('sends the Authorization header on a protected API call and renders the returned history', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse(200, AUTH_RESPONSE)) // login
-      .mockResolvedValueOnce(
+    const fetchMock = mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+      '/api/analyses': () =>
         jsonResponse(200, {
           items: [
             {
@@ -109,34 +151,50 @@ describe('Authentication flow', () => {
           pageSize: 20,
           totalCount: 1,
         }),
-      )
-    vi.stubGlobal('fetch', fetchMock)
+    })
     const user = userEvent.setup()
 
     renderApp('/login')
     await loginAs(user)
-    await user.click(screen.getByRole('link', { name: 'Analiz Geçmişim' }))
+    await user.click(screen.getByRole('link', { name: 'Analiz Geçmişim', exact: true }))
 
     expect(await screen.findByText('cv.pdf')).toBeInTheDocument()
 
-    const [, historyInit] = fetchMock.mock.calls[1]
-    const headers = new Headers(historyInit.headers)
+    const [, historyInit] = findCall(fetchMock, '/api/analyses')
+    const headers = new Headers(historyInit?.headers)
     expect(headers.get('Authorization')).toBe('Bearer test-access-token')
   })
 
   it('logs the user out automatically when a protected call comes back 401 (expired/invalid token)', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse(200, AUTH_RESPONSE)) // login
-      .mockResolvedValueOnce(jsonResponse(401, { code: 'UNAUTHORIZED', message: 'Yetkisiz.' })) // history call
-    vi.stubGlobal('fetch', fetchMock)
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+      '/api/analyses': () => jsonResponse(401, { code: 'UNAUTHORIZED', message: 'Yetkisiz.' }),
+    })
     const user = userEvent.setup()
 
     renderApp('/login')
     await loginAs(user)
-    await user.click(screen.getByRole('link', { name: 'Analiz Geçmişim' }))
+    await user.click(screen.getByRole('link', { name: 'Analiz Geçmişim', exact: true }))
 
     expect(await screen.findByRole('heading', { name: 'Giriş Yap' })).toBeInTheDocument()
     expect(localStorage.getItem('cvAnalyzer.accessToken')).toBeNull()
+  })
+
+  it('clears the plan/usage badge after logout', async () => {
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+    })
+    const user = userEvent.setup()
+
+    renderApp('/login')
+    await loginAs(user)
+    expect(await screen.findByText('FREE PLAN')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Çıkış Yap' }))
+
+    await screen.findByRole('heading', { name: 'Giriş Yap' })
+    expect(screen.queryByText('FREE PLAN')).not.toBeInTheDocument()
   })
 })

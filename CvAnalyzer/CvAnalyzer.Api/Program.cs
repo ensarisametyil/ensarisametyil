@@ -62,7 +62,13 @@ builder.Services.AddSingleton<IAnthropicMessagesGateway, AnthropicMessagesGatewa
 builder.Services.AddSingleton<ICvAnalysisResponseParser, CvAnalysisResponseParser>();
 builder.Services.AddSingleton<IAiCvAnalysisService, AnthropicCvAnalysisService>();
 
-builder.Services.AddSingleton<IAnalysisQuotaService, UnlimitedAnalysisQuotaService>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.Configure<PlanOptions>(builder.Configuration.GetSection(PlanOptions.SectionName));
+builder.Services.AddSingleton<IPlanCatalog, PlanCatalog>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IFeatureEntitlementService, FeatureEntitlementService>();
+builder.Services.AddSingleton<IUserOperationLock, UserOperationLock>();
+builder.Services.AddScoped<IAnalysisQuotaService, AnalysisQuotaService>();
 
 // --- Authentication (JWT) ---
 

@@ -161,6 +161,7 @@ public class CvController : ControllerBase
     [HttpPost("{id:guid}/analyze")]
     [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status402PaymentRequired)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status502BadGateway)]
@@ -175,13 +176,17 @@ public class CvController : ControllerBase
             return NotFound(CvNotFoundError);
         }
 
+        // Cheap pre-check before the costly AI call — stops the common case (quota already
+        // exhausted) from ever reaching the AI provider. Not itself race-safe; see
+        // IAnalysisQuotaService.RecordAnalysisUsageAsync for the atomic guard against two
+        // concurrent requests both spending the same last credit.
         try
         {
             await _quotaService.EnsureUserCanAnalyzeAsync(userId, cancellationToken);
         }
         catch (AnalysisQuotaExceededException ex)
         {
-            return StatusCode(StatusCodes.Status429TooManyRequests, new ErrorResponseDto("QUOTA_EXCEEDED", ex.Message));
+            return StatusCode(StatusCodes.Status402PaymentRequired, new ErrorResponseDto("QUOTA_EXCEEDED", ex.Message));
         }
 
         byte[] fileBytes;
@@ -265,7 +270,20 @@ public class CvController : ControllerBase
         _db.Analyses.Add(analysis);
         await _db.SaveChangesAsync(cancellationToken);
 
-        await _quotaService.RecordAnalysisUsageAsync(userId, cancellationToken);
+        try
+        {
+            await _quotaService.RecordAnalysisUsageAsync(userId, analysis.Id, cancellationToken);
+        }
+        catch (AnalysisQuotaExceededException ex)
+        {
+            // Lost a race against a concurrent request for the same user's last credit (see
+            // RecordAnalysisUsageAsync doc comment) — the AI call already happened and can't be
+            // refunded, but the credit itself must not be double-spent, so this analysis is not
+            // kept: undo the save and report the same quota error the pre-check would have.
+            _db.Analyses.Remove(analysis);
+            await _db.SaveChangesAsync(cancellationToken);
+            return StatusCode(StatusCodes.Status402PaymentRequired, new ErrorResponseDto("QUOTA_EXCEEDED", ex.Message));
+        }
 
         return Ok(result);
     }
