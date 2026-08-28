@@ -7,4 +7,5 @@ import { cleanup } from '@testing-library/react'
 // import here, not as an ambient global testing-library can detect).
 afterEach(() => {
   cleanup()
+  localStorage.clear()
 })

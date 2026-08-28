@@ -15,4 +15,7 @@ public interface IFileStorageService
     /// <see cref="FileNotFoundException"/> if the key doesn't resolve to an existing file.
     /// </summary>
     Task<byte[]> ReadAsync(string storageKey, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes a previously saved file. Idempotent — does nothing if the key no longer resolves to a file.</summary>
+    Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default);
 }

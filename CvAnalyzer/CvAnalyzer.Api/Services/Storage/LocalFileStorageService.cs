@@ -38,4 +38,15 @@ public class LocalFileStorageService : IFileStorageService
 
         return await File.ReadAllBytesAsync(fullPath, cancellationToken);
     }
+
+    public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        var fullPath = Path.Combine(_rootPath, storageKey);
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+
+        return Task.CompletedTask;
+    }
 }

@@ -36,23 +36,42 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.Property<Guid>("CvId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("JobMatches")
+                    b.Property<string>("Education")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Experience")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MissingKeywords")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<string>("MissingSkills")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
+                    b.Property<int>("OverallScore")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RawAiResponse")
                         .HasColumnType("jsonb");
 
-                    b.Property<int>("Score")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Suggestions")
+                    b.Property<string>("Recommendations")
                         .IsRequired()
                         .HasColumnType("jsonb");
+
+                    b.Property<string>("Skills")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Strengths")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Weaknesses")
                         .IsRequired()
@@ -62,9 +81,11 @@ namespace CvAnalyzer.Api.Data.Migrations
 
                     b.HasIndex("CvId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Analyses", t =>
                         {
-                            t.HasCheckConstraint("CK_Analysis_Score_Range", "\"Score\" BETWEEN 0 AND 100");
+                            t.HasCheckConstraint("CK_Analysis_OverallScore_Range", "\"OverallScore\" BETWEEN 0 AND 100");
                         });
                 });
 
@@ -96,7 +117,7 @@ namespace CvAnalyzer.Api.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -126,9 +147,19 @@ namespace CvAnalyzer.Api.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
@@ -146,7 +177,15 @@ namespace CvAnalyzer.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CvAnalyzer.Api.Models.Entities.User", "User")
+                        .WithMany("Analyses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Cv");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.Cv", b =>
@@ -154,7 +193,8 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.HasOne("CvAnalyzer.Api.Models.Entities.User", "User")
                         .WithMany("Cvs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -166,6 +206,8 @@ namespace CvAnalyzer.Api.Data.Migrations
 
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.User", b =>
                 {
+                    b.Navigation("Analyses");
+
                     b.Navigation("Cvs");
                 });
 #pragma warning restore 612, 618

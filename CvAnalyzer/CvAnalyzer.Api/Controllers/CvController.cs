@@ -1,24 +1,39 @@
+using System.Text.Json;
 using CvAnalyzer.Api.Data;
+using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.Services.AI;
+using CvAnalyzer.Api.Services.Billing;
 using CvAnalyzer.Api.Services.FileProcessing;
 using CvAnalyzer.Api.Services.Storage;
 using CvAnalyzer.Api.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CvAnalyzer.Api.Controllers;
 
+/// <summary>
+/// Every action here requires authentication and every query/mutation is scoped to
+/// User.GetUserId() — a caller can never see, analyze, or delete another user's CV. A CV that
+/// exists but belongs to someone else returns the same 404 as a CV that doesn't exist at all,
+/// so a guessed id can't be used to learn anything about another account's data.
+/// </summary>
 [ApiController]
+[Authorize]
 [Route("api/cv")]
 public class CvController : ControllerBase
 {
+    private static readonly ErrorResponseDto CvNotFoundError = new("CV_NOT_FOUND", "Belirtilen CV bulunamadı.");
+
     private readonly AppDbContext _db;
     private readonly IFileStorageService _fileStorage;
     private readonly ICvFileValidator _fileValidator;
     private readonly IFileParserService _fileParser;
     private readonly ICvTextNormalizer _textNormalizer;
     private readonly IAiCvAnalysisService _aiAnalysisService;
+    private readonly IAnalysisQuotaService _quotaService;
     private readonly ILogger<CvController> _logger;
 
     public CvController(
@@ -28,6 +43,7 @@ public class CvController : ControllerBase
         IFileParserService fileParser,
         ICvTextNormalizer textNormalizer,
         IAiCvAnalysisService aiAnalysisService,
+        IAnalysisQuotaService quotaService,
         ILogger<CvController> logger)
     {
         _db = db;
@@ -36,6 +52,7 @@ public class CvController : ControllerBase
         _fileParser = fileParser;
         _textNormalizer = textNormalizer;
         _aiAnalysisService = aiAnalysisService;
+        _quotaService = quotaService;
         _logger = logger;
     }
 
@@ -73,7 +90,8 @@ public class CvController : ControllerBase
         var cv = new Cv
         {
             Id = Guid.NewGuid(),
-            UserId = null,
+            // Always the authenticated caller — the client never gets to choose an owner.
+            UserId = User.GetUserId(),
             FileName = Path.GetFileName(file.FileName),
             FilePath = storageKey,
             ContentType = file.ContentType,
@@ -87,6 +105,59 @@ public class CvController : ControllerBase
         return Ok(new CvUploadResponseDto(cv.Id, cv.FileName));
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(List<CvSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var cvs = await _db.Cvs
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.UploadedAt)
+            .Select(c => new CvSummaryDto(c.Id, c.FileName, c.UploadedAt))
+            .ToListAsync(cancellationToken);
+
+        return Ok(cvs);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(CvDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var cv = await _db.Cvs.SingleOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
+        if (cv is null)
+        {
+            return NotFound(CvNotFoundError);
+        }
+
+        return Ok(new CvDetailDto(cv.Id, cv.FileName, cv.ContentType, cv.FileSizeBytes, cv.UploadedAt));
+    }
+
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var cv = await _db.Cvs.SingleOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
+        if (cv is null)
+        {
+            return NotFound(CvNotFoundError);
+        }
+
+        // Analyses referencing this Cv cascade-delete at the database level (see AppDbContext).
+        _db.Cvs.Remove(cv);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        await _fileStorage.DeleteAsync(cv.FilePath, cancellationToken);
+
+        return NoContent();
+    }
+
     [HttpPost("{id:guid}/analyze")]
     [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
@@ -96,10 +167,21 @@ public class CvController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> Analyze(Guid id, CancellationToken cancellationToken)
     {
-        var cv = await _db.Cvs.FindAsync(new object?[] { id }, cancellationToken);
+        var userId = User.GetUserId();
+
+        var cv = await _db.Cvs.SingleOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
         if (cv is null)
         {
-            return NotFound(new ErrorResponseDto("CV_NOT_FOUND", "Belirtilen CV bulunamadı."));
+            return NotFound(CvNotFoundError);
+        }
+
+        try
+        {
+            await _quotaService.EnsureUserCanAnalyzeAsync(userId, cancellationToken);
+        }
+        catch (AnalysisQuotaExceededException ex)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests, new ErrorResponseDto("QUOTA_EXCEEDED", ex.Message));
         }
 
         byte[] fileBytes;
@@ -133,10 +215,10 @@ public class CvController : ControllerBase
             return BadRequest(new ErrorResponseDto("EMPTY_CV_TEXT", "CV içeriğinden analiz edilecek metin bulunamadı."));
         }
 
+        CvAnalysisResult result;
         try
         {
-            var result = await _aiAnalysisService.AnalyzeCvAsync(normalizedText, cancellationToken);
-            return Ok(result);
+            result = await _aiAnalysisService.AnalyzeCvAsync(normalizedText, cancellationToken);
         }
         catch (AiConfigurationException ex)
         {
@@ -162,5 +244,29 @@ public class CvController : ControllerBase
             return StatusCode(StatusCodes.Status502BadGateway,
                 new ErrorResponseDto("AI_INVALID_RESPONSE", "AI servisinden geçerli bir analiz sonucu alınamadı."));
         }
+
+        var analysis = new Analysis
+        {
+            Id = Guid.NewGuid(),
+            CvId = cv.Id,
+            UserId = userId,
+            OverallScore = result.OverallScore,
+            Summary = result.Summary,
+            Strengths = result.Strengths,
+            Weaknesses = result.Weaknesses,
+            Skills = result.Skills,
+            Experience = result.Experience,
+            Education = result.Education,
+            MissingKeywords = result.MissingKeywords,
+            Recommendations = result.Recommendations,
+            RawAiResponse = JsonSerializer.Serialize(result),
+            CreatedAt = DateTime.UtcNow,
+        };
+        _db.Analyses.Add(analysis);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        await _quotaService.RecordAnalysisUsageAsync(userId, cancellationToken);
+
+        return Ok(result);
     }
 }

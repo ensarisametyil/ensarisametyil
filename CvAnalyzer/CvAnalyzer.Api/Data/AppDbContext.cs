@@ -31,7 +31,9 @@ public class AppDbContext : DbContext
             entity.HasIndex(u => u.Email).IsUnique();
             entity.Property(u => u.PasswordHash).IsRequired();
             entity.Property(u => u.FullName).HasMaxLength(255);
+            entity.Property(u => u.IsActive).HasDefaultValue(true);
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(u => u.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<Cv>(entity =>
@@ -45,8 +47,8 @@ public class AppDbContext : DbContext
             entity.HasOne(c => c.User)
                   .WithMany(u => u.Cvs)
                   .HasForeignKey(c => c.UserId)
-                  .IsRequired(false)
-                  .OnDelete(DeleteBehavior.SetNull);
+                  .IsRequired()
+                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(c => c.UserId);
         });
@@ -54,36 +56,22 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Analysis>(entity =>
         {
             entity.HasKey(a => a.Id);
-            entity.Property(a => a.Score);
-            entity.ToTable(t => t.HasCheckConstraint("CK_Analysis_Score_Range", "\"Score\" BETWEEN 0 AND 100"));
+            entity.Property(a => a.OverallScore);
+            entity.ToTable(t => t.HasCheckConstraint("CK_Analysis_OverallScore_Range", "\"OverallScore\" BETWEEN 0 AND 100"));
 
-            entity.Property(a => a.MissingSkills)
-                  .HasColumnType("jsonb")
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new())
-                  .Metadata.SetValueComparer(stringListComparer);
+            entity.Property(a => a.Summary).IsRequired();
+            entity.Property(a => a.Experience).IsRequired();
+            entity.Property(a => a.Education).IsRequired();
 
-            entity.Property(a => a.Weaknesses)
-                  .HasColumnType("jsonb")
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new())
-                  .Metadata.SetValueComparer(stringListComparer);
-
-            entity.Property(a => a.Suggestions)
-                  .HasColumnType("jsonb")
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new())
-                  .Metadata.SetValueComparer(stringListComparer);
-
-            entity.Property(a => a.JobMatches)
-                  .HasColumnType("jsonb")
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new())
-                  .Metadata.SetValueComparer(stringListComparer);
+            foreach (var propertyName in new[] { nameof(Analysis.Strengths), nameof(Analysis.Weaknesses), nameof(Analysis.Skills), nameof(Analysis.MissingKeywords), nameof(Analysis.Recommendations) })
+            {
+                entity.Property<List<string>>(propertyName)
+                      .HasColumnType("jsonb")
+                      .HasConversion(
+                          v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                          v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new())
+                      .Metadata.SetValueComparer(stringListComparer);
+            }
 
             entity.Property(a => a.RawAiResponse).HasColumnType("jsonb");
             entity.Property(a => a.CreatedAt).HasDefaultValueSql("now()");
@@ -93,7 +81,16 @@ public class AppDbContext : DbContext
                   .HasForeignKey(a => a.CvId)
                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Denormalized owner reference (see Analysis.UserId doc comment). The CvId cascade
+            // above already guarantees an Analysis row never outlives its Cv/User, so this FK
+            // only needs to enforce referential integrity, not a second cascade path.
+            entity.HasOne(a => a.User)
+                  .WithMany(u => u.Analyses)
+                  .HasForeignKey(a => a.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(a => a.CvId);
+            entity.HasIndex(a => a.UserId);
         });
     }
 }

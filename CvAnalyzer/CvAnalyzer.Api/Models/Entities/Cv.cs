@@ -4,10 +4,8 @@ public class Cv
 {
     public Guid Id { get; set; }
 
-    /// <summary>
-    /// Nullable until authentication exists: uploads are not yet tied to a signed-in user.
-    /// </summary>
-    public Guid? UserId { get; set; }
+    /// <summary>Owning user — always set from the authenticated caller's JWT claim, never from client input.</summary>
+    public Guid UserId { get; set; }
 
     public string FileName { get; set; } = string.Empty;
 
@@ -21,7 +19,7 @@ public class Cv
 
     public DateTime UploadedAt { get; set; }
 
-    public User? User { get; set; }
+    public User User { get; set; } = null!;
 
     public ICollection<Analysis> Analyses { get; set; } = new List<Analysis>();
 }

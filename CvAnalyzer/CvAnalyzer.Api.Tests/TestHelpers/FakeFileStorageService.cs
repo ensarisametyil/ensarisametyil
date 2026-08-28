@@ -34,4 +34,10 @@ public class FakeFileStorageService : IFileStorageService
 
         return Task.FromResult(bytes);
     }
+
+    public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        _files.Remove(storageKey);
+        return Task.CompletedTask;
+    }
 }
