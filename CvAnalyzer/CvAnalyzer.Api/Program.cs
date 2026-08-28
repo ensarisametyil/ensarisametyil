@@ -1,6 +1,7 @@
 using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
+using CvAnalyzer.Api.Services.FileProcessing;
 using CvAnalyzer.Api.Services.Storage;
 using CvAnalyzer.Api.Validators;
 using Microsoft.AspNetCore.Diagnostics;
@@ -30,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 
 builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddSingleton<ICvFileValidator, CvFileValidator>();
+builder.Services.AddSingleton<IFileParserService, FileParserService>();
 
 var app = builder.Build();
 
