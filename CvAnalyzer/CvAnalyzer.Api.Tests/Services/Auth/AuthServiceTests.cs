@@ -309,6 +309,22 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task VerifyEmailAsync_TokenReplayed_ThrowsInvalidOrExpiredTokenOnSecondUse()
+    {
+        // Single-use, mirroring ResetPasswordAsync_ValidToken_ChangesPasswordAndConsumesToken —
+        // a captured/leaked verification link must not be replayable once it has already verified
+        // the account (e.g. a link exposed in a referrer header, browser history, or a shared inbox).
+        using var db = CreateDbContext();
+        var sut = CreateSut(db);
+        var user = await sut.RegisterAsync("verify-replay@example.com", "Password123");
+        var token = await sut.RequestEmailVerificationAsync(user.Id);
+
+        await sut.VerifyEmailAsync(token!);
+
+        await Assert.ThrowsAsync<InvalidOrExpiredTokenException>(() => sut.VerifyEmailAsync(token!));
+    }
+
+    [Fact]
     public async Task DeactivateAccountAsync_CorrectPassword_SetsInactiveAndBlocksLogin()
     {
         using var db = CreateDbContext();

@@ -58,6 +58,31 @@ describe('empty-state handling', () => {
     expect(screen.queryByText(/no data/i)).not.toBeInTheDocument()
   })
 
+  it('renders AI-supplied HTML/script-like content as literal text, never as markup', () => {
+    // The AI response is untrusted content (a CV can contain arbitrary attacker-supplied text,
+    // and the model can echo it back) — this proves React's default escaping is actually in
+    // effect end-to-end through AnalysisDashboard, not just assumed because no
+    // dangerouslySetInnerHTML appears in the source.
+    const maliciousPayload = '<img src=x onerror=alert(1)>'
+    const maliciousScript = '<script>alert(1)</script>'
+    const hostileResult: CvAnalysisResult = {
+      ...FULL_RESULT,
+      summary: maliciousScript,
+      strengths: [maliciousPayload],
+      experience: maliciousPayload,
+    }
+
+    const { container } = render(<AnalysisDashboard result={hostileResult} />)
+
+    // No actual <img> or <script> element was created from the AI text.
+    expect(container.querySelector('img')).toBeNull()
+    expect(container.querySelector('script')).toBeNull()
+
+    // The literal, unescaped-looking string is present as ordinary text content.
+    expect(screen.getByText(maliciousScript)).toBeInTheDocument()
+    expect(screen.getAllByText(maliciousPayload).length).toBeGreaterThan(0)
+  })
+
   it('AnalysisDashboard with a fully populated result shows every section', () => {
     render(<AnalysisDashboard result={FULL_RESULT} />)
 

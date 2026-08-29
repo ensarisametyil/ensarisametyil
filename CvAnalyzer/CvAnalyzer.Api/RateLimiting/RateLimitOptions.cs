@@ -22,6 +22,12 @@ public class RateLimitOptions
     public RateLimitPolicyOptions Checkout { get; set; } = new() { PermitLimit = 10, WindowSeconds = 60 };
 
     public RateLimitPolicyOptions Contact { get; set; } = new() { PermitLimit = 10, WindowSeconds = 60 };
+
+    /// <summary>forgot-password / reset-password / verify-email — anonymous, IP-partitioned. Token guessing is already computationally infeasible (256-bit random tokens), but this still caps how many token-generation cycles / guesses an IP can trigger.</summary>
+    public RateLimitPolicyOptions PasswordReset { get; set; } = new() { PermitLimit = 10, WindowSeconds = 60 };
+
+    /// <summary>change-password / deactivate / send-verification — authenticated, user-partitioned sensitive account actions.</summary>
+    public RateLimitPolicyOptions Account { get; set; } = new() { PermitLimit = 20, WindowSeconds = 60 };
 }
 
 public class RateLimitPolicyOptions

@@ -93,16 +93,28 @@ builder.Services.AddSingleton<IPasswordPolicy, PasswordPolicy>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-// Fail fast if the signing key is missing — checked eagerly here so misconfiguration is caught
-// at startup, but the value actually baked into TokenValidationParameters below is re-read lazily
-// from builder.Configuration inside the AddJwtBearer callback, so it reflects the fully-merged
-// configuration (including any overrides layered on after this point, e.g. by test hosts).
-if (string.IsNullOrWhiteSpace(builder.Configuration[$"{JwtOptions.SectionName}:SigningKey"]))
+// Fail fast if the signing key is missing or too weak — checked eagerly here so misconfiguration
+// is caught at startup, but the value actually baked into TokenValidationParameters below is
+// re-read lazily from builder.Configuration inside the AddJwtBearer callback, so it reflects the
+// fully-merged configuration (including any overrides layered on after this point, e.g. by test
+// hosts). 32 UTF-8 characters is a floor, not a target — it guarantees at least the 256 bits
+// HMAC-SHA256 wants (every UTF-8 code unit is >= 1 byte), rejecting an obviously-too-short key
+// (e.g. a placeholder like "changeme") without pretending to fully judge the key's entropy.
+const int MinimumJwtSigningKeyLength = 32;
+var configuredSigningKey = builder.Configuration[$"{JwtOptions.SectionName}:SigningKey"];
+if (string.IsNullOrWhiteSpace(configuredSigningKey))
 {
     throw new InvalidOperationException(
         "JWT signing key 'Jwt:SigningKey' is not configured. " +
         "Set it via 'dotnet user-secrets set Jwt:SigningKey \"...\"' in Development, " +
         "or the Jwt__SigningKey environment variable in other environments.");
+}
+if (configuredSigningKey.Length < MinimumJwtSigningKeyLength)
+{
+    throw new InvalidOperationException(
+        $"JWT signing key 'Jwt:SigningKey' is too short ({configuredSigningKey.Length} characters) — " +
+        $"it must be at least {MinimumJwtSigningKeyLength} characters (256 bits) for HMAC-SHA256 to be " +
+        "meaningfully secure. Generate a strong one, e.g. 'openssl rand -base64 48'.");
 }
 
 builder.Services
@@ -127,6 +139,17 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!)),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
+
+            // Defense-in-depth against algorithm confusion: the only key configured above is
+            // symmetric, so an attacker presenting an RS256-signed token could never validate
+            // against it anyway (a SymmetricSecurityKey cannot produce an asymmetric-signature
+            // verifier) — but pinning the accepted algorithm explicitly, rather than relying on
+            // that implicit key-type mismatch, removes any doubt and survives a future change to
+            // this method that might add another key type. RequireSignedTokens (already the
+            // library default) is restated explicitly so an unsigned ("alg: none") token is
+            // rejected regardless of any future default change upstream.
+            RequireSignedTokens = true,
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
         };
     });
 
@@ -171,11 +194,34 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(RateLimitPolicies.Analyze, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Analyze));
     options.AddPolicy(RateLimitPolicies.Checkout, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Checkout));
     options.AddPolicy(RateLimitPolicies.Contact, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.Contact));
+    options.AddPolicy(RateLimitPolicies.PasswordReset, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.PasswordReset));
+    options.AddPolicy(RateLimitPolicies.Account, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Account));
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// Security response headers — registered first and via OnStarting (not a plain header
+// assignment) so they are guaranteed present on EVERY response this app ever sends, including
+// ones produced by the exception handler below (which re-executes an independent branch that
+// bypasses the rest of this pipeline) and by 404/redirect responses. See
+// Middleware/SecurityHeaders.cs for what's actually sent and why (Content-Security-Policy is
+// Development-gated there, not here).
+var securityHeaders = CvAnalyzer.Api.Middleware.SecurityHeaders.Build(app.Environment.IsDevelopment());
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        foreach (var (name, value) in securityHeaders)
+        {
+            context.Response.Headers[name] = value;
+        }
+        return Task.CompletedTask;
+    });
+    await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -191,6 +237,19 @@ app.UseExceptionHandler(errorApp =>
         logger.LogError(exceptionFeature?.Error, "Unhandled exception while processing {Path}", context.Request.Path);
 
         context.Response.ContentType = "application/json";
+
+        // A BadHttpRequestException (e.g. a body over a [RequestSizeLimit]/Kestrel body-size
+        // limit) already carries the correct client-facing status code — blindly rewriting every
+        // exception to 500 would turn that into a misleading "internal server error" and defeat
+        // the point of the size limit for any caller/monitoring reading the response status.
+        if (exceptionFeature?.Error is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
+        {
+            context.Response.StatusCode = badRequestException.StatusCode;
+            await context.Response.WriteAsJsonAsync(
+                new ErrorResponseDto("REQUEST_TOO_LARGE", "İstek gövdesi izin verilen boyutu aşıyor."));
+            return;
+        }
+
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await context.Response.WriteAsJsonAsync(
             new ErrorResponseDto("INTERNAL_SERVER_ERROR", "Beklenmeyen bir sunucu hatası oluştu."));

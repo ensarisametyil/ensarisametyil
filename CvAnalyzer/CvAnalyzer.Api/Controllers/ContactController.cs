@@ -24,6 +24,14 @@ public class ContactController : ControllerBase
     private const int MaxSubjectLength = 200;
     private const int MaxMessageLength = 4000;
 
+    /// <summary>
+    /// Bounds the raw request body before JSON deserialization, well above what the
+    /// MaxNameLength/MaxSubjectLength/MaxMessageLength checks below would ever allow through
+    /// (including UTF-8 multi-byte and JSON-escaping overhead) but far below anything an
+    /// oversized-payload memory-pressure attempt would need.
+    /// </summary>
+    private const long MaxContactBodyBytes = 32 * 1024;
+
     private readonly IContactService _contactService;
 
     public ContactController(IContactService contactService)
@@ -32,6 +40,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpPost]
+    [RequestSizeLimit(MaxContactBodyBytes)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Submit(ContactRequestDto request, CancellationToken cancellationToken)

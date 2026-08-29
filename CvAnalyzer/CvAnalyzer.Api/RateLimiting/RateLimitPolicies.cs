@@ -7,4 +7,6 @@ public static class RateLimitPolicies
     public const string Analyze = "analyze";
     public const string Checkout = "checkout";
     public const string Contact = "contact";
+    public const string PasswordReset = "password-reset";
+    public const string Account = "account";
 }

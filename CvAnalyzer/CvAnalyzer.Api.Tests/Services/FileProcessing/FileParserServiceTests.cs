@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using CvAnalyzer.Api.Services.FileProcessing;
 using CvAnalyzer.Api.Tests.TestHelpers;
 
@@ -121,5 +122,72 @@ public class FileParserServiceTests
         var text = await _sut.ExtractTextAsync(bytes, "sample.docx");
 
         Assert.Contains("Sample CV", text);
+    }
+
+    [Fact]
+    public async Task ExtractTextAsync_DocxZipBomb_RejectedWithoutFullyDecompressing()
+    {
+        // A real, valid zip whose one entry is a single repeated character — extremely
+        // compressible, so the archive itself stays tiny even though it genuinely declares (and
+        // would genuinely decompress to) well over the 50 MB guard. This is exactly the classic
+        // zip-bomb shape, built with the real .NET zip writer rather than hand-crafted bytes.
+        var bombBytes = BuildZipBomb(uncompressedSize: 80L * 1024 * 1024);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _sut.ExtractTextAsync(bombBytes, "cv.docx"));
+
+        Assert.Contains("büyük içerik", ex.Message);
+        // The bomb's compressed form must actually be small — proves this test exercises real
+        // compression, not just a large byte array.
+        Assert.True(bombBytes.Length < 1024 * 1024, $"Expected a highly-compressed bomb file, got {bombBytes.Length} bytes.");
+    }
+
+    [Fact]
+    public async Task ExtractTextAsync_DocxWithExcessiveEntryCount_Rejected()
+    {
+        using var ms = new MemoryStream();
+        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            for (var i = 0; i < 5001; i++)
+            {
+                var entry = archive.CreateEntry($"part-{i}.xml", CompressionLevel.Fastest);
+                using var entryStream = entry.Open();
+                entryStream.Write(new byte[] { 1 });
+            }
+        }
+        var bytes = ms.ToArray();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _sut.ExtractTextAsync(bytes, "cv.docx"));
+
+        Assert.Contains("çok sayıda", ex.Message);
+    }
+
+    [Fact]
+    public async Task ExtractTextAsync_ValidDocxWellUnderTheZipBombGuard_StillWorks()
+    {
+        // Regression check: the guard must not reject an ordinary, legitimate document.
+        var docxBytes = DocxTestFileBuilder.Build("Ada Lovelace - Software Engineer");
+
+        var text = await _sut.ExtractTextAsync(docxBytes, "cv.docx");
+
+        Assert.Contains("Ada Lovelace", text);
+    }
+
+    private static byte[] BuildZipBomb(long uncompressedSize)
+    {
+        using var ms = new MemoryStream();
+        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var entry = archive.CreateEntry("bomb.bin", CompressionLevel.SmallestSize);
+            using var entryStream = entry.Open();
+            var chunk = new byte[81920]; // all zeros — maximally compressible
+            for (long written = 0; written < uncompressedSize; written += chunk.Length)
+            {
+                var remaining = uncompressedSize - written;
+                entryStream.Write(chunk, 0, (int)Math.Min(chunk.Length, remaining));
+            }
+        }
+        return ms.ToArray();
     }
 }

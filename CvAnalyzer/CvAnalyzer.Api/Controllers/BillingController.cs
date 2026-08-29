@@ -24,6 +24,15 @@ namespace CvAnalyzer.Api.Controllers;
 [Route("api/billing")]
 public class BillingController : ControllerBase
 {
+    /// <summary>
+    /// Every JSON/form body this controller accepts (checkout buyer info, the callback token,
+    /// the webhook's reference codes) is a handful of short strings. Bounding the raw body
+    /// pre-deserialization stops a caller — including the two [AllowAnonymous] endpoints, which
+    /// have no auth-based rate limiting to fall back on — from forcing an oversized payload
+    /// through the model binder before any application-level validation runs.
+    /// </summary>
+    private const long MaxSmallBodyBytes = 8 * 1024;
+
     private readonly IAnalysisQuotaService _quotaService;
     private readonly IPaymentService _paymentService;
     private readonly ISubscriptionService _subscriptionService;
@@ -119,6 +128,7 @@ public class BillingController : ControllerBase
     /// </summary>
     [HttpPost("checkout")]
     [EnableRateLimiting(RateLimitPolicies.Checkout)]
+    [RequestSizeLimit(MaxSmallBodyBytes)]
     [ProducesResponseType(typeof(CheckoutResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status503ServiceUnavailable)]
@@ -157,6 +167,7 @@ public class BillingController : ControllerBase
     /// </summary>
     [HttpPost("checkout/callback")]
     [AllowAnonymous]
+    [RequestSizeLimit(MaxSmallBodyBytes)]
     public async Task<IActionResult> CheckoutCallback([FromForm] string? token, CancellationToken cancellationToken)
     {
         token ??= Request.Query["token"];
@@ -180,6 +191,7 @@ public class BillingController : ControllerBase
     /// </summary>
     [HttpPost("webhook/iyzico")]
     [AllowAnonymous]
+    [RequestSizeLimit(MaxSmallBodyBytes)]
     public async Task<IActionResult> IyzicoWebhook([FromBody] IyzicoWebhookRequestDto body, CancellationToken cancellationToken)
     {
         var signature = Request.Headers["X-IYZ-SIGNATURE-V3"].ToString();

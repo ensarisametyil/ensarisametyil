@@ -14,6 +14,14 @@ namespace CvAnalyzer.Api.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
+    /// <summary>
+    /// Every action here accepts a handful of short strings (email/password/token) — nothing
+    /// legitimate is anywhere near this size. Bounding the body pre-deserialization stops a
+    /// caller from forcing the JSON model binder to buffer/parse an oversized payload (a cheap
+    /// memory-pressure DoS vector) before any of this controller's own length validation runs.
+    /// </summary>
+    private const long MaxSmallJsonBodyBytes = 8 * 1024;
+
     private readonly IAuthService _authService;
     private readonly IJwtTokenService _jwtTokenService;
 
@@ -25,6 +33,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("register")]
     [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status409Conflict)]
@@ -52,6 +61,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status401Unauthorized)]
@@ -95,6 +105,8 @@ public class AuthController : ControllerBase
     /// <summary>Requires the current password (never just the JWT) so a hijacked-but-not-fully-compromised session can't silently lock the real owner out.</summary>
     [HttpPost("change-password")]
     [Authorize]
+    [EnableRateLimiting(RateLimitPolicies.Account)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken)
@@ -128,6 +140,8 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordReset)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(typeof(MessageResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequestDto request, CancellationToken cancellationToken)
     {
@@ -143,6 +157,8 @@ public class AuthController : ControllerBase
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordReset)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
@@ -170,6 +186,8 @@ public class AuthController : ControllerBase
     /// <summary>No enumeration concern here (unlike forgot-password) — the caller is already authenticated as the account in question.</summary>
     [HttpPost("send-verification")]
     [Authorize]
+    [EnableRateLimiting(RateLimitPolicies.Account)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(typeof(MessageResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendVerification(CancellationToken cancellationToken)
     {
@@ -181,6 +199,8 @@ public class AuthController : ControllerBase
 
     [HttpPost("verify-email")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordReset)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> VerifyEmail(VerifyEmailRequestDto request, CancellationToken cancellationToken)
@@ -209,6 +229,8 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("deactivate")]
     [Authorize]
+    [EnableRateLimiting(RateLimitPolicies.Account)]
+    [RequestSizeLimit(MaxSmallJsonBodyBytes)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Deactivate(DeactivateAccountRequestDto request, CancellationToken cancellationToken)
