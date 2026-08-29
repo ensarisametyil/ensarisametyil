@@ -21,6 +21,13 @@ export function getErrorMessage(error: unknown): string {
     case 429:
       return 'Çok fazla analiz isteği gönderildi. Lütfen biraz sonra tekrar deneyin.'
     case 503:
+      // 503 is shared by two unrelated backends behind this API — the AI provider and the
+      // checkout/payment provider — so the fixed AI copy only applies to the AI's own code.
+      // CHECKOUT_UNAVAILABLE (already Premium, Iyzico not configured, etc.) falls through to the
+      // backend's own already-sanitized message instead.
+      if (error.code === 'CHECKOUT_UNAVAILABLE') {
+        return error.message || GENERIC_MESSAGE
+      }
       return 'AI analiz servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.'
     default:
       return error.message || GENERIC_MESSAGE

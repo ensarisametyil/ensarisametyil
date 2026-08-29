@@ -1,0 +1,372 @@
+using System.Security.Cryptography;
+using System.Text;
+using CvAnalyzer.Api.Data;
+using CvAnalyzer.Api.Models.Entities;
+using CvAnalyzer.Api.Services.Billing;
+using CvAnalyzer.Api.Services.Billing.Payments;
+using CvAnalyzer.Api.Tests.TestHelpers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+
+namespace CvAnalyzer.Api.Tests.Services.Billing.Payments;
+
+public class PaymentServiceTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    private const string TestSecretKey = "test-only-secret-key-never-used-for-anything-real-0123456789";
+
+    private static readonly CheckoutBuyerInfo Buyer = new("Ada", "Lovelace", "11111111111", "5551234567", "Istanbul", "Test Sk. No:1");
+
+    private static AppDbContext CreateDbContext() =>
+        new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+
+    private static IyzicoOptions CreateOptions() => new()
+    {
+        ApiKey = "test-api-key",
+        SecretKey = TestSecretKey,
+        PremiumPricingPlanReferenceCode = "premium-monthly-plan",
+        CallbackUrl = "http://localhost:5285/api/billing/checkout/callback",
+        FrontendResultUrl = "http://localhost:5173/premium/result",
+    };
+
+    private static (PaymentService Sut, FakePaymentProvider Provider, AppDbContext Db, FakeTimeProvider Clock) CreateSut(
+        IyzicoOptions? options = null, IUserOperationLock? userLock = null)
+    {
+        var db = CreateDbContext();
+        var provider = new FakePaymentProvider();
+        var opts = options ?? CreateOptions();
+        var clock = new FakeTimeProvider(Now);
+        var sut = new PaymentService(
+            db,
+            provider,
+            new IyzicoWebhookSignatureVerifier(Options.Create(opts)),
+            new SubscriptionService(db, clock),
+            userLock ?? new UserOperationLock(),
+            Options.Create(opts),
+            clock,
+            NullLogger<PaymentService>.Instance);
+
+        return (sut, provider, db, clock);
+    }
+
+    private static string ComputeSignature(string secretKey, string eventType, string subscriptionRef, string orderRef, string customerRef)
+    {
+        var data = eventType + subscriptionRef + orderRef + customerRef;
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
+        return Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(data))).ToLowerInvariant();
+    }
+
+    // ---------- Payment initialization ----------
+
+    [Fact]
+    public async Task StartPremiumCheckoutAsync_FreeUser_CreatesTransactionAndReturnsCheckoutForm()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+
+        var result = await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+
+        Assert.True(result.Success);
+        Assert.Equal("test-token", result.Token);
+        Assert.Equal(1, provider.InitializeCallCount);
+
+        var transaction = Assert.Single(db.PaymentTransactions);
+        Assert.Equal(userId, transaction.UserId);
+        Assert.Equal("test-token", transaction.CheckoutToken);
+        Assert.Equal(PaymentTransactionStatus.Initiated, transaction.Status);
+    }
+
+    [Fact]
+    public async Task StartPremiumCheckoutAsync_AlreadyPremiumUser_DoesNotCallProviderAndReturnsFailure()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "existing-sub-ref"));
+        await db.SaveChangesAsync();
+
+        var result = await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, provider.InitializeCallCount);
+        Assert.Empty(db.PaymentTransactions);
+    }
+
+    [Fact]
+    public async Task StartPremiumCheckoutAsync_ProviderNotConfigured_ReturnsFailureWithoutCreatingTransaction()
+    {
+        var options = CreateOptions();
+        options.ApiKey = ""; // makes IsConfigured false
+        var (sut, provider, db, _) = CreateSut(options);
+        var userId = Guid.NewGuid();
+
+        var result = await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, provider.InitializeCallCount);
+        Assert.Empty(db.PaymentTransactions);
+    }
+
+    [Fact]
+    public async Task StartPremiumCheckoutAsync_ProviderInitializationFails_MarksTransactionFailed()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        provider.InitializeResult = new CheckoutInitializationResult(false, null, null, "kart reddedildi");
+        var userId = Guid.NewGuid();
+
+        var result = await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+
+        Assert.False(result.Success);
+        var transaction = Assert.Single(db.PaymentTransactions);
+        Assert.Equal(PaymentTransactionStatus.Failed, transaction.Status);
+        Assert.Empty(db.Subscriptions);
+    }
+
+    // ---------- Successful / failed payment, verification ----------
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_SuccessfulPayment_ActivatesPremiumSubscription()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+
+        var outcome = await sut.ProcessCheckoutCallbackAsync(token);
+
+        Assert.True(outcome.Success);
+        var subscription = Assert.Single(db.Subscriptions);
+        Assert.Equal(userId, subscription.UserId);
+        Assert.Equal(PlanType.Premium, subscription.Plan);
+        Assert.Equal(SubscriptionStatus.Active, subscription.Status);
+        Assert.Equal("Iyzico", subscription.Provider);
+        Assert.Equal("test-subscription-ref", subscription.ProviderSubscriptionId);
+        Assert.Equal("test-customer-ref", subscription.ProviderCustomerId);
+        Assert.Equal(1, provider.RetrieveCallCount); // authoritative confirmation was actually performed
+    }
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_UnknownToken_ReturnsFailureWithoutTouchingSubscriptions()
+    {
+        var (sut, _, db, _) = CreateSut();
+
+        var outcome = await sut.ProcessCheckoutCallbackAsync("never-issued-token");
+
+        Assert.False(outcome.Success);
+        Assert.Empty(db.Subscriptions);
+    }
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_ProviderReportsCheckoutFailure_SubscriptionNotCreated()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+        provider.CheckoutFormResult = new SubscriptionCheckoutResult(false, null, null, null, "ödeme reddedildi");
+
+        var outcome = await sut.ProcessCheckoutCallbackAsync(token);
+
+        Assert.False(outcome.Success);
+        Assert.Empty(db.Subscriptions);
+        Assert.Equal(PaymentTransactionStatus.Failed, db.PaymentTransactions.Single().Status);
+    }
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_AuthoritativeRetrieveDoesNotFindSubscription_PremiumNotGranted()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+        // The checkout-form-result step claims success, but the AUTHORITATIVE server-to-server
+        // check disagrees — this must be the deciding factor, not the claim above.
+        provider.RetrieveResult = new ProviderSubscriptionState(false, null, "bulunamadı");
+
+        var outcome = await sut.ProcessCheckoutCallbackAsync(token);
+
+        Assert.False(outcome.Success);
+        Assert.Empty(db.Subscriptions);
+    }
+
+    [Theory]
+    [InlineData("PENDING")]
+    [InlineData("UNPAID")]
+    [InlineData("CANCELED")]
+    public async Task ProcessCheckoutCallbackAsync_AuthoritativeStatusNotActive_PremiumNotGranted(string providerStatus)
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+        provider.RetrieveResult = new ProviderSubscriptionState(true, providerStatus, null);
+
+        var outcome = await sut.ProcessCheckoutCallbackAsync(token);
+
+        Assert.False(outcome.Success);
+        Assert.Empty(db.Subscriptions);
+    }
+
+    // ---------- Idempotency / duplicate events ----------
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_CalledThreeTimesForSameToken_OnlyFirstCallActivatesSubscription()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+
+        var first = await sut.ProcessCheckoutCallbackAsync(token);
+        var second = await sut.ProcessCheckoutCallbackAsync(token);
+        var third = await sut.ProcessCheckoutCallbackAsync(token);
+
+        Assert.True(first.Success);
+        Assert.True(second.Success); // idempotent "already processed" — not a failure
+        Assert.True(third.Success);
+        Assert.Single(db.Subscriptions); // never a second Subscription row
+        Assert.Equal(1, provider.RetrieveCallCount); // second/third call never re-verified — short-circuited by the already-Succeeded transaction
+    }
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_AlwaysActivatesTheOriginalCheckoutInitiator()
+    {
+        // There is no "target user" parameter anywhere in this flow — the token is the only
+        // input, and it is permanently bound (at StartPremiumCheckoutAsync time) to whichever
+        // user actually authenticated and started the checkout. This is what makes a
+        // cross-user/IDOR attempt structurally impossible here, not a runtime permission check.
+        var (sut, _, db, _) = CreateSut();
+        var originalUserId = Guid.NewGuid();
+        await sut.StartPremiumCheckoutAsync(originalUserId, "ada@example.com", Buyer);
+        var token = db.PaymentTransactions.Single().CheckoutToken!;
+
+        await sut.ProcessCheckoutCallbackAsync(token);
+
+        var subscription = Assert.Single(db.Subscriptions);
+        Assert.Equal(originalUserId, subscription.UserId);
+    }
+
+    // ---------- Webhook: signature verification ----------
+
+    [Fact]
+    public async Task ProcessWebhookAsync_InvalidSignature_RejectedAndNothingChanges()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-ref-1"));
+        await db.SaveChangesAsync();
+        var payload = new IyzicoWebhookPayload("subscription.order.success", "sub-ref-1", "order-1", "cust-1");
+
+        var result = await sut.ProcessWebhookAsync(payload, "0000invalidsignature0000");
+
+        Assert.Equal(WebhookProcessingResult.Rejected, result);
+        Assert.Equal(0, provider.RetrieveCallCount); // rejected before ever consulting the provider
+        Assert.Equal(SubscriptionStatus.Active, db.Subscriptions.Single().Status);
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_MissingSignatureHeader_Rejected()
+    {
+        var (sut, _, _, _) = CreateSut();
+        var payload = new IyzicoWebhookPayload("subscription.order.success", "sub-ref-1", "order-1", "cust-1");
+
+        var result = await sut.ProcessWebhookAsync(payload, signatureHeader: null);
+
+        Assert.Equal(WebhookProcessingResult.Rejected, result);
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_ValidSignatureButUnknownSubscription_SafelyIgnored()
+    {
+        var (sut, _, db, _) = CreateSut();
+        var payload = new IyzicoWebhookPayload("subscription.order.success", "never-seen-sub-ref", "order-1", "cust-1");
+        var signature = ComputeSignature(TestSecretKey, "subscription.order.success", "never-seen-sub-ref", "order-1", "cust-1");
+
+        var result = await sut.ProcessWebhookAsync(payload, signature);
+
+        Assert.Equal(WebhookProcessingResult.Ignored, result); // acknowledged so Iyzico doesn't endlessly retry — but nothing to act on
+        Assert.Empty(db.Subscriptions);
+    }
+
+    // ---------- Webhook: lifecycle (cancellation/expiration) + duplicate handling ----------
+
+    [Fact]
+    public async Task ProcessWebhookAsync_CancelledStatus_MovesSubscriptionToCancelledAndEffectivePlanBecomesFree()
+    {
+        var (sut, provider, db, clock) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-ref-1"));
+        await db.SaveChangesAsync();
+        provider.RetrieveResult = new ProviderSubscriptionState(true, "CANCELED", null);
+        var payload = new IyzicoWebhookPayload("subscription.canceled", "sub-ref-1", null, "cust-1");
+        var signature = ComputeSignature(TestSecretKey, "subscription.canceled", "sub-ref-1", "", "cust-1");
+
+        var result = await sut.ProcessWebhookAsync(payload, signature);
+
+        Assert.Equal(WebhookProcessingResult.Processed, result);
+        var subscription = db.Subscriptions.Single();
+        Assert.Equal(SubscriptionStatus.Cancelled, subscription.Status);
+        Assert.NotNull(subscription.EndDate);
+
+        var effectivePlan = await new SubscriptionService(db, clock).GetEffectivePlanAsync(userId);
+        Assert.Equal(PlanType.Free, effectivePlan);
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_ExpiredStatus_MovesSubscriptionToExpiredAndEffectivePlanBecomesFree()
+    {
+        var (sut, provider, db, clock) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-ref-1"));
+        await db.SaveChangesAsync();
+        provider.RetrieveResult = new ProviderSubscriptionState(true, "EXPIRED", null);
+        var payload = new IyzicoWebhookPayload("subscription.expired", "sub-ref-1", null, "cust-1");
+        var signature = ComputeSignature(TestSecretKey, "subscription.expired", "sub-ref-1", "", "cust-1");
+
+        await sut.ProcessWebhookAsync(payload, signature);
+
+        Assert.Equal(SubscriptionStatus.Expired, db.Subscriptions.Single().Status);
+        var effectivePlan = await new SubscriptionService(db, clock).GetEffectivePlanAsync(userId);
+        Assert.Equal(PlanType.Free, effectivePlan);
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_DuplicateCancellationEventSentThreeTimes_OnlyFirstActuallyUpdates()
+    {
+        var (sut, provider, db, clock) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-ref-1"));
+        await db.SaveChangesAsync();
+        provider.RetrieveResult = new ProviderSubscriptionState(true, "CANCELED", null);
+        var payload = new IyzicoWebhookPayload("subscription.canceled", "sub-ref-1", null, "cust-1");
+        var signature = ComputeSignature(TestSecretKey, "subscription.canceled", "sub-ref-1", "", "cust-1");
+
+        var first = await sut.ProcessWebhookAsync(payload, signature);
+        var firstEndDate = db.Subscriptions.Single().EndDate;
+
+        clock.Set(Now.AddHours(1)); // time moves on — if the 2nd/3rd calls updated again, EndDate would move too
+        var second = await sut.ProcessWebhookAsync(payload, signature);
+        var third = await sut.ProcessWebhookAsync(payload, signature);
+
+        Assert.Equal(WebhookProcessingResult.Processed, first);
+        Assert.Equal(WebhookProcessingResult.Processed, second); // idempotent no-op, still "processed" — not an error
+        Assert.Equal(WebhookProcessingResult.Processed, third);
+        var subscription = db.Subscriptions.Single();
+        Assert.Equal(SubscriptionStatus.Cancelled, subscription.Status);
+        Assert.Equal(firstEndDate, subscription.EndDate); // unchanged by the 2nd/3rd (no-op) calls
+    }
+
+    private static Subscription ActivePremiumSubscription(Guid userId, string providerSubscriptionId) => new()
+    {
+        Id = Guid.NewGuid(),
+        UserId = userId,
+        Plan = PlanType.Premium,
+        Status = SubscriptionStatus.Active,
+        StartDate = Now.UtcDateTime,
+        CreatedAt = Now.UtcDateTime,
+        UpdatedAt = Now.UtcDateTime,
+        Provider = "Iyzico",
+        ProviderCustomerId = "cust-1",
+        ProviderSubscriptionId = providerSubscriptionId,
+    };
+}

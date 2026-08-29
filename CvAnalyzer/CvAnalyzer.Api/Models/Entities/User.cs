@@ -24,4 +24,6 @@ public class User
     public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 
     public ICollection<AnalysisUsage> AnalysisUsages { get; set; } = new List<AnalysisUsage>();
+
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

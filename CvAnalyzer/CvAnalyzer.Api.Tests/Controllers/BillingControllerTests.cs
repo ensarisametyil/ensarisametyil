@@ -1,12 +1,15 @@
 using CvAnalyzer.Api.Controllers;
 using CvAnalyzer.Api.Data;
+using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Dtos.Billing;
 using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.Services.Billing;
+using CvAnalyzer.Api.Services.Billing.Payments;
 using CvAnalyzer.Api.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace CvAnalyzer.Api.Tests.Controllers;
@@ -20,7 +23,7 @@ public class BillingControllerTests
     private static AppDbContext CreateDbContext() =>
         new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
-    private static BillingController CreateController(AppDbContext db, Guid userId, int freeLimit = 2)
+    private static BillingController CreateController(AppDbContext db, Guid userId, int freeLimit = 2, IPaymentService? paymentService = null)
     {
         var quotaService = new AnalysisQuotaService(
             db,
@@ -29,7 +32,12 @@ public class BillingControllerTests
             new UserOperationLock(),
             new FakeTimeProvider(Now));
 
-        var controller = new BillingController(quotaService);
+        var controller = new BillingController(
+            quotaService,
+            paymentService ?? new FakePaymentService(),
+            Options.Create(new IyzicoOptions { FrontendResultUrl = "http://localhost:5173/premium/result" }),
+            NullLogger<BillingController>.Instance);
+
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = TestPrincipal.ForUser(userId) },
@@ -107,20 +115,38 @@ public class BillingControllerTests
     }
 
     [Fact]
-    public void BillingController_ExposesNoWayToSetOrChangeAPlan()
+    public void CheckoutRequestDto_NeverAcceptsAPlanOrPaymentOutcomeFieldFromTheClient()
     {
-        // Security requirement: a client can never set its own plan/subscription. Asserted at
-        // the type level so this can never silently regress — the controller must never grow a
-        // POST/PUT/PATCH/DELETE action, only read-only GETs.
-        var mutatingVerbAttributes = new[] { typeof(HttpPostAttribute), typeof(HttpPutAttribute), typeof(HttpPatchAttribute), typeof(HttpDeleteAttribute) };
+        // Security requirement: the ONLY request body an authenticated end-user submits to this
+        // controller (POST /api/billing/checkout — CheckoutRequestDto) must never carry a field
+        // that looks like "the client claims its own plan/payment outcome" (plan=Premium,
+        // paymentSuccess=true, subscriptionStatus=Active, ...). This is asserted at the type
+        // level so a future field addition that reintroduces client-trusted plan state fails the
+        // build immediately. (IyzicoWebhookRequestDto is intentionally excluded: it is Iyzico's
+        // own server-to-server payload, verified by signature + an authoritative re-confirmation
+        // before ever being trusted — see PaymentService — not a claim a browser/user submits.)
+        var forbiddenSubstrings = new[] { "plan", "premium", "paymentsuccess", "success", "status", "subscriptionstatus", "isactive" };
 
-        var methods = typeof(BillingController).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
-
-        foreach (var method in methods)
+        foreach (var property in typeof(CheckoutRequestDto).GetProperties())
         {
-            var hasMutatingVerb = method.GetCustomAttributes(inherit: true)
-                .Any(attribute => mutatingVerbAttributes.Contains(attribute.GetType()));
-            Assert.False(hasMutatingVerb, $"{method.Name} must not accept a mutating HTTP verb.");
+            var lower = property.Name.ToLowerInvariant();
+            Assert.False(
+                forbiddenSubstrings.Any(lower.Contains),
+                $"CheckoutRequestDto.{property.Name} looks like a client-controlled plan/payment-outcome field — Premium must only ever be granted from a verified provider result.");
         }
+    }
+
+    [Fact]
+    public async Task StartCheckout_MissingBuyerInfo_ReturnsBadRequestWithoutCallingPaymentService()
+    {
+        using var db = CreateDbContext();
+        var paymentService = new FakePaymentService();
+        var controller = CreateController(db, Guid.NewGuid(), paymentService: paymentService);
+
+        var response = await controller.StartCheckout(new CheckoutRequestDto("", "Doe", "11111111111", "5551234567", "Istanbul", "Test Address"), CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(response);
+        var error = Assert.IsType<ErrorResponseDto>(badRequest.Value);
+        Assert.Equal("INVALID_REQUEST", error.Code);
     }
 }

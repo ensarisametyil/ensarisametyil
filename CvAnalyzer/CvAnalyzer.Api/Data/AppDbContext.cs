@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
 
     public DbSet<AnalysisUsage> AnalysisUsages => Set<AnalysisUsage>();
 
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var stringListComparer = new ValueComparer<List<string>>(
@@ -117,6 +119,12 @@ public class AppDbContext : DbContext
 
             // The exact lookup SubscriptionService.GetEffectivePlanAsync performs.
             entity.HasIndex(s => new { s.UserId, s.Status });
+
+            // Idempotency at the DB level: two webhook/callback events for the same Iyzico
+            // subscription can never create two Subscription rows. Nulls (Free users, or any
+            // Subscription row created before a provider id was known) don't collide with each
+            // other under a unique index — only two equal non-null values would.
+            entity.HasIndex(s => s.ProviderSubscriptionId).IsUnique();
         });
 
         modelBuilder.Entity<AnalysisUsage>(entity =>
@@ -144,6 +152,31 @@ public class AppDbContext : DbContext
 
             // The exact lookup AnalysisQuotaService's usage count performs.
             entity.HasIndex(u => new { u.UserId, u.PeriodStart });
+        });
+
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.ConversationId).IsRequired().HasMaxLength(100);
+            entity.Property(t => t.CheckoutToken).HasMaxLength(255);
+            entity.Property(t => t.ProviderSubscriptionReferenceCode).HasMaxLength(255);
+            entity.Property(t => t.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(t => t.FailureReason).HasMaxLength(500);
+            entity.Property(t => t.CreatedAt).HasDefaultValueSql("now()");
+
+            // No other path cascades a PaymentTransaction when its User is deleted, so this one must.
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.PaymentTransactions)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Idempotency anchors: our own correlation id is always unique; the checkout token
+            // and provider subscription reference code are unique whenever Iyzico has assigned
+            // one (null before that point — nulls never collide with each other).
+            entity.HasIndex(t => t.ConversationId).IsUnique();
+            entity.HasIndex(t => t.CheckoutToken).IsUnique();
+            entity.HasIndex(t => t.ProviderSubscriptionReferenceCode).IsUnique();
+            entity.HasIndex(t => t.UserId);
         });
     }
 }

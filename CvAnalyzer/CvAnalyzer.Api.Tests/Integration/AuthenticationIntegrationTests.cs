@@ -80,6 +80,22 @@ public class AuthenticationIntegrationTests : IClassFixture<CustomWebApplication
     }
 
     [Fact]
+    public async Task BillingCheckout_WithoutToken_ReturnsUnauthorized()
+    {
+        var response = await _client.PostAsJsonAsync("/api/billing/checkout", new
+        {
+            name = "Ada",
+            surname = "Lovelace",
+            identityNumber = "11111111111",
+            gsmNumber = "5551234567",
+            city = "Istanbul",
+            addressLine = "Test Sk. No:1",
+        });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task RegisterThenLoginThenMe_FullFlow_Works()
     {
         var email = $"user-{Guid.NewGuid():N}@example.com";

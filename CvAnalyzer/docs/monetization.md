@@ -1,9 +1,12 @@
-# Free / Premium Plan ve Kullanım Kotası (Aşama 8)
+# Free / Premium Plan, Kullanım Kotası ve Ödeme (Aşama 8 + Aşama 9)
 
 Bu doküman, Free/Premium plan altyapısını, kullanım (usage/quota) sistemini, subscription
-modelini, feature gating mimarisini ve Aşama 9'da İyzico'nun tam olarak nereye bağlanacağını
-açıklar. **Bu aşamada gerçek bir ödeme sistemi implement edilmemiştir** — sadece Aşama 9'da
-İyzico entegre edilebilecek altyapı kurulmuştur.
+modelini ve feature gating mimarisini açıklar (Aşama 8). Gerçek İyzico ödeme entegrasyonunun
+(checkout, webhook/callback doğrulama, idempotency, subscription yaşam döngüsü) ayrıntıları artık
+**Aşama 9'da implement edilmiştir** ve ayrı bir dokümanda anlatılır:
+**[`docs/iyzico-integration.md`](./iyzico-integration.md)**. Bu dosya (`monetization.md`) plan/kota
+mimarisinin genel referansı olmaya devam eder; ödemeyle ilgili tüm detaylar için diğer dosyaya
+bakın.
 
 ## 1. Plan Sistemi
 
@@ -196,8 +199,10 @@ if (!await _entitlements.HasFeatureAsync(userId, PlanFeature.AtsAnalysis, cancel
   state'i `null`'a döner — önceki oturuma ait plan bilgisi asla yeni/hiç oturuma sızmaz).
 - `PlanBadge` component'i (NavBar'da gösterilir): `FREE PLAN` / `PREMIUM` etiketi, Free için
   "1 / 2 analiz kullanıldı" sayacı, ve Free için **"Premium'a Geç"** butonu.
-- **"Premium'a Geç" butonu şu anda hiçbir ödeme sayfasına gitmez** — tıklanınca sadece "Premium
-  yakında!" notu gösterir. Gerçek checkout Aşama 9'da bağlanacak.
+- **(Aşama 9 ile güncellendi)** "Premium'a Geç" butonu artık gerçek checkout akışına bağlıdır:
+  `/premium/checkout` sayfasına yönlendiren bir `<Link>`'tir. Bu sayfa alıcı bilgilerini toplar,
+  `POST /api/billing/checkout`'u çağırır ve İyzico'nun döndürdüğü checkout formunu render eder.
+  Ayrıntılar için `docs/iyzico-integration.md`.
 - `HomePage`, `usage.remaining === 0` olduğunda "CV'yi Analiz Et" butonunu devre dışı bırakır ve
   nedenini gösterir — backend zaten bunu reddedecek olsa da, kullanıcıya boşuna bir istek
   attırmamak için frontend'de de engellenir (gerçek yetkilendirme her zaman backend'dedir, bu
@@ -225,9 +230,11 @@ if (!await _entitlements.HasFeatureAsync(userId, PlanFeature.AtsAnalysis, cancel
 ## 9. Development'ta Bir Kullanıcıyı Premium Yapma
 
 Production'da herkesin çağırabileceği bir `POST /api/billing/make-premium` endpoint'i **yok** —
-gerçek Premium aktivasyonu Aşama 9'da İyzico ödeme sonucuna göre yapılacak. Development/test
-amacıyla, doğrudan veritabanına bir `Subscription` satırı ekleyerek bir kullanıcıyı Premium
-yapabilirsin:
+gerçek Premium aktivasyonu artık (Aşama 9) İyzico'nun backend-doğrulanmış ödeme sonucuna göre
+yapılır (bkz. `docs/iyzico-integration.md`). Sandbox kimlik bilgisi olmadan uçtan uca denemek
+istersen, aşağıdaki gibi doğrudan veritabanına bir `Subscription` satırı ekleyerek bir kullanıcıyı
+manuel olarak Premium yapabilirsin (yalnızca development/test amaçlı — bu yol hiçbir API
+endpoint'inden erişilebilir değildir):
 
 ```sql
 INSERT INTO "Subscriptions" ("Id", "UserId", "Plan", "Status", "StartDate", "EndDate", "CreatedAt", "UpdatedAt")
@@ -251,49 +258,59 @@ bulman gerekir:
 SELECT "Id", "Email" FROM "Users" WHERE "Email" = 'test@example.com';
 ```
 
-## 10. `Payment` Entity'si: Aşama 9'a Ertelendi
+## 10. `PaymentTransaction` Entity'si (Aşama 9'da Eklendi)
 
-Bu aşamada bir `Payment` entity'si **eklenmedi**. Gerekçe:
+Aşama 8'de bu bölüm bir `Payment` entity'sinin bilinçli olarak eklenmediğini, gerekçesinin
+İyzico'nun gerçek response şemasının o aşamada bilinmediğini anlatıyordu. Aşama 9'da İyzico'nun
+gerçek (SDK'dan doğrulanmış) response şekli netleşince, yalnızca **idempotency ve checkout↔kullanıcı
+eşlemesi için gereken minimum alanları** taşıyan bir `PaymentTransaction` entity'si eklendi
+(`Models/Entities/PaymentTransaction.cs`) — spekülatif bir "tam ödeme geçmişi" tablosu değil, somut
+bir güvenlik ihtiyacına (aynı İyzico event'inin iki kez işlenmemesi, callback'in her zaman doğru
+kullanıcıya bağlanması) karşılık gelen dar kapsamlı bir tablo. Tam alan listesi, neden gerekli
+olduğu ve unique index'ler için bkz. **`docs/iyzico-integration.md`**.
 
-- İyzico'nun gerçek response şeması (transaction id, ödeme durumu alan adları/değerleri, hata
-  kodları) Aşama 9'a kadar bilinmiyor — şimdi tahmini bir şema tasarlamak, ya kullanılmayan boş
-  bir tablo olarak kalacak ya da Aşama 9'da gerçek şekliyle uyuşmadığı için yeniden yazılacaktı.
-- Spec'in kendisi de sahte/tahmini ödeme kaydı oluşturmayı açıkça yasaklıyor — bir `Payment`
-  tablosu şimdiden var olup içi hiç dolmayacaksa (bu aşamada gerçek ödeme yok), eklemenin somut
-  bir faydası yok, sadece erken/gereksiz karmaşıklık.
-- `Subscription`'ın zaten taşıdığı `Provider`/`ProviderCustomerId`/`ProviderSubscriptionId`
-  alanları, Aşama 9'un ilk entegrasyonu için yeterli — bir kullanıcının aktif Premium
-  aboneliğinin hangi sağlayıcıdan geldiğini bilmek için ayrı bir `Payment` tablosuna henüz gerek
-  yok. Tekil ödeme/transaction geçmişi (ör. yenileme başarısız oldu, iade edildi) gerektiğinde,
-  Aşama 9'da İyzico'nun gerçek response alanlarına göre eklenmesi önerilir.
+`Subscription`'ın zaten taşıdığı `Provider`/`ProviderCustomerId`/`ProviderSubscriptionId` alanları
+artık gerçek İyzico değerleriyle doldurulur — bu doküman §2'de anlatılan `Subscription` şeması ve
+`GetEffectivePlanAsync` mantığı **hiç değişmedi**.
 
-## 11. Aşama 9: İyzico Tam Olarak Nereye Bağlanacak
+## 11. Aşama 9: İyzico Entegrasyonu (Tamamlandı)
+
+Aşama 9 ile gerçek İyzico ödeme akışı uçtan uca implement edildi:
 
 ```
-Kullanıcı "Premium'a Geç"e tıklar
-  → (Aşama 9) Frontend, backend'de yeni bir "checkout başlat" endpoint'ini çağırır
-  → (Aşama 9) Backend, İyzico'nun ödeme/checkout formunu (veya iframe/redirect) başlatır
+Kullanıcı "Premium'a Geç"e tıklar (PlanBadge → /premium/checkout)
+  → Frontend, POST /api/billing/checkout'u çağırır (JWT ile authenticated)
+  → Backend, İyzico Subscription (V2) checkout form'unu başlatır, bir PaymentTransaction
+    satırı oluşturur (bu satır, checkout token'ı başlatan kullanıcıyı kalıcı olarak sabitler)
+  → Frontend, İyzico'nun döndürdüğü checkout form içeriğini render eder
   → Kullanıcı kart bilgilerini İYZİCO'NUN kendi arayüzünde girer (bu uygulama asla kart
     bilgisi görmez/saklamaz)
-  → İyzico ödeme sonucu bir webhook/callback ile backend'e bildirir
-  → (Aşama 9) Backend bu callback'i doğrular (imza/secret kontrolü) ve:
-      - yeni bir `Subscription` satırı oluşturur (Plan=Premium, Status=Active,
-        Provider="Iyzico", ProviderCustomerId=..., ProviderSubscriptionId=...)
-      - (muhtemelen) bir `Payment` kaydı ekler (bu doküman §10)
+  → İyzico, callback URL'ine (POST /api/billing/checkout/callback) ve/veya webhook'a
+    (POST /api/billing/webhook/iyzico) sonucu bildirir
+  → Backend bu bildirimi ASLA olduğu gibi güvenmez: imza doğrulaması + zorunlu sunucu-sunucu
+    "gerçek durumu getir" çağrısı (İyzico API'sine) ile teyit eder
+  → Yalnızca gerçekten doğrulanmış başarı durumunda:
+      - var olan PaymentTransaction işlenmiş olarak işaretlenir (idempotency)
+      - ilgili kullanıcının Subscription satırı oluşturulur/güncellenir (Plan=Premium,
+        Status=Active, Provider="Iyzico", ProviderCustomerId=..., ProviderSubscriptionId=...)
   → Kullanıcının bir sonraki `GET /api/billing/usage` çağrısı otomatik olarak "PREMIUM" döner
-    — mevcut `SubscriptionService.GetEffectivePlanAsync` mantığı HİÇ değişmeden çalışır
+    — mevcut `SubscriptionService.GetEffectivePlanAsync` mantığı HİÇ değişmeden çalıştı
 ```
 
-Bu aşamada kurulan mimarinin İyzico entegrasyonunu kolaylaştıran özellikleri:
+Ayrıntılı akış diyagramı, doğrulama mekanizması, idempotency stratejisi, webhook güvenlik modeli,
+sandbox/production kurulumu ve güvenlik testleri için bkz. **[`docs/iyzico-integration.md`](./iyzico-integration.md)**.
 
-- `ISubscriptionService`/`IAnalysisQuotaService`/`IPlanCatalog` arayüzleri zaten var — Aşama 9
-  sadece yeni bir `Subscription` satırı YAZAN bir yer ekleyecek (webhook handler), OKUYAN taraf
-  (`GetEffectivePlanAsync`, quota kontrolü, `/api/billing/usage`) hiç değişmeyecek.
-- `Subscription.Provider*` alanları zaten nullable ve hazır.
+Aşama 8'de kurulan mimarinin Aşama 9'u kolaylaştıran özellikleri (öngörüldüğü gibi çalıştı):
+
+- `ISubscriptionService`/`IAnalysisQuotaService`/`IPlanCatalog` arayüzleri hiç değişmedi — Aşama 9
+  sadece yeni bir `Subscription` satırı YAZAN bir yer ekledi (`PaymentService`), OKUYAN taraf
+  (`GetEffectivePlanAsync`, quota kontrolü, `/api/billing/usage`) hiç değişmedi.
+- `Subscription.Provider*` alanları zaten nullable ve hazırdı, doğrudan gerçek İyzico değerleriyle
+  dolduruldu.
 - Frontend'in `PlanBadge`/`useBilling`/quota-aware Analyze butonu zaten backend'den gelen gerçek
-  `plan`/`used`/`limit`/`remaining` değerlerini gösteriyor — Aşama 9'da bu bileşenlerin
-  **hiçbiri** değişmeyecek, sadece "Premium'a Geç" butonunun `onClick`'i "yakında" notu yerine
-  gerçek checkout akışını başlatacak.
+  `plan`/`used`/`limit`/`remaining` değerlerini gösteriyordu — Aşama 9'da bu bileşenlerin
+  **hiçbiri** değişmedi, sadece "Premium'a Geç" butonunun hedefi "yakında" notu yerine gerçek
+  checkout sayfasına (`/premium/checkout`) döndü.
 
 ## 12. Testler Nasıl Çalıştırılır?
 
@@ -304,4 +321,6 @@ cd cv-analyzer-web
 npm test && npm run lint && npm run build       # frontend
 ```
 
-Gerçek AI API'sine veya gerçek bir ödeme sağlayıcısına hiçbir testte istek atılmaz.
+Gerçek AI API'sine veya gerçek İyzico API'sine hiçbir testte istek atılmaz — ödeme testleri
+`IPaymentProvider`'ın sahte (`FakePaymentProvider`) implementasyonu üzerinden çalışır (bkz.
+`docs/iyzico-integration.md`).

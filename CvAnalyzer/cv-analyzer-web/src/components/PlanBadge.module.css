@@ -25,13 +25,8 @@
   color: var(--text-muted);
 }
 
-.ctaGroup {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .ctaButton {
+  display: inline-block;
   background: none;
   border: 1px solid var(--accent);
   color: var(--accent);
@@ -39,15 +34,10 @@
   padding: 4px 12px;
   font-size: 0.75rem;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
 }
 
 .ctaButton:hover {
   background: var(--accent-soft);
-}
-
-.comingSoon {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-style: italic;
 }

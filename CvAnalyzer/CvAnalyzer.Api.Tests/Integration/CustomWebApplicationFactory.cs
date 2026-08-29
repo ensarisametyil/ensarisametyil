@@ -1,4 +1,6 @@
 using CvAnalyzer.Api.Data;
+using CvAnalyzer.Api.Services.Billing.Payments;
+using CvAnalyzer.Api.Tests.TestHelpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +22,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public const string TestJwtSigningKey = "test-only-signing-key-never-used-outside-this-test-process-0123456789";
     public const string TestJwtIssuer = "CvAnalyzer.Api.Tests";
     public const string TestJwtAudience = "CvAnalyzer.Api.Tests";
+    public const string TestIyzicoSecretKey = "test-only-iyzico-secret-never-used-outside-this-test-process-0123456789";
 
     private readonly string _databaseName = $"AuthIntegrationTests-{Guid.NewGuid()}";
+
+    /// <summary>Exposed so a test can configure specific results (e.g. a checkout failure) before making requests.</summary>
+    public readonly FakePaymentProvider TestPaymentProvider = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -35,6 +41,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:SigningKey"] = TestJwtSigningKey,
                 ["Jwt:ExpirationMinutes"] = "60",
                 ["AI:ApiKey"] = "",
+                ["Iyzico:ApiKey"] = "test-api-key",
+                ["Iyzico:SecretKey"] = TestIyzicoSecretKey,
+                ["Iyzico:PremiumPricingPlanReferenceCode"] = "test-premium-plan",
             });
         });
 
@@ -47,6 +56,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+
+            // Never let an integration test reach the real Iyzico API.
+            var paymentProviderDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IPaymentProvider));
+            if (paymentProviderDescriptor is not null)
+            {
+                services.Remove(paymentProviderDescriptor);
+            }
+
+            services.AddSingleton<IPaymentProvider>(TestPaymentProvider);
         });
     }
 }

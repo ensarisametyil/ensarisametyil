@@ -8,6 +8,8 @@ import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
 import HistoryPage from './pages/HistoryPage'
 import HistoryDetailPage from './pages/HistoryDetailPage'
+import PremiumCheckoutPage from './pages/PremiumCheckoutPage'
+import PremiumResultPage from './pages/PremiumResultPage'
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/history/:id" element={<HistoryDetailPage />} />
+            <Route path="/premium/checkout" element={<PremiumCheckoutPage />} />
+            <Route path="/premium/result" element={<PremiumResultPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 import { setToken } from '../api/tokenStorage'
@@ -30,11 +31,13 @@ function renderWithSession(usage: Usage) {
   )
 
   return render(
-    <AuthProvider>
-      <BillingProvider>
-        <PlanBadge />
-      </BillingProvider>
-    </AuthProvider>,
+    <MemoryRouter>
+      <AuthProvider>
+        <BillingProvider>
+          <PlanBadge />
+        </BillingProvider>
+      </AuthProvider>
+    </MemoryRouter>,
   )
 }
 
@@ -56,16 +59,13 @@ describe('PlanBadge', () => {
 
     expect(await screen.findByText('PREMIUM')).toBeInTheDocument()
     expect(screen.queryByText(/analiz kullanıldı/)).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: "Premium'a Geç" })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: "Premium'a Geç" })).not.toBeInTheDocument()
   })
 
-  it('shows a Premium CTA for free users that reveals a "coming soon" note without navigating or charging anything', async () => {
+  it('shows a Premium CTA for free users that links to the real checkout page (never grants Premium itself)', async () => {
     renderWithSession({ plan: 'FREE', used: 0, limit: 2, remaining: 2, periodStart: '2026-08-01T00:00:00Z', periodEnd: '2026-09-01T00:00:00Z' })
-    const user = userEvent.setup()
 
-    const ctaButton = await screen.findByRole('button', { name: "Premium'a Geç" })
-    await user.click(ctaButton)
-
-    expect(await screen.findByText('Premium yakında!')).toBeInTheDocument()
+    const ctaLink = await screen.findByRole('link', { name: "Premium'a Geç" })
+    expect(ctaLink).toHaveAttribute('href', '/premium/checkout')
   })
 })

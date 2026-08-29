@@ -19,4 +19,16 @@ public static class ClaimsPrincipalExtensions
 
         return userId;
     }
+
+    /// <summary>Reads the authenticated user's email from the "email" claim (always present — see JwtTokenService).</summary>
+    public static string GetEmail(this ClaimsPrincipal principal)
+    {
+        var value = principal.FindFirstValue(JwtRegisteredClaimNames.Email);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new InvalidOperationException("Authenticated request is missing an email claim.");
+        }
+
+        return value;
+    }
 }

@@ -1,0 +1,44 @@
+.page {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.icon {
+  font-size: 2.5rem;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--text-heading);
+}
+
+.card p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.homeLink {
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}

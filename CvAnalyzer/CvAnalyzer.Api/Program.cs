@@ -6,6 +6,7 @@ using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.Services.AI;
 using CvAnalyzer.Api.Services.Auth;
 using CvAnalyzer.Api.Services.Billing;
+using CvAnalyzer.Api.Services.Billing.Payments;
 using CvAnalyzer.Api.Services.FileProcessing;
 using CvAnalyzer.Api.Services.Storage;
 using CvAnalyzer.Api.Validators;
@@ -69,6 +70,11 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IFeatureEntitlementService, FeatureEntitlementService>();
 builder.Services.AddSingleton<IUserOperationLock, UserOperationLock>();
 builder.Services.AddScoped<IAnalysisQuotaService, AnalysisQuotaService>();
+
+builder.Services.Configure<IyzicoOptions>(builder.Configuration.GetSection(IyzicoOptions.SectionName));
+builder.Services.AddSingleton<IPaymentProvider, IyzicoPaymentProvider>();
+builder.Services.AddSingleton<IIyzicoWebhookSignatureVerifier, IyzicoWebhookSignatureVerifier>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // --- Authentication (JWT) ---
 
