@@ -356,6 +356,113 @@ public class PaymentServiceTests
         Assert.Equal(firstEndDate, subscription.EndDate); // unchanged by the 2nd/3rd (no-op) calls
     }
 
+    // ---------- Subscription cancellation ----------
+
+    [Fact]
+    public async Task CancelPremiumSubscriptionAsync_ActiveSubscription_CancelsWithProviderAndUpdatesLocalStatus()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-cancel-1"));
+        await db.SaveChangesAsync();
+        provider.RetrieveResult = new ProviderSubscriptionState(true, "CANCELED", null);
+
+        var result = await sut.CancelPremiumSubscriptionAsync(userId);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, provider.CancelCallCount);
+        var subscription = db.Subscriptions.Single();
+        Assert.Equal(SubscriptionStatus.Cancelled, subscription.Status);
+        Assert.NotNull(subscription.EndDate);
+    }
+
+    [Fact]
+    public async Task CancelPremiumSubscriptionAsync_NoActiveSubscription_ReturnsFailureAndNeverCallsProvider()
+    {
+        var (sut, provider, _, _) = CreateSut();
+
+        var result = await sut.CancelPremiumSubscriptionAsync(Guid.NewGuid());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.ErrorMessage);
+        Assert.Equal(0, provider.CancelCallCount);
+    }
+
+    [Fact]
+    public async Task CancelPremiumSubscriptionAsync_ProviderCancelFails_ReturnsFailureAndLeavesSubscriptionActive()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-cancel-2"));
+        await db.SaveChangesAsync();
+        provider.CancelResult = false;
+
+        var result = await sut.CancelPremiumSubscriptionAsync(userId);
+
+        Assert.False(result.Success);
+        var subscription = db.Subscriptions.Single();
+        Assert.Equal(SubscriptionStatus.Active, subscription.Status); // never trust the cancel call alone / never flipped on failure
+    }
+
+    [Fact]
+    public async Task CancelPremiumSubscriptionAsync_AnotherUsersSubscription_IsNeverAffected()
+    {
+        var (sut, provider, db, _) = CreateSut();
+        var targetUser = Guid.NewGuid();
+        var otherUser = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(otherUser, "sub-other-1"));
+        await db.SaveChangesAsync();
+
+        var result = await sut.CancelPremiumSubscriptionAsync(targetUser);
+
+        Assert.False(result.Success); // targetUser has no subscription of their own
+        Assert.Equal(0, provider.CancelCallCount);
+        Assert.Equal(SubscriptionStatus.Active, db.Subscriptions.Single().Status); // otherUser's row untouched
+    }
+
+    // ---------- Payment history ----------
+
+    [Fact]
+    public async Task GetPaymentHistoryAsync_ReturnsOnlyCallingUsersOwnTransactions_NewestFirst()
+    {
+        var (sut, _, db, clock) = CreateSut();
+        var userId = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+
+        db.PaymentTransactions.Add(new PaymentTransaction
+        {
+            Id = Guid.NewGuid(), UserId = userId, ConversationId = "conv-1",
+            Status = PaymentTransactionStatus.Succeeded, CreatedAt = Now.UtcDateTime,
+        });
+        db.PaymentTransactions.Add(new PaymentTransaction
+        {
+            Id = Guid.NewGuid(), UserId = userId, ConversationId = "conv-2",
+            Status = PaymentTransactionStatus.Failed, CreatedAt = Now.AddHours(1).UtcDateTime,
+        });
+        db.PaymentTransactions.Add(new PaymentTransaction
+        {
+            Id = Guid.NewGuid(), UserId = otherUserId, ConversationId = "conv-3",
+            Status = PaymentTransactionStatus.Succeeded, CreatedAt = Now.AddHours(2).UtcDateTime,
+        });
+        await db.SaveChangesAsync();
+
+        var history = await sut.GetPaymentHistoryAsync(userId);
+
+        Assert.Equal(2, history.Count);
+        Assert.All(history, h => Assert.True(h.Date <= Now.AddHours(1).UtcDateTime));
+        Assert.Equal("Failed", history[0].Status); // newest first
+        Assert.Equal("Succeeded", history[1].Status);
+    }
+
+    [Fact]
+    public void PaymentTransactionSummary_NeverExposesAnAmountField()
+    {
+        // This app has never defined a plan price anywhere (see docs/monetization.md) — the
+        // summary type must not carry a fabricated one.
+        var summaryProperties = typeof(PaymentTransactionSummary).GetProperties().Select(p => p.Name);
+        Assert.DoesNotContain(summaryProperties, name => name.Contains("Amount", StringComparison.OrdinalIgnoreCase) || name.Contains("Price", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static Subscription ActivePremiumSubscription(Guid userId, string providerSubscriptionId) => new()
     {
         Id = Guid.NewGuid(),

@@ -1,0 +1,243 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+.hero {
+  padding: 64px 0 48px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  margin: 0 0 16px;
+}
+
+.heroSubtitle {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+
+.heroActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.heroCta {
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.heroHint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+section {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+}
+
+section h2 {
+  color: var(--text-heading);
+  font-size: 1.4rem;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.steps li {
+  display: flex;
+  gap: 12px;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.steps h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  color: var(--text-heading);
+}
+
+.steps p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.benefitGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.benefitCard {
+  background: var(--surface-muted);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.benefitCard h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--text-heading);
+}
+
+.benefitCard p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.planCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.planCardHighlight {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.planCard h3 {
+  margin: 0 0 4px;
+  color: var(--text-heading);
+}
+
+.planPriceNote {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+}
+
+.planCard ul {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  color: var(--text);
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.planCard li {
+  margin-bottom: 6px;
+}
+
+.planCta {
+  text-align: center;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.security p {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.security a {
+  color: var(--accent);
+}
+
+.faq dl {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.faqItem {
+  margin-bottom: 20px;
+}
+
+.faqItem dt {
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.faqItem dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .benefitGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .planGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .benefitGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 40px 0 32px;
+  }
+
+  main {
+    padding: 0 16px;
+  }
+}

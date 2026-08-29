@@ -20,6 +20,7 @@
   font-weight: 700;
   color: var(--text-heading);
   margin-right: 8px;
+  text-decoration: none;
 }
 
 .link,

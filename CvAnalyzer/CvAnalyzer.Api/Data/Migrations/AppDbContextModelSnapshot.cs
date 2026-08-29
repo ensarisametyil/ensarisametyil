@@ -121,6 +121,47 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.ToTable("AnalysisUsages");
                 });
 
+            modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.ContactMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ContactMessages");
+                });
+
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.Cv", b =>
                 {
                     b.Property<Guid>("Id")
@@ -287,6 +328,9 @@ namespace CvAnalyzer.Api.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<DateTime?>("EmailVerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("FullName")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -311,6 +355,46 @@ namespace CvAnalyzer.Api.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.UserToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Purpose");
+
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.Analysis", b =>
@@ -350,6 +434,16 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.ContactMessage", b =>
+                {
+                    b.HasOne("CvAnalyzer.Api.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.Cv", b =>
                 {
                     b.HasOne("CvAnalyzer.Api.Models.Entities.User", "User")
@@ -383,6 +477,17 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.UserToken", b =>
+                {
+                    b.HasOne("CvAnalyzer.Api.Models.Entities.User", "User")
+                        .WithMany("Tokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CvAnalyzer.Api.Models.Entities.Cv", b =>
                 {
                     b.Navigation("Analyses");
@@ -399,6 +504,8 @@ namespace CvAnalyzer.Api.Data.Migrations
                     b.Navigation("PaymentTransactions");
 
                     b.Navigation("Subscriptions");
+
+                    b.Navigation("Tokens");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,6 @@
 import { API_BASE_URL } from './config'
 import { requestJson } from './httpClient'
-import type { CheckoutBuyerInfo, CheckoutResponse, Usage } from '../types/billing'
+import type { CheckoutBuyerInfo, CheckoutResponse, PaymentHistoryItem, SubscriptionDetails, Usage } from '../types/billing'
 
 /** Fetches the authenticated user's current plan and this period's analysis usage. */
 export function getUsage(): Promise<Usage> {
@@ -14,4 +14,19 @@ export function startCheckout(buyer: CheckoutBuyerInfo): Promise<CheckoutRespons
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(buyer),
   })
+}
+
+/** Fetches richer subscription detail (status/provider/dates) for the account/billing page. */
+export function getSubscription(): Promise<SubscriptionDetails> {
+  return requestJson<SubscriptionDetails>(`${API_BASE_URL}/api/billing/subscription`)
+}
+
+/** Cancels the authenticated user's active Premium subscription via Iyzico. */
+export function cancelSubscription(): Promise<{ message: string }> {
+  return requestJson(`${API_BASE_URL}/api/billing/subscription/cancel`, { method: 'POST' })
+}
+
+/** Fetches the authenticated user's own past checkout attempts, newest first. */
+export function getPaymentHistory(): Promise<PaymentHistoryItem[]> {
+  return requestJson<PaymentHistoryItem[]>(`${API_BASE_URL}/api/billing/payments`)
 }

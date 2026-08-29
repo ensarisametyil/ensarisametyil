@@ -34,7 +34,7 @@ function HomePage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <h1>CV Analyzer</h1>
+        <h1>CVora AI</h1>
         <p>Yapay zekâ destekli CV analiz platformu</p>
       </header>
 

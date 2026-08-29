@@ -16,7 +16,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME_RESPONSE: User = { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z' }
+const ME_RESPONSE: User = { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null }
 
 function renderWithSession(usage: Usage) {
   setToken('existing-token')

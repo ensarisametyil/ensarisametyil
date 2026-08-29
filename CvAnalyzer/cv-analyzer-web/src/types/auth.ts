@@ -3,6 +3,7 @@ export interface User {
   id: string;
   email: string;
   createdAt: string;
+  emailVerifiedAt: string | null;
 }
 
 /** Response of POST /api/auth/register and POST /api/auth/login (AuthResponseDto). */

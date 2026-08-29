@@ -6,6 +6,11 @@ public sealed record CheckoutStartResult(bool Success, string? Token, string? Ch
 
 public sealed record CheckoutCallbackOutcome(bool Success);
 
+public sealed record CancelSubscriptionResult(bool Success, string? ErrorMessage);
+
+/// <summary>One row of the caller's own payment history — Date/Status/Provider/Reference only; never an amount (this app never defined a plan price, see docs/monetization.md) and never any raw provider payload.</summary>
+public sealed record PaymentTransactionSummary(DateTime Date, string Status, string? Provider, string? SubscriptionReference);
+
 /// <summary>
 /// Distinguishes "this call was not authentically from Iyzico" (Rejected — must surface as 401,
 /// never a silent 200 an attacker could use to probe signature guesses) from "it was authentic
@@ -49,4 +54,16 @@ public interface IPaymentService
     /// user id) and re-confirms status server-to-server before mutating anything. Idempotent.
     /// </summary>
     Task<WebhookProcessingResult> ProcessWebhookAsync(IyzicoWebhookPayload payload, string? signatureHeader, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cancels <paramref name="userId"/>'s active Premium subscription via the provider, then
+    /// re-confirms the resulting status server-to-server before updating the local Subscription
+    /// row — the same "never trust a single call's own success flag" pattern used everywhere else
+    /// in this file. Never throws; returns a failure result if the user has no active Premium
+    /// subscription or the provider call itself fails.
+    /// </summary>
+    Task<CancelSubscriptionResult> CancelPremiumSubscriptionAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>The caller's own payment attempts (checkout starts), newest first. Always scoped to <paramref name="userId"/> — never any other user's rows.</summary>
+    Task<IReadOnlyList<PaymentTransactionSummary>> GetPaymentHistoryAsync(Guid userId, CancellationToken cancellationToken = default);
 }

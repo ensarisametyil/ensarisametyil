@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import PlanBadge from './PlanBadge'
 import styles from './NavBar.module.css'
@@ -16,8 +16,10 @@ function NavBar() {
   return (
     <nav className={styles.nav}>
       <div className={styles.left}>
-        <span className={styles.brand}>CV Analyzer</span>
-        <NavLink to="/" end className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
+        <Link to="/app" className={styles.brand}>
+          CVora AI
+        </Link>
+        <NavLink to="/app" end className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
           Ana Sayfa
         </NavLink>
         <NavLink to="/history" className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
@@ -27,6 +29,9 @@ function NavBar() {
 
       <div className={styles.right}>
         <PlanBadge />
+        <NavLink to="/account" className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
+          Hesabım
+        </NavLink>
         {user && <span className={styles.email}>{user.email}</span>}
         <button type="button" className={styles.logoutButton} onClick={handleLogout}>
           Çıkış Yap

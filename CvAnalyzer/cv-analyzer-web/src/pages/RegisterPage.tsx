@@ -28,7 +28,7 @@ function RegisterPage() {
     setIsSubmitting(true)
     try {
       await register(email, password)
-      navigate('/', { replace: true })
+      navigate('/app', { replace: true })
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {

@@ -23,6 +23,10 @@ public class AppDbContext : DbContext
 
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
+    public DbSet<UserToken> UserTokens => Set<UserToken>();
+
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var stringListComparer = new ValueComparer<List<string>>(
@@ -177,6 +181,45 @@ public class AppDbContext : DbContext
             entity.HasIndex(t => t.CheckoutToken).IsUnique();
             entity.HasIndex(t => t.ProviderSubscriptionReferenceCode).IsUnique();
             entity.HasIndex(t => t.UserId);
+        });
+
+        modelBuilder.Entity<UserToken>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Purpose).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(t => t.TokenHash).IsRequired().HasMaxLength(128);
+            entity.Property(t => t.ExpiresAt).IsRequired();
+            entity.Property(t => t.CreatedAt).HasDefaultValueSql("now()");
+
+            // No other path cascades a UserToken when its User is deleted, so this one must.
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.Tokens)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // A given token value must resolve to at most one row (collision would otherwise let
+            // one token redeem a different user's reset/verification request).
+            entity.HasIndex(t => t.TokenHash).IsUnique();
+            // The lookup ResetPasswordAsync/VerifyEmailAsync perform for "the caller's newest
+            // still-valid token of this purpose" when generating a fresh one supersedes an older one.
+            entity.HasIndex(t => new { t.UserId, t.Purpose });
+        });
+
+        modelBuilder.Entity<ContactMessage>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Name).IsRequired().HasMaxLength(200);
+            entity.Property(m => m.Email).IsRequired().HasMaxLength(255);
+            entity.Property(m => m.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(m => m.Message).IsRequired().HasMaxLength(4000);
+            entity.Property(m => m.CreatedAt).HasDefaultValueSql("now()");
+
+            // Optional link to an authenticated sender — a deleted/deactivated user's past contact
+            // messages are still a real support record, so this must not cascade-delete them.
+            entity.HasOne(m => m.User)
+                  .WithMany()
+                  .HasForeignKey(m => m.UserId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

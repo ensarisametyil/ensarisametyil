@@ -25,9 +25,10 @@ public class BillingControllerTests
 
     private static BillingController CreateController(AppDbContext db, Guid userId, int freeLimit = 2, IPaymentService? paymentService = null)
     {
+        var subscriptionService = new SubscriptionService(db, new FakeTimeProvider(Now));
         var quotaService = new AnalysisQuotaService(
             db,
-            new SubscriptionService(db, new FakeTimeProvider(Now)),
+            subscriptionService,
             new PlanCatalog(Options.Create(new PlanOptions { FreeMonthlyAnalysisLimit = freeLimit })),
             new UserOperationLock(),
             new FakeTimeProvider(Now));
@@ -35,6 +36,7 @@ public class BillingControllerTests
         var controller = new BillingController(
             quotaService,
             paymentService ?? new FakePaymentService(),
+            subscriptionService,
             Options.Create(new IyzicoOptions { FrontendResultUrl = "http://localhost:5173/premium/result" }),
             NullLogger<BillingController>.Instance);
 
@@ -148,5 +150,92 @@ public class BillingControllerTests
         var badRequest = Assert.IsType<BadRequestObjectResult>(response);
         var error = Assert.IsType<ErrorResponseDto>(badRequest.Value);
         Assert.Equal("INVALID_REQUEST", error.Code);
+    }
+
+    [Fact]
+    public async Task GetSubscription_FreeUserWhoNeverCheckedOut_ReturnsAllNullDetailNotAnError()
+    {
+        using var db = CreateDbContext();
+        var controller = CreateController(db, Guid.NewGuid());
+
+        var response = await controller.GetSubscription(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(response);
+        var dto = Assert.IsType<SubscriptionDetailsDto>(ok.Value);
+        Assert.Equal("FREE", dto.Plan);
+        Assert.Null(dto.Status);
+        Assert.False(dto.CanCancel);
+    }
+
+    [Fact]
+    public async Task GetSubscription_ActivePremiumUser_ReturnsDetailAndCanCancelTrue()
+    {
+        using var db = CreateDbContext();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(new Subscription
+        {
+            Id = Guid.NewGuid(), UserId = userId, Plan = PlanType.Premium, Status = SubscriptionStatus.Active,
+            StartDate = CurrentPeriodStart, CreatedAt = CurrentPeriodStart, UpdatedAt = CurrentPeriodStart,
+            Provider = "Iyzico", ProviderCustomerId = "cust-1", ProviderSubscriptionId = "sub-1",
+        });
+        await db.SaveChangesAsync();
+        var controller = CreateController(db, userId);
+
+        var response = await controller.GetSubscription(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(response);
+        var dto = Assert.IsType<SubscriptionDetailsDto>(ok.Value);
+        Assert.Equal("PREMIUM", dto.Plan);
+        Assert.Equal("ACTIVE", dto.Status);
+        Assert.Equal("Iyzico", dto.Provider);
+        Assert.True(dto.CanCancel);
+    }
+
+    [Fact]
+    public async Task CancelSubscription_PaymentServiceReportsSuccess_ReturnsOk()
+    {
+        using var db = CreateDbContext();
+        var paymentService = new FakePaymentService { CancelResult = new CancelSubscriptionResult(true, null) };
+        var controller = CreateController(db, Guid.NewGuid(), paymentService: paymentService);
+
+        var response = await controller.CancelSubscription(CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(response);
+    }
+
+    [Fact]
+    public async Task CancelSubscription_PaymentServiceReportsFailure_ReturnsBadRequest()
+    {
+        using var db = CreateDbContext();
+        var paymentService = new FakePaymentService { CancelResult = new CancelSubscriptionResult(false, "Aktif bir Premium aboneliğiniz yok.") };
+        var controller = CreateController(db, Guid.NewGuid(), paymentService: paymentService);
+
+        var response = await controller.CancelSubscription(CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(response);
+        var error = Assert.IsType<ErrorResponseDto>(badRequest.Value);
+        Assert.Equal("CANCELLATION_FAILED", error.Code);
+    }
+
+    [Fact]
+    public async Task GetPaymentHistory_ReturnsWhatTheServiceReturns_MappedToDto()
+    {
+        using var db = CreateDbContext();
+        var paymentService = new FakePaymentService
+        {
+            PaymentHistory = new List<PaymentTransactionSummary>
+            {
+                new(CurrentPeriodStart, "Succeeded", "Iyzico", "sub-ref-1"),
+            },
+        };
+        var controller = CreateController(db, Guid.NewGuid(), paymentService: paymentService);
+
+        var response = await controller.GetPaymentHistory(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(response);
+        var items = Assert.IsType<List<PaymentHistoryItemDto>>(ok.Value);
+        Assert.Single(items);
+        Assert.Equal("Succeeded", items[0].Status);
+        Assert.Equal("sub-ref-1", items[0].SubscriptionReference);
     }
 }

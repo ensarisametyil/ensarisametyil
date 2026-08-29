@@ -17,7 +17,7 @@ const AUTH_RESPONSE: AuthResponse = {
   accessToken: 'test-access-token',
   tokenType: 'Bearer',
   expiresInSeconds: 3600,
-  user: { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z' },
+  user: { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null },
 }
 
 const DEFAULT_USAGE: Usage = {
@@ -77,10 +77,18 @@ describe('Authentication flow', () => {
     localStorage.clear()
   })
 
-  it('redirects an unauthenticated visitor away from a protected route to /login', async () => {
+  it('shows the public landing page at / for an unauthenticated visitor (no forced redirect)', async () => {
     mockFetchRoutes({})
 
     renderApp('/')
+
+    expect(await screen.findByRole('heading', { name: /CV'nizi Yapay Zekâ ile/ })).toBeInTheDocument()
+  })
+
+  it('redirects an unauthenticated visitor away from a protected route (/app) to /login', async () => {
+    mockFetchRoutes({})
+
+    renderApp('/app')
 
     expect(await screen.findByRole('heading', { name: 'Giriş Yap' })).toBeInTheDocument()
   })
@@ -95,7 +103,7 @@ describe('Authentication flow', () => {
     renderApp('/login')
     await loginAs(user)
 
-    expect(screen.getByRole('heading', { name: 'CV Analyzer' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'CVora AI' })).toBeInTheDocument()
     expect(localStorage.getItem('cvAnalyzer.accessToken')).toBe('test-access-token')
   })
 

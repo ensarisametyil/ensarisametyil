@@ -19,7 +19,7 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const redirectTo = (location.state as LocationState | null)?.from?.pathname ?? '/'
+  const redirectTo = (location.state as LocationState | null)?.from?.pathname ?? '/app'
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -69,6 +69,9 @@ function LoginPage() {
           {isSubmitting ? <Spinner label="Giriş yapılıyor..." /> : 'Giriş Yap'}
         </button>
 
+        <p className={styles.switchText}>
+          <Link to="/forgot-password">Şifremi unuttum</Link>
+        </p>
         <p className={styles.switchText}>
           Hesabın yok mu? <Link to="/register">Kayıt ol</Link>
         </p>

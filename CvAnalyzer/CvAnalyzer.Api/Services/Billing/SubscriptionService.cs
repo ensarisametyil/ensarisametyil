@@ -29,4 +29,10 @@ public class SubscriptionService : ISubscriptionService
 
         return hasActivePremium ? PlanType.Premium : PlanType.Free;
     }
+
+    public Task<Subscription?> GetCurrentSubscriptionAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        _db.Subscriptions
+            .Where(s => s.UserId == userId)
+            .OrderByDescending(s => s.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
 }

@@ -1,10 +1,12 @@
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Dtos.Billing;
+using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.Billing;
 using CvAnalyzer.Api.Services.Billing.Payments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace CvAnalyzer.Api.Controllers;
@@ -24,17 +26,20 @@ public class BillingController : ControllerBase
 {
     private readonly IAnalysisQuotaService _quotaService;
     private readonly IPaymentService _paymentService;
+    private readonly ISubscriptionService _subscriptionService;
     private readonly IyzicoOptions _iyzicoOptions;
     private readonly ILogger<BillingController> _logger;
 
     public BillingController(
         IAnalysisQuotaService quotaService,
         IPaymentService paymentService,
+        ISubscriptionService subscriptionService,
         IOptions<IyzicoOptions> iyzicoOptions,
         ILogger<BillingController> logger)
     {
         _quotaService = quotaService;
         _paymentService = paymentService;
+        _subscriptionService = subscriptionService;
         _iyzicoOptions = iyzicoOptions.Value;
         _logger = logger;
     }
@@ -55,12 +60,65 @@ public class BillingController : ControllerBase
             summary.PeriodEnd));
     }
 
+    /// <summary>Richer detail than GET /api/billing/usage's bare plan string — for the account/billing page. A Free user who has never checked out gets an all-null detail, not an error.</summary>
+    [HttpGet("subscription")]
+    [ProducesResponseType(typeof(SubscriptionDetailsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSubscription(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var subscription = await _subscriptionService.GetCurrentSubscriptionAsync(userId, cancellationToken);
+        if (subscription is null)
+        {
+            return Ok(new SubscriptionDetailsDto("FREE", null, null, null, null, false));
+        }
+
+        var canCancel = subscription.Plan == Models.Entities.PlanType.Premium && subscription.Status == Models.Entities.SubscriptionStatus.Active;
+        return Ok(new SubscriptionDetailsDto(
+            subscription.Plan.ToString().ToUpperInvariant(),
+            subscription.Status.ToString().ToUpperInvariant(),
+            subscription.Provider,
+            subscription.StartDate,
+            subscription.EndDate,
+            canCancel));
+    }
+
+    /// <summary>
+    /// Cancels the caller's own active Premium subscription via Iyzico. Never accepts a
+    /// subscription/user id from the request — always resolves "which subscription" from the
+    /// caller's own JWT identity, exactly like every other endpoint here.
+    /// </summary>
+    [HttpPost("subscription/cancel")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CancelSubscription(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var result = await _paymentService.CancelPremiumSubscriptionAsync(userId, cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(new ErrorResponseDto("CANCELLATION_FAILED", result.ErrorMessage ?? "Abonelik iptal edilemedi."));
+        }
+
+        return Ok(new { message = "Aboneliğiniz iptal edildi." });
+    }
+
+    /// <summary>The caller's own past checkout attempts, newest first — never any other user's rows, never an amount (no plan price is defined anywhere in this app), never a raw provider payload.</summary>
+    [HttpGet("payments")]
+    [ProducesResponseType(typeof(List<PaymentHistoryItemDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPaymentHistory(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var history = await _paymentService.GetPaymentHistoryAsync(userId, cancellationToken);
+        return Ok(history.Select(h => new PaymentHistoryItemDto(h.Date, h.Status, h.Provider, h.SubscriptionReference)).ToList());
+    }
+
     /// <summary>
     /// Starts a Premium subscription checkout for the authenticated caller. The request carries
     /// only the buyer info Iyzico's checkout form requires — never a plan or payment-outcome
     /// claim; the response is just a token/form to render, not a Premium grant.
     /// </summary>
     [HttpPost("checkout")]
+    [EnableRateLimiting(RateLimitPolicies.Checkout)]
     [ProducesResponseType(typeof(CheckoutResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status503ServiceUnavailable)]

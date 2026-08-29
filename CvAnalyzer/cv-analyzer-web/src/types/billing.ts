@@ -28,3 +28,21 @@ export interface CheckoutResponse {
   token: string
   checkoutFormContent: string
 }
+
+/** Response of GET /api/billing/subscription. Status/Provider/dates are null for a Free user who has never checked out — not an error. */
+export interface SubscriptionDetails {
+  plan: 'FREE' | 'PREMIUM'
+  status: string | null
+  provider: string | null
+  startDate: string | null
+  endDate: string | null
+  canCancel: boolean
+}
+
+/** One row of GET /api/billing/payments — deliberately no amount (this app never defined a plan price) and no raw provider payload. */
+export interface PaymentHistoryItem {
+  date: string
+  status: string
+  provider: string | null
+  subscriptionReference: string | null
+}

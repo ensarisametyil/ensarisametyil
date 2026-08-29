@@ -32,3 +32,19 @@ public class InvalidCredentialsException : AuthException
     {
     }
 }
+
+/// <summary>Distinct from <see cref="InvalidCredentialsException"/> — used only for change-password/deactivate, where the caller is already authenticated and the email is not in question, just the current password confirmation.</summary>
+public class IncorrectPasswordException : AuthException
+{
+    public IncorrectPasswordException() : base("Mevcut parola hatalı.")
+    {
+    }
+}
+
+/// <summary>Covers both "no such token" and "token expired/already used" — deliberately one message/type for all three, so a caller can't distinguish an expired token from a guessed one.</summary>
+public class InvalidOrExpiredTokenException : AuthException
+{
+    public InvalidOrExpiredTokenException() : base("Bağlantının süresi dolmuş veya geçersiz.")
+    {
+    }
+}

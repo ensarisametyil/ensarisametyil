@@ -1,8 +1,10 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Entities;
+using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.AI;
 using CvAnalyzer.Api.Services.Auth;
 using CvAnalyzer.Api.Services.Billing;
@@ -21,7 +23,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Global, not per-controller — see ActiveAccountFilter's doc comment for why every
+    // authenticated request needs this, not just some.
+    options.Filters.Add<CvAnalyzer.Api.Filters.ActiveAccountFilter>();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -76,6 +83,8 @@ builder.Services.AddSingleton<IPaymentProvider, IyzicoPaymentProvider>();
 builder.Services.AddSingleton<IIyzicoWebhookSignatureVerifier, IyzicoWebhookSignatureVerifier>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<CvAnalyzer.Api.Services.Contact.IContactService, CvAnalyzer.Api.Services.Contact.ContactService>();
+
 // --- Authentication (JWT) ---
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
@@ -122,6 +131,47 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+// --- Rate limiting (built-in ASP.NET Core middleware — no extra dependency) ---
+// Bound once, eagerly, at startup (same style as the Jwt signing-key check above) rather than
+// resolved from DI inside each policy lambda, so the limits used are simple to reason about.
+var rateLimitOptions = builder.Configuration.GetSection(RateLimitOptions.SectionName).Get<RateLimitOptions>() ?? new RateLimitOptions();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new ErrorResponseDto("RATE_LIMITED", "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin."),
+            cancellationToken);
+    };
+
+    // Unauthenticated/anonymous callers (login, register, contact) are partitioned by IP — the
+    // only identity available before a JWT exists. Authenticated callers (analyze, checkout) are
+    // partitioned by user id instead, so one heavy user behind a shared IP (NAT, office network)
+    // never throttles a different user on the same connection.
+    static string IpPartitionKey(HttpContext httpContext) =>
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    static string UserPartitionKey(HttpContext httpContext) =>
+        httpContext.User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
+        ?? IpPartitionKey(httpContext);
+
+    RateLimitPartition<string> FixedWindow(string key, RateLimitPolicyOptions policy) =>
+        RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = policy.PermitLimit,
+            Window = TimeSpan.FromSeconds(policy.WindowSeconds),
+            QueueLimit = 0,
+        });
+
+    options.AddPolicy(RateLimitPolicies.Auth, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.Auth));
+    options.AddPolicy(RateLimitPolicies.Analyze, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Analyze));
+    options.AddPolicy(RateLimitPolicies.Checkout, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Checkout));
+    options.AddPolicy(RateLimitPolicies.Contact, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.Contact));
+});
 
 var app = builder.Build();
 
@@ -173,6 +223,10 @@ app.UseCors(FrontendCorsExtensions.FrontendPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// After authentication/authorization so a per-user rate-limit policy (analyze, checkout) can read
+// HttpContext.User — it has already been populated by this point in the pipeline.
+app.UseRateLimiter();
 
 app.MapControllers();
 

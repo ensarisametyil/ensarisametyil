@@ -260,10 +260,33 @@ Doğrulanmış başarılı ödeme (§6)
 
 ## 11. Premium → Free (İptal/Süre Dolumu)
 
-Webhook üzerinden `CANCELED`/`EXPIRED` durumu geldiğinde (§9), `Subscription.Status` güncellenir
-ve `EndDate` (henüz set değilse) şimdiki zamana ayarlanır. Bir sonraki
-`GetEffectivePlanAsync()` çağrısı otomatik olarak `Free` döner — Aşama 8'in "Status != Active ise
-Free" mantığı hiç değişmeden çalışır.
+**Sağlayıcı-tetiklemeli (webhook üzerinden, Aşama 9):** `CANCELED`/`EXPIRED` durumu geldiğinde
+(§9), `Subscription.Status` güncellenir ve `EndDate` (henüz set değilse) şimdiki zamana
+ayarlanır.
+
+**Kullanıcı-tetiklemeli (Aşama 10 — `POST /api/billing/subscription/cancel`):** Aşama 9'da
+`IPaymentProvider.CancelSubscriptionAsync` metodu tanımlanmıştı ama hiçbir orkestrasyon
+kodu onu çağırmıyordu (yalnızca gelecekteki kullanım için hazır bırakılmıştı). Aşama 10 bunu
+gerçekten bağladı: `PaymentService.CancelPremiumSubscriptionAsync(userId)`,
+
+1. çağıranın **kendi** aktif Premium `Subscription` satırını bulur (userId her zaman JWT'den —
+   hiçbir zaman bir parametreden),
+2. `_provider.CancelSubscriptionAsync(providerSubscriptionId)` çağırır,
+3. **iptal çağrısının kendi dönüş değerine körü körüne güvenmez** — checkout callback ve
+   webhook'ta zaten kurulu olan "asla tek bir sonucu doğrulanmamış kabul etme" ilkesiyle
+   tutarlı olarak, ardından `RetrieveSubscriptionStatusAsync` ile durumu **tekrar**
+   sunucu-sunucu doğrular ve yerel `Subscription` satırını ancak o zaman günceller.
+
+Her iki yol da (webhook ve kullanıcı-tetiklemeli iptal) aynı hedefe yazar
+(`Subscription.Status`), bu yüzden bir sonraki `GetEffectivePlanAsync()` çağrısı her iki
+durumda da otomatik olarak `Free` döner — Aşama 8'in "Status != Active ise Free" mantığı hiç
+değişmeden çalışır. `IUserOperationLock` ile aynı kullanıcı için eşzamanlı bir webhook ve
+kullanıcı-tetiklemeli iptal isteğinin birbirini ezmesi engellenir.
+
+Bu uçtan `GET /api/billing/subscription` (plan/durum/sağlayıcı/tarih detayı, `canCancel`
+bayrağıyla birlikte) ve `GET /api/billing/payments` (kullanıcının kendi `PaymentTransaction`
+geçmişinin özeti — asla bir tutar, asla ham bir provider payload'ı) da eklendi; ayrıntılar
+için `docs/monetization.md` §9.
 
 ## 12. Frontend Değişiklikleri
 
@@ -281,6 +304,10 @@ Free" mantığı hiç değişmeden çalışır.
   çeker (`useBilling().refresh()`).
 - **Frontend hiçbir noktada Premium kararı vermiyor** — sadece backend'in ürettiği form içeriğini
   gösteriyor ve backend'in doğruladığı sonucu (usage endpoint'i üzerinden) yansıtıyor.
+- **(Aşama 10)** `pages/AccountPage.tsx` — abonelik detayı, ödeme geçmişi ve "Aboneliği İptal
+  Et" (onay adımlı) akışını tek bir sayfada toplar; `api/billingService.ts`'e
+  `getSubscription()`, `cancelSubscription()`, `getPaymentHistory()` eklendi. Ayrıntılar için
+  `docs/frontend-authentication.md`.
 
 ## 13. Database / Migration Değişiklikleri
 

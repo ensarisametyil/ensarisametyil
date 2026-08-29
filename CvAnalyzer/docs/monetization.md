@@ -1,4 +1,4 @@
-# Free / Premium Plan, Kullanım Kotası ve Ödeme (Aşama 8 + Aşama 9)
+# Free / Premium Plan, Kullanım Kotası ve Ödeme (Aşama 8 + Aşama 9 + Aşama 10)
 
 Bu doküman, Free/Premium plan altyapısını, kullanım (usage/quota) sistemini, subscription
 modelini ve feature gating mimarisini açıklar (Aşama 8). Gerçek İyzico ödeme entegrasyonunun
@@ -217,15 +217,49 @@ if (!await _entitlements.HasFeatureAsync(userId, PlanFeature.AtsAnalysis, cancel
   (`User.GetUserId()`) okunur — hiçbir zaman route/query/body parametresinden.
   `GET /api/billing/usage`, çağıran kullanıcının kendi verisi dışında hiçbir şey döndürmez
   (test: `BillingControllerTests.GetUsage_OnlyReflectsTheCallingUsersOwnUsage_...`).
-- `BillingController`'da hiçbir mutating endpoint (`POST`/`PUT`/`PATCH`/`DELETE`) yoktur — sadece
-  `GET`. Bu, bir reflection testiyle de doğrulanır
-  (`BillingController_ExposesNoWayToSetOrChangeAPlan`), böylece ileride yanlışlıkla bir "plan
-  ayarla" endpoint'i eklenirse test kırılır.
+- **(Güncelleme — Aşama 9/10)** `BillingController`'da artık mutating endpoint'ler **var**:
+  `POST /api/billing/checkout` (Aşama 9) ve `POST /api/billing/subscription/cancel`
+  (Aşama 10). Aşağıdaki cümle Aşama 8'de yazıldığında doğruydu ama artık güncel değil —
+  burada tarihsel doğruluk için düzeltiliyor. Güvenlik garantisi hâlâ aynı **ilkeye**
+  dayanıyor, sadece "hiç mutating endpoint yok" değil: **hiçbir endpoint client'tan bir
+  plan/payment-outcome değeri kabul etmiyor** — checkout sadece alıcı bilgisi (isim,
+  TC kimlik no vb.) alır, cancel hiçbir parametre almaz (her zaman çağıranın **kendi**
+  JWT kimliğindeki aktif aboneliği hedefler). Bu artık bir reflection testiyle
+  (`CheckoutRequestDto_NeverAcceptsAPlanOrPaymentOutcomeFieldFromTheClient`) DTO şekli
+  seviyesinde doğrulanıyor — "mutating endpoint yok" testi yerine, daha isabetli bir
+  "mutating endpoint'ler var ama hiçbiri client-controlled plan state kabul etmiyor" testi.
+  Ayrıntılar için `docs/iyzico-integration.md`.
 - Frontend **hiçbir zaman** `isPremium: true` gibi bir değer göndererek plan değiştiremez —
   çünkü böyle bir alanı kabul eden hiçbir endpoint yok. Plan/kullanım her zaman backend'de,
   sunucu tarafında hesaplanır.
 - `used`/`remaining`/`plan` frontend'de asla yeniden hesaplanmaz — sadece backend'in döndürdüğü
   değerler gösterilir.
+
+## 9. Abonelik Yönetimi ve Ödeme Geçmişi (Aşama 10)
+
+Aşama 9'da eklenen `IPaymentProvider.CancelSubscriptionAsync` o zaman **tanımlıydı ama hiç
+çağrılmıyordu** (yalnızca gelecekteki kullanım için hazırdı). Aşama 10, bunu gerçekten
+kullanan orkestrasyon katmanını ekledi:
+
+- `GET /api/billing/subscription` — plan/durum/sağlayıcı/tarih detayını döner (
+  `GET /api/billing/usage`'ın bare plan string'inden daha zengin — hesap/billing sayfası
+  için). Hiç abonelik satırı olmayan bir Free kullanıcı için tüm alanlar `null` döner, bu
+  bir hata değildir.
+- `POST /api/billing/subscription/cancel` — `IPaymentService.CancelPremiumSubscriptionAsync`
+  çağıranın **kendi** aktif Premium aboneliğini bulur (varsa), İyzico'ya iptal isteği
+  gönderir, ve — checkout callback/webhook'taki "asla tek bir çağrının sonucuna körü
+  körüne güvenme" prensibiyle tutarlı olarak — iptal sonrası durumu **tekrar**
+  `RetrieveSubscriptionStatusAsync` ile sunucu-sunucu doğrular, yerel `Subscription`
+  satırını ancak o zaman günceller.
+- `GET /api/billing/payments` — çağıranın kendi `PaymentTransaction` kayıtlarının özetini
+  (tarih/durum/sağlayıcı/referans kodu) döner, en yeniden eskiye. **Asla bir tutar
+  içermez** — bu uygulama hiçbir yerde bir plan fiyatı tanımlamadı (§1) — ve asla ham bir
+  İyzico response'u göstermez.
+
+Frontend tarafında bu üçü, `AccountPage`'in "Abonelik" ve "Ödeme Geçmişi" bölümlerini
+besler (bkz. `docs/frontend-authentication.md` "Aşama 10 Eklemeleri"). "Aboneliği İptal
+Et" butonu sadece backend `canCancel: true` dediğinde görünür ve bir onay adımı
+gerektirir.
 
 ## 9. Development'ta Bir Kullanıcıyı Premium Yapma
 

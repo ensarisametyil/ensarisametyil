@@ -11,6 +11,10 @@ public class FakePaymentService : IPaymentService
 
     public WebhookProcessingResult WebhookResult { get; set; } = WebhookProcessingResult.Processed;
 
+    public CancelSubscriptionResult CancelResult { get; set; } = new(true, null);
+
+    public IReadOnlyList<PaymentTransactionSummary> PaymentHistory { get; set; } = Array.Empty<PaymentTransactionSummary>();
+
     public Task<CheckoutStartResult> StartPremiumCheckoutAsync(Guid userId, string customerEmail, CheckoutBuyerInfo buyer, CancellationToken cancellationToken = default) =>
         Task.FromResult(CheckoutResult);
 
@@ -19,4 +23,10 @@ public class FakePaymentService : IPaymentService
 
     public Task<WebhookProcessingResult> ProcessWebhookAsync(IyzicoWebhookPayload payload, string? signatureHeader, CancellationToken cancellationToken = default) =>
         Task.FromResult(WebhookResult);
+
+    public Task<CancelSubscriptionResult> CancelPremiumSubscriptionAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(CancelResult);
+
+    public Task<IReadOnlyList<PaymentTransactionSummary>> GetPaymentHistoryAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(PaymentHistory);
 }

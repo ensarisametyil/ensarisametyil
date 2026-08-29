@@ -116,3 +116,61 @@ her testte taklit edilir). Kimlik doğrulama akışına özel testler:
 | Kayıt formu — zayıf parola / zaten kayıtlı e-posta doğrulaması | `src/pages/RegisterPage.test.tsx` |
 | Analiz geçmişi listesi doğru render ediliyor | `src/pages/HistoryPage.test.tsx` |
 | Analiz geçmişi detayı (gerçek id ile, hard-code değil) doğru render ediliyor | `src/pages/HistoryDetailPage.test.tsx` |
+
+## Aşama 10 Eklemeleri
+
+### Routing: Herkese Açık Landing + `/app`
+
+Aşama 9'a kadar `/` her zaman korumalı analiz aracıydı (girişsiz ziyaretçi `/login`'e
+yönlendirilirdi). Aşama 10'da ürün akışı ("Landing → Register → Upload CV → Analyze →
+Result → Premium") gerektirdiği için bu değişti:
+
+- **`/`** artık **herkese açık** bir landing sayfası (`pages/LandingPage.tsx`) — değer
+  önerisi, Free/Premium karşılaştırması, "nasıl çalışır", güvenlik notu, SSS, footer.
+  Girişsiz ziyaretçi buradan hiçbir zaman zorla `/login`'e yönlendirilmez.
+- Asıl analiz aracı (eski `HomePage`) **`/app`**'e taşındı — `ProtectedRoute` hâlâ sadece
+  bunu ve diğer asıl uygulama sayfalarını (`/history`, `/account`, `/premium/*`) korur.
+- `LoginPage`/`RegisterPage`'in başarı sonrası varsayılan yönlendirmesi `/`'den `/app`'e
+  güncellendi (`location.state.from` hâlâ önceliklidir — bir kullanıcı `/history`'ye
+  gitmeye çalışıp `/login`'e yönlendirildiyse, giriş sonrası yine `/history`'ye döner).
+- `NavBar`'ın marka/"Ana Sayfa" linki `/app`'e işaret eder; landing sayfası, oturumu açık
+  bir kullanıcı ziyaret ederse "Uygulamaya Git" CTA'sı gösterir (zorla yönlendirme yapmaz).
+
+`App.test.tsx` bu değişikliği iki ayrı testle doğrular: `/` girişsiz ziyaretçi için landing'i
+gösterir (yönlendirme yok), `/app` girişsiz ziyaretçi için hâlâ `/login`'e yönlendirir.
+
+### Hesap Sayfası (`/account`)
+
+Tek bir `AccountPage.tsx`, aşağıdaki bölümleri bir arada tutar (spec'in "gereksiz sayfa
+çoğaltma" ilkesiyle tutarlı — her biri için ayrı bir route açılmadı):
+
+- **Profil**: e-posta, hesap durumu, e-posta doğrulama durumu (bilgi amaçlı — bkz.
+  `docs/authentication.md` §9.3), plan/kullanım (`useBilling`'den, backend'den gelen
+  değerler — frontend hiçbir zaman kotayı kendisi hesaplamaz).
+- **Abonelik**: `GET /api/billing/subscription`'dan gelen plan/durum/sağlayıcı/tarih;
+  sadece `canCancel=true` olduğunda bir "Aboneliği İptal Et" butonu (onay adımlı) gösterir.
+- **Ödeme Geçmişi**: `GET /api/billing/payments`'ten gelen liste — tarih/durum/sağlayıcı;
+  asla bir tutar göstermez (bu uygulama hiçbir yerde plan fiyatı tanımlamadı, bkz.
+  `docs/monetization.md`) ve asla ham bir provider payload'ı göstermez.
+- **Şifre Değiştir** / **Hesabı Kapat**: `docs/authentication.md` §9.1 ve §9.4'teki
+  endpoint'leri çağırır; hesabı kapatma, şifre onayı gerektiren iki adımlı bir akıştır
+  (yanlışlıkla tek tıkla kapatmayı engeller), başarı sonrası `logout()` + `/login`'e
+  yönlendirme yapar.
+
+### Şifre Sıfırlama Sayfaları
+
+`ForgotPasswordPage` (`/forgot-password`) ve `ResetPasswordPage`
+(`/reset-password?token=...`), `docs/authentication.md` §9.2'deki backend akışının
+frontend tarafıdır. `ForgotPasswordPage`, backend'in enumeration-safe mesajını **olduğu
+gibi** gösterir — frontend kendi başına "e-posta gönderildi" gibi ek bir iddia
+**eklemez**. `ResetPasswordPage`, URL'de token yoksa formu hiç göstermez (açık bir hata
+mesajıyla), parolalar eşleşmiyorsa backend'e hiç istek atmadan client-side reddeder.
+
+### Ödeme Sağlayıcısı Sırrı/Detayı Asla Frontend'e Sızmaz
+
+`AccountPage`'in abonelik/ödeme geçmişi bölümleri sadece `SubscriptionDetailsDto`/
+`PaymentHistoryItemDto`'nun barındırdığı alanları gösterir — bunlar zaten backend
+tarafından "güvenli, gösterilebilir" olacak şekilde tasarlanmıştır (bkz.
+`docs/iyzico-integration.md`). Hiçbir İyzico API key/secret, webhook imzası veya ham
+provider response'u hiçbir zaman bir API yanıtında frontend'e ulaşmaz — dolayısıyla
+sızdırılacak bir şey de yoktur (savunma bu katmanda değil, backend'de kurulmuştur).

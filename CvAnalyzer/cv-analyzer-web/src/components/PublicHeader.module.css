@@ -1,0 +1,43 @@
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--text-heading);
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+
+.topNav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topNavLink {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.topNavLink:hover,
+.topNavLink:focus-visible {
+  color: var(--accent);
+}
+
+.topNavCta {
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

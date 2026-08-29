@@ -220,6 +220,52 @@ public class PaymentService : IPaymentService
         return WebhookProcessingResult.Processed;
     }
 
+    public async Task<CancelSubscriptionResult> CancelPremiumSubscriptionAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        using (await _userLock.AcquireAsync(userId, cancellationToken))
+        {
+            var subscription = await _db.Subscriptions
+                .Where(s => s.UserId == userId && s.Plan == PlanType.Premium && s.Status == SubscriptionStatus.Active)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (subscription is null || string.IsNullOrWhiteSpace(subscription.ProviderSubscriptionId))
+            {
+                return new CancelSubscriptionResult(false, "Aktif bir Premium aboneliğiniz yok.");
+            }
+
+            var cancelled = await _provider.CancelSubscriptionAsync(subscription.ProviderSubscriptionId, cancellationToken);
+            if (!cancelled)
+            {
+                _logger.LogWarning("Iyzico subscription cancellation failed for user {UserId}.", userId);
+                return new CancelSubscriptionResult(false, "Abonelik iptal edilemedi. Lütfen daha sonra tekrar deneyin.");
+            }
+
+            // Never trust the cancel call's own boolean as the final local state — re-confirm
+            // server-to-server, the same pattern the checkout callback and webhook already use.
+            var authoritative = await _provider.RetrieveSubscriptionStatusAsync(subscription.ProviderSubscriptionId, cancellationToken);
+            var mappedStatus = (authoritative.Found ? MapProviderStatus(authoritative.ProviderStatus) : null) ?? SubscriptionStatus.Cancelled;
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+
+            subscription.Status = mappedStatus;
+            subscription.UpdatedAt = now;
+            if (mappedStatus is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            {
+                subscription.EndDate ??= now;
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+            return new CancelSubscriptionResult(true, null);
+        }
+    }
+
+    public async Task<IReadOnlyList<PaymentTransactionSummary>> GetPaymentHistoryAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        await _db.PaymentTransactions
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
+            .Select(t => new PaymentTransactionSummary(t.CreatedAt, t.Status.ToString(), t.ProviderSubscriptionReferenceCode != null ? "Iyzico" : null, t.ProviderSubscriptionReferenceCode))
+            .ToListAsync(cancellationToken);
+
     private async Task MarkFailedAsync(PaymentTransaction transaction, string reason, CancellationToken cancellationToken)
     {
         transaction.Status = PaymentTransactionStatus.Failed;

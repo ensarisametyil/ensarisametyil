@@ -3,6 +3,7 @@ using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Entities;
+using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.AI;
 using CvAnalyzer.Api.Services.Billing;
 using CvAnalyzer.Api.Services.FileProcessing;
@@ -10,6 +11,7 @@ using CvAnalyzer.Api.Services.Storage;
 using CvAnalyzer.Api.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace CvAnalyzer.Api.Controllers;
@@ -159,6 +161,7 @@ public class CvController : ControllerBase
     }
 
     [HttpPost("{id:guid}/analyze")]
+    [EnableRateLimiting(RateLimitPolicies.Analyze)]
     [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status402PaymentRequired)]
