@@ -22,7 +22,7 @@ public class AuthControllerTests
     private static (AuthController Controller, AppDbContext Db) CreateController()
     {
         var db = CreateDbContext();
-        var authService = new AuthService(db, new PasswordHasher<User>(), new PasswordPolicy(), TimeProvider.System, new FakeHostEnvironment(), NullLogger<AuthService>.Instance);
+        var authService = new AuthService(db, new PasswordHasher<User>(), new PasswordPolicy(), TimeProvider.System, new FakeEmailService());
         var jwtOptions = Options.Create(new JwtOptions
         {
             Issuer = "test-issuer",

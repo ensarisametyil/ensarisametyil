@@ -30,4 +30,18 @@ public class AiOptions
     /// control knob for oversized documents. See <see cref="CvTextNormalizer"/>.
     /// </summary>
     public int MaxInputCharacters { get; set; } = 20_000;
+
+    /// <summary>
+    /// Upper bound on how long a single AI analysis request may run before it is abandoned —
+    /// an unreachable/stalled provider must never hang a request indefinitely. Applied to the
+    /// underlying <c>AnthropicClient.Timeout</c> in <see cref="AnthropicMessagesGateway"/>.
+    /// </summary>
+    public int TimeoutSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// Left unset in production (the SDK's own default Anthropic API endpoint is used). Exists
+    /// as a test seam — mirrors <c>IyzicoOptions.BaseUrl</c> — so a test can point the gateway at
+    /// a local, controlled endpoint instead of the real AI API.
+    /// </summary>
+    public string? BaseUrl { get; set; }
 }

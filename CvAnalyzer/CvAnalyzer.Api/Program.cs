@@ -90,6 +90,7 @@ builder.Services.AddScoped<CvAnalyzer.Api.Services.Contact.IContactService, CvAn
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton<IPasswordPolicy, PasswordPolicy>();
+builder.Services.AddSingleton<CvAnalyzer.Api.Services.Email.IEmailService, CvAnalyzer.Api.Services.Email.LoggingEmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
@@ -286,6 +287,18 @@ app.UseAuthorization();
 // After authentication/authorization so a per-user rate-limit policy (analyze, checkout) can read
 // HttpContext.User — it has already been populated by this point in the pipeline.
 app.UseRateLimiter();
+
+// Readiness — the one thing the existing liveness check (HealthController, GET /health) doesn't
+// verify: can this instance actually reach its database right now? CanConnectAsync never throws
+// (it swallows the connection failure and returns false), so this never risks leaking a
+// connection string or exception through the response either way.
+app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) =>
+{
+    var canConnect = await db.Database.CanConnectAsync(cancellationToken);
+    return canConnect
+        ? Results.Ok(new { status = "ready" })
+        : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+});
 
 app.MapControllers();
 

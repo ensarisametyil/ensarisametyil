@@ -4,14 +4,13 @@ using CvAnalyzer.Api.Services.Auth;
 using CvAnalyzer.Api.Tests.TestHelpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CvAnalyzer.Api.Tests.Services.Auth;
 
 public class AuthServiceTests
 {
-    private static AuthService CreateSut(AppDbContext db, TimeProvider? timeProvider = null, Microsoft.Extensions.Hosting.IHostEnvironment? environment = null) =>
-        new(db, new PasswordHasher<User>(), new PasswordPolicy(), timeProvider ?? TimeProvider.System, environment ?? new FakeHostEnvironment(), NullLogger<AuthService>.Instance);
+    private static AuthService CreateSut(AppDbContext db, TimeProvider? timeProvider = null, FakeEmailService? emailService = null) =>
+        new(db, new PasswordHasher<User>(), new PasswordPolicy(), timeProvider ?? TimeProvider.System, emailService ?? new FakeEmailService());
 
     private static AppDbContext CreateDbContext() =>
         new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
@@ -352,16 +351,34 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task IssueTokenAsync_DevelopmentEnvironment_DoesNotThrow()
+    public async Task RequestPasswordResetAsync_ValidUser_DispatchesToEmailServiceWithTheSameToken()
     {
-        // Exercises the Development-only dev-token-logging branch without asserting on log
-        // content — just confirming it doesn't blow up and still returns the token normally.
         using var db = CreateDbContext();
-        var sut = CreateSut(db, environment: new FakeHostEnvironment { EnvironmentName = "Development" });
-        var user = await sut.RegisterAsync("dev-log@example.com", "Password123");
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+        await sut.RegisterAsync("reset-email@example.com", "Password123");
 
-        var token = await sut.RequestPasswordResetAsync("dev-log@example.com");
+        var token = await sut.RequestPasswordResetAsync("reset-email@example.com");
 
-        Assert.NotNull(token);
+        var sent = Assert.Single(emailService.PasswordResetEmails);
+        Assert.Equal("reset-email@example.com", sent.ToEmail);
+        Assert.Equal(token, sent.Token);
+        Assert.Empty(emailService.VerificationEmails);
+    }
+
+    [Fact]
+    public async Task RequestEmailVerificationAsync_UnverifiedUser_DispatchesToEmailServiceWithTheSameToken()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+        var user = await sut.RegisterAsync("verify-email-dispatch@example.com", "Password123");
+
+        var token = await sut.RequestEmailVerificationAsync(user.Id);
+
+        var sent = Assert.Single(emailService.VerificationEmails);
+        Assert.Equal("verify-email-dispatch@example.com", sent.ToEmail);
+        Assert.Equal(token, sent.Token);
+        Assert.Empty(emailService.PasswordResetEmails);
     }
 }

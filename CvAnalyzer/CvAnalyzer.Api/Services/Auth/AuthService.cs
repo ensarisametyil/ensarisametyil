@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Models.Entities;
+using CvAnalyzer.Api.Services.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -16,23 +17,20 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IPasswordPolicy _passwordPolicy;
     private readonly TimeProvider _timeProvider;
-    private readonly IHostEnvironment _environment;
-    private readonly ILogger<AuthService> _logger;
+    private readonly IEmailService _emailService;
 
     public AuthService(
         AppDbContext db,
         IPasswordHasher<User> passwordHasher,
         IPasswordPolicy passwordPolicy,
         TimeProvider timeProvider,
-        IHostEnvironment environment,
-        ILogger<AuthService> logger)
+        IEmailService emailService)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _passwordPolicy = passwordPolicy;
         _timeProvider = timeProvider;
-        _environment = environment;
-        _logger = logger;
+        _emailService = emailService;
     }
 
     public async Task<User> RegisterAsync(string email, string password, CancellationToken cancellationToken = default)
@@ -212,16 +210,16 @@ public class AuthService : IAuthService
 
     /// <summary>
     /// Generates a cryptographically random token, persists only its SHA-256 hash (never the
-    /// plaintext), and returns the plaintext to the caller. In Development only, also logs it —
-    /// there is no real email provider wired up yet (see docs/authentication.md), so this is the
-    /// only way to exercise the reset/verification flow end-to-end without one; the log line is
-    /// never emitted outside Development, and the plaintext is never persisted or returned by any
-    /// HTTP response.
+    /// plaintext), hands the plaintext to <see cref="IEmailService"/> for delivery (see
+    /// <see cref="LoggingEmailService"/> for what actually happens with it in this environment),
+    /// and also returns the plaintext to the caller — never persisted anywhere else and never
+    /// returned by any HTTP response.
     /// </summary>
     private async Task<string> IssueTokenAsync(User user, UserTokenPurpose purpose, TimeSpan validFor, CancellationToken cancellationToken)
     {
         var rawToken = GenerateRawToken();
         var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var expiresAt = now.Add(validFor);
 
         _db.UserTokens.Add(new UserToken
         {
@@ -229,16 +227,18 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Purpose = purpose,
             TokenHash = HashToken(rawToken),
-            ExpiresAt = now.Add(validFor),
+            ExpiresAt = expiresAt,
             CreatedAt = now,
         });
         await _db.SaveChangesAsync(cancellationToken);
 
-        if (_environment.IsDevelopment())
+        if (purpose == UserTokenPurpose.PasswordReset)
         {
-            _logger.LogInformation(
-                "[DEV ONLY — never logged outside Development] {Purpose} token for user {UserId}: {Token} (expires {ExpiresAt:o})",
-                purpose, user.Id, rawToken, now.Add(validFor));
+            await _emailService.SendPasswordResetEmailAsync(user.Email, rawToken, expiresAt, cancellationToken);
+        }
+        else
+        {
+            await _emailService.SendEmailVerificationEmailAsync(user.Email, rawToken, expiresAt, cancellationToken);
         }
 
         return rawToken;

@@ -36,7 +36,16 @@ public class AnthropicMessagesGateway : IAnthropicMessagesGateway
                 "in Development, or the AI__ApiKey environment variable in other environments.");
         }
 
-        return new AnthropicClient { ApiKey = _options.ApiKey };
+        // A stalled/unreachable provider must never hang a request forever — Timeout bounds the
+        // whole call (connect + response), surfacing as an OperationCanceledException that the
+        // catch clause below (guarded on the *caller's* token, not this one) translates into a
+        // safe AiProviderUnavailableException. BaseUrl is left as the SDK's own default (the real
+        // Anthropic API) unless a test/override value is configured — see AiOptions.BaseUrl's doc
+        // comment; it's init-only on the SDK's client type, so the conditional has to live inside
+        // this single object initializer rather than being assigned afterward.
+        return string.IsNullOrWhiteSpace(_options.BaseUrl)
+            ? new AnthropicClient { ApiKey = _options.ApiKey, Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds) }
+            : new AnthropicClient { ApiKey = _options.ApiKey, Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds), BaseUrl = _options.BaseUrl };
     }
 
     public async Task<string> SendAsync(string systemPrompt, string userMessage, CancellationToken cancellationToken = default)

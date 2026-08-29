@@ -356,6 +356,32 @@ public class PaymentServiceTests
         Assert.Equal(firstEndDate, subscription.EndDate); // unchanged by the 2nd/3rd (no-op) calls
     }
 
+    [Fact]
+    public async Task ProcessWebhookAsync_StaleEventTypeArrivesAfterAuthoritativeStatusAlreadyMovedOn_AppliesTheAuthoritativeStatusNotThePayloadsClaim()
+    {
+        // A genuinely out-of-order delivery: the payload claims "subscription.canceled" (as if
+        // the cancellation just happened), but by the time this webhook is actually processed the
+        // authoritative provider-side status has already moved on to ACTIVE (e.g. the user
+        // resubscribed, or Iyzico's own retry delivered an old event late). ProcessWebhookAsync
+        // never trusts the payload's claimed status for anything beyond "go re-check this
+        // subscription" — it always applies whatever the authoritative RetrieveSubscriptionStatusAsync
+        // call reports right now, so this must NOT cancel a subscription that is actually active.
+        var (sut, provider, db, clock) = CreateSut();
+        var userId = Guid.NewGuid();
+        db.Subscriptions.Add(ActivePremiumSubscription(userId, "sub-ref-1"));
+        await db.SaveChangesAsync();
+        provider.RetrieveResult = new ProviderSubscriptionState(true, "ACTIVE", null);
+        var staleCancelledPayload = new IyzicoWebhookPayload("subscription.canceled", "sub-ref-1", null, "cust-1");
+        var signature = ComputeSignature(TestSecretKey, "subscription.canceled", "sub-ref-1", "", "cust-1");
+
+        var result = await sut.ProcessWebhookAsync(staleCancelledPayload, signature);
+
+        Assert.Equal(WebhookProcessingResult.Processed, result);
+        Assert.Equal(SubscriptionStatus.Active, db.Subscriptions.Single().Status);
+        var effectivePlan = await new SubscriptionService(db, clock).GetEffectivePlanAsync(userId);
+        Assert.Equal(PlanType.Premium, effectivePlan);
+    }
+
     // ---------- Subscription cancellation ----------
 
     [Fact]
