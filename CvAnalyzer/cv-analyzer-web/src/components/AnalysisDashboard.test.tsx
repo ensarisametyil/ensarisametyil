@@ -4,7 +4,16 @@ import AnalysisDashboard from './AnalysisDashboard'
 import ListCard from './ListCard'
 import TagCard from './TagCard'
 import TextCard from './TextCard'
+import { I18nProvider } from '../context/I18nContext'
 import type { CvAnalysisResult } from '../types/cv'
+
+function renderDashboard(result: CvAnalysisResult) {
+  return render(
+    <I18nProvider>
+      <AnalysisDashboard result={result} />
+    </I18nProvider>,
+  )
+}
 
 const FULL_RESULT: CvAnalysisResult = {
   overallScore: 82,
@@ -46,7 +55,7 @@ describe('empty-state handling', () => {
       weaknesses: [],
     }
 
-    render(<AnalysisDashboard result={partialResult} />)
+    renderDashboard(partialResult)
 
     expect(screen.queryByText('Deneyim')).not.toBeInTheDocument()
     expect(screen.queryByText('Eğitim')).not.toBeInTheDocument()
@@ -72,7 +81,7 @@ describe('empty-state handling', () => {
       experience: maliciousPayload,
     }
 
-    const { container } = render(<AnalysisDashboard result={hostileResult} />)
+    const { container } = renderDashboard(hostileResult)
 
     // No actual <img> or <script> element was created from the AI text.
     expect(container.querySelector('img')).toBeNull()
@@ -84,7 +93,7 @@ describe('empty-state handling', () => {
   })
 
   it('AnalysisDashboard with a fully populated result shows every section', () => {
-    render(<AnalysisDashboard result={FULL_RESULT} />)
+    renderDashboard(FULL_RESULT)
 
     expect(screen.getByText('82')).toBeInTheDocument()
     expect(screen.getByText(FULL_RESULT.summary)).toBeInTheDocument()

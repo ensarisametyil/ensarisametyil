@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useBilling } from '../hooks/useBilling'
+import { useTranslation } from '../hooks/useTranslation'
 import styles from './PlanBadge.module.css'
 
 /**
@@ -11,6 +12,7 @@ import styles from './PlanBadge.module.css'
  */
 function PlanBadge() {
   const { usage } = useBilling()
+  const { t } = useTranslation()
 
   if (!usage) {
     return null
@@ -21,18 +23,16 @@ function PlanBadge() {
   return (
     <div className={styles.wrapper}>
       <span className={styles.planTag} data-plan={usage.plan}>
-        {isFree ? 'FREE PLAN' : 'PREMIUM'}
+        {isFree ? t('billing.freePlan') : t('billing.premiumPlan')}
       </span>
 
       {isFree && usage.limit !== null && (
-        <span className={styles.usage}>
-          {usage.used} / {usage.limit} analiz kullanıldı
-        </span>
+        <span className={styles.usage}>{t('billing.usageUsed', { used: usage.used, limit: usage.limit })}</span>
       )}
 
       {isFree && (
         <Link to="/premium/checkout" className={styles.ctaButton}>
-          Premium'a Geç
+          {t('billing.upgradeToPremium')}
         </Link>
       )}
     </div>

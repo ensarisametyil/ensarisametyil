@@ -3,13 +3,19 @@ import { emitUnauthorized } from './authEvents';
 import { getToken } from './tokenStorage';
 import type { ApiErrorResponse } from '../types/cv';
 
+// The strings below are internal fallback Error.message text, not user-facing copy — every call
+// site displays an error via utils/errorMessages.getErrorMessage(error, t), which keys off
+// status/code and always returns a localized string, ignoring this raw message. It only exists
+// as a last-resort value for anything that reads error.message directly (e.g. a stray console
+// log), so it's left in English rather than needing its own i18n plumbing in a module that has
+// no access to the active locale (this is a plain fetch wrapper, not a React component/hook).
 async function parseErrorResponse(response: Response): Promise<ApiError> {
   try {
     const body = (await response.json()) as Partial<ApiErrorResponse>;
-    return new ApiError(response.status, body.message ?? `İstek başarısız oldu (${response.status}).`, body.code);
+    return new ApiError(response.status, body.message ?? `Request failed (${response.status}).`, body.code);
   } catch {
     // Body wasn't JSON (or was empty) — fall back to a generic, still-safe message.
-    return new ApiError(response.status, `İstek başarısız oldu (${response.status}).`);
+    return new ApiError(response.status, `Request failed (${response.status}).`);
   }
 }
 
@@ -39,7 +45,9 @@ export async function requestJson<T>(input: string, init: RequestOptions = {}): 
   } catch {
     // fetch() only throws for network-level failures (DNS, connection refused, CORS, offline) —
     // there was never an HTTP response to inspect.
-    throw new ApiError(0, 'Sunucuya bağlanılamadı.');
+    // Same rationale as parseErrorResponse above — getErrorMessage(error, t) always overrides
+    // this for status 0 with the localized errors.NETWORK_ERROR string.
+    throw new ApiError(0, 'Could not connect to the server.');
   }
 
   if (!response.ok) {

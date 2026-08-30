@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getAnalysis } from '../api/analysisService'
+import { useTranslation } from '../hooks/useTranslation'
 import { getErrorMessage } from '../utils/errorMessages'
-import { formatDate } from '../utils/formatDate'
+import { formatDate } from '../i18n/format'
 import AnalysisDashboard from '../components/AnalysisDashboard'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
@@ -11,6 +12,7 @@ import styles from './HistoryDetailPage.module.css'
 
 /** Detail view of one past analysis, reached by clicking a row in "Analiz Geçmişim". */
 function HistoryDetailPage() {
+  const { t, locale } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const [detail, setDetail] = useState<AnalysisDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -30,26 +32,26 @@ function HistoryDetailPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(getErrorMessage(err))
+          setError(getErrorMessage(err, t))
         }
       })
 
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, t])
 
   return (
     <main className={styles.page}>
       <Link to="/history" className={styles.backLink}>
-        ← Analiz Geçmişime Dön
+        {t('history.backToHistory')}
       </Link>
 
       {error && <ErrorBanner message={error} />}
 
       {!detail && !error && (
         <div className={styles.loading}>
-          <Spinner label="Yükleniyor..." />
+          <Spinner label={t('common.loading')} />
         </div>
       )}
 
@@ -58,7 +60,7 @@ function HistoryDetailPage() {
           <div className={styles.header}>
             <div className={styles.headerInfo}>
               <p className={styles.cvName}>{detail.cvFileName}</p>
-              <p className={styles.date}>{formatDate(detail.createdAt)}</p>
+              <p className={styles.date}>{formatDate(detail.createdAt, locale)}</p>
             </div>
           </div>
 

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import PremiumResultPage from './PremiumResultPage'
+import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 import { setToken } from '../api/tokenStorage'
@@ -29,13 +30,15 @@ function renderResultPage(path: string) {
   vi.stubGlobal('fetch', fetchMock)
 
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <AuthProvider>
-        <BillingProvider>
-          <PremiumResultPage />
-        </BillingProvider>
-      </AuthProvider>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter initialEntries={[path]}>
+        <AuthProvider>
+          <BillingProvider>
+            <PremiumResultPage />
+          </BillingProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 
   return fetchMock

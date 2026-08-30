@@ -1,0 +1,407 @@
+{
+  "app": {
+    "name": "CVora AI",
+    "tagline": "AI-Powered CV Analysis",
+    "description": "AI-powered CV analysis platform"
+  },
+  "languageSelector": {
+    "label": "Select language",
+    "tr": "Türkçe",
+    "en": "English",
+    "de": "Deutsch"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "close": "Close",
+    "dash": "—"
+  },
+  "publicHeader": {
+    "goToApp": "Go to App",
+    "login": "Log In",
+    "registerFree": "Start Free"
+  },
+  "footer": {
+    "linksLabel": "Footer links",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "cookies": "Cookie Policy",
+    "contact": "Contact",
+    "rights": "All rights reserved."
+  },
+  "nav": {
+    "home": "Home",
+    "history": "Analysis History",
+    "account": "Account",
+    "logout": "Log Out"
+  },
+  "billing": {
+    "freePlan": "FREE PLAN",
+    "premiumPlan": "PREMIUM",
+    "usageUsed": "{used} / {limit} analyses used",
+    "upgradeToPremium": "Upgrade to Premium"
+  },
+  "landing": {
+    "hero": {
+      "title": "Analyze Your CV with AI in Seconds",
+      "subtitle": "As soon as you upload your CV, CVora AI reveals your strengths, weaknesses, missing skills, and improvement suggestions — strengthen your CV before you apply.",
+      "ctaAuthenticated": "Go to App",
+      "ctaAnonymous": "Start Free",
+      "hint": "No credit card required — get started with the Free plan right away."
+    },
+    "howItWorks": {
+      "heading": "How It Works",
+      "step1Title": "Upload your CV",
+      "step1Body": "Upload your CV in PDF or DOCX format.",
+      "step2Title": "Let AI analyze it",
+      "step2Body": "Get a detailed CV analysis within seconds.",
+      "step3Title": "Review and improve",
+      "step3Body": "See your score, suggestions, and missing keywords."
+    },
+    "benefits": {
+      "heading": "What You Get with CVora AI",
+      "objective": {
+        "title": "Objective Evaluation",
+        "body": "Have your CV evaluated with an unbiased score, from a recruiter's perspective."
+      },
+      "concrete": {
+        "title": "Concrete Suggestions",
+        "body": "Get improvement suggestions tailored to your CV, not generic advice."
+      },
+      "keywords": {
+        "title": "Missing Keywords",
+        "body": "See the missing skills that would help you stand out for the positions you apply to."
+      },
+      "history": {
+        "title": "Your Past Analyses",
+        "body": "Save all your analyses and track your progress over time."
+      }
+    },
+    "plans": {
+      "heading": "Plans",
+      "free": {
+        "title": "Free",
+        "priceNote": "No credit card required",
+        "feature1": "2 CV analyses per month",
+        "feature2": "Score, strengths/weaknesses, suggestions",
+        "feature3": "Analysis history",
+        "cta": "Start Free"
+      },
+      "premium": {
+        "title": "Premium",
+        "priceNote": "Unlimited analyses",
+        "feature1": "Unlimited monthly CV analyses",
+        "feature2": "Score, strengths/weaknesses, suggestions",
+        "feature3": "Analysis history",
+        "feature4": "Priority support",
+        "cta": "Upgrade to Premium"
+      }
+    },
+    "security": {
+      "heading": "Security and Privacy",
+      "body": "Your CV may contain personal and sensitive information. CVora AI only uses your CV content to produce the analysis, stores it tied to your authenticated account, and never shares it with any other user. Your payment details never reach this application — they are processed through Iyzico's secure payment infrastructure. See our {privacyLink} page for details."
+    },
+    "faq": {
+      "heading": "Frequently Asked Questions",
+      "q1": {
+        "question": "How does CVora AI analyze my CV?",
+        "answer": "After you upload your CV, the AI model reads its content and produces an overall score, strengths/weaknesses, a skill list, missing keywords, and concrete suggestions. Your CV file is only used to produce the analysis."
+      },
+      "q2": {
+        "question": "What's the difference between Free and Premium?",
+        "answer": "The Free plan gives you 2 analyses per month. The Premium plan has no monthly analysis limit."
+      },
+      "q3": {
+        "question": "Is my payment information safe?",
+        "answer": "Your card details never reach this application — payment is collected through Iyzico's own secure payment form. Premium is only activated based on a server-side-verified result from Iyzico."
+      },
+      "q4": {
+        "question": "Can I delete my CV after analyzing it?",
+        "answer": "Yes. You can delete any CV and its analysis result at any time from your Analysis History page."
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Log In",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log In",
+      "submitting": "Logging in...",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up"
+    },
+    "register": {
+      "title": "Sign Up",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "Must be at least 8 characters and contain at least one letter and one digit.",
+      "submit": "Sign Up",
+      "submitting": "Signing up...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "email": "Email",
+      "submit": "Send",
+      "submitting": "Sending...",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "invalidLinkTitle": "Invalid Link",
+      "invalidLinkMessage": "The password reset link is missing or invalid.",
+      "requestNewLink": "Request a new password reset link",
+      "successTitle": "Your Password Has Been Updated",
+      "successMessage": "You can now log in with your new password.",
+      "loginLink": "Log in",
+      "title": "Set a New Password",
+      "newPassword": "New Password",
+      "confirmPassword": "New Password (Confirm)",
+      "passwordHint": "Must be at least 8 characters and contain at least one letter and one digit.",
+      "submit": "Update Password",
+      "submitting": "Saving..."
+    }
+  },
+  "validation": {
+    "passwordMinLength": "Password must be at least 8 characters long.",
+    "passwordNeedsLetter": "Password must contain at least one letter.",
+    "passwordNeedsDigit": "Password must contain at least one digit.",
+    "passwordsDontMatch": "Passwords do not match."
+  },
+  "home": {
+    "title": "CVora AI",
+    "subtitle": "AI-powered CV analysis platform",
+    "uploadedCv": "Uploaded CV",
+    "analyzedCv": "Analyzed CV",
+    "uploadAnotherCv": "Upload another CV"
+  },
+  "upload": {
+    "dropHint": "Drag and drop your CV here, or click to browse",
+    "sizeHint": "PDF or DOCX, maximum 10 MB",
+    "invalidType": "Only PDF and DOCX files are accepted.",
+    "uploading": "Uploading..."
+  },
+  "analyze": {
+    "button": "Analyze CV",
+    "buttonAgain": "Analyze Again",
+    "analyzing": "Analyzing CV...",
+    "quotaExhausted": "You've used up your monthly analysis quota. Upgrade to Premium to analyze more."
+  },
+  "analysis": {
+    "cvScore": "CV Score",
+    "summary": "Overall Assessment",
+    "strengths": "Strengths",
+    "weaknesses": "Areas to Improve",
+    "skills": "Skills",
+    "experience": "Experience",
+    "education": "Education",
+    "missingKeywords": "Missing / Suggested Keywords",
+    "missingKeywordsNote": "These keywords are suggested by AI; they don't necessarily mean your CV is definitely missing them — treat them as suggestions.",
+    "recommendations": "Suggestions to Improve Your CV",
+    "tier": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "mid": "Needs Improvement",
+      "low": "Low"
+    },
+    "scoreAriaLabel": "CV score {score}/100"
+  },
+  "history": {
+    "title": "Analysis History",
+    "empty": "You haven't analyzed any CVs yet.",
+    "pageIndicator": "Page {page} of {totalPages}",
+    "previous": "Previous",
+    "next": "Next",
+    "backToHistory": "← Back to Analysis History",
+    "paginationLabel": "Pages"
+  },
+  "account": {
+    "title": "Account",
+    "profile": {
+      "heading": "Profile",
+      "email": "Email",
+      "accountStatus": "Account Status",
+      "accountActive": "Active",
+      "emailVerification": "Email Verification",
+      "emailVerified": "Verified",
+      "emailNotVerified": "Not verified (email verification isn't active in this environment yet)",
+      "plan": "Plan",
+      "usage": "Usage",
+      "planFree": "Free",
+      "planPremium": "Premium"
+    },
+    "subscription": {
+      "heading": "Subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "provider": "Payment Provider",
+      "startDate": "Start Date",
+      "cancelButton": "Cancel Subscription",
+      "cancelConfirmQuestion": "Are you sure you want to cancel your Premium subscription?",
+      "cancelConfirmYes": "Yes, Cancel",
+      "cancelling": "Cancelling...",
+      "cancelDecline": "Never mind"
+    },
+    "paymentHistory": {
+      "heading": "Payment History",
+      "empty": "You don't have any payment transactions yet.",
+      "date": "Date",
+      "status": "Status",
+      "provider": "Provider",
+      "statusSucceeded": "Succeeded",
+      "statusFailed": "Failed",
+      "statusInitiated": "Initiated"
+    },
+    "changePassword": {
+      "heading": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "New Password (Confirm)",
+      "submit": "Update Password",
+      "submitting": "Saving...",
+      "passwordsDontMatch": "New passwords do not match."
+    },
+    "deactivate": {
+      "heading": "Deactivate Account",
+      "hint": "Once your account is deactivated, you won't be able to log in again. Your CV, analysis, and payment records will continue to be kept for data integrity purposes, but your account will become inactive.",
+      "openButton": "Deactivate My Account",
+      "confirmPassword": "Confirm your password",
+      "confirmButton": "Confirm and Deactivate Account",
+      "confirming": "Deactivating...",
+      "decline": "Never mind"
+    }
+  },
+  "checkout": {
+    "title": "Upgrade to Premium",
+    "hint": "Enter your billing details before proceeding to the payment form.",
+    "name": "First Name",
+    "surname": "Last Name",
+    "identityNumber": "National ID Number",
+    "gsmNumber": "Mobile Phone",
+    "city": "City",
+    "addressLine": "Address",
+    "submit": "Proceed to Payment",
+    "submitting": "Starting payment..."
+  },
+  "paymentResult": {
+    "successTitle": "You're Now on Premium!",
+    "successMessage": "You can now analyze CVs without limits.",
+    "failTitle": "Payment Could Not Be Completed",
+    "failMessage": "Your payment could not be confirmed. Please try again or use a different payment method.",
+    "backHome": "Back to Home"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "You can use the form below for your questions or feedback.",
+    "name": "Full Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "successMessage": "Your message has been received. Thank you."
+  },
+  "legal": {
+    "disclaimer": "This text is a starting draft prepared for the product's current stage and does not substitute for legal counsel. It is recommended that it be reviewed by a legal advisor before going to production.",
+    "disclaimerShort": "This text is a starting draft prepared for the product's current stage and does not substitute for legal counsel.",
+    "updatedAt": "Last updated: August 2026",
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This Privacy Policy explains how CVora AI (the \"Application\") collects, processes, and protects its users' personal data. Because documents like your CV may contain sensitive personal data (identity, contact, education, work history information), we prepared this document with care.",
+      "section1Heading": "1. What Data Do We Collect?",
+      "section1Items": [
+        "Account information: your email address, and the irreversible (hashed) form of your password.",
+        "The CV file you upload and the text content extracted from it.",
+        "AI analysis results (score, strengths/weaknesses, suggestions, etc.).",
+        "If you upgrade to Premium: the payment provider Iyzico's transaction result and technical reference codes that are not personally identifying to you (your card details never reach this application).",
+        "Messages you send us through the contact form."
+      ],
+      "section2Heading": "2. Why Do We Process This Data?",
+      "section2Items": [
+        "To create your account and verify your identity.",
+        "To analyze your CV and present you with a result.",
+        "To track your Free/Premium plan usage entitlement.",
+        "To carry out and verify the Premium payment process.",
+        "To respond to your contact requests."
+      ],
+      "section3Heading": "3. Who Is Your Data Shared With?",
+      "section3Body": "Your CV content is sent to the AI provider for the purpose of producing the analysis. Your payment transactions are processed by Iyzico. Your data is not shared with or sold to third parties for marketing purposes, except where legally required.",
+      "section4Heading": "4. How Long Is Your Data Retained?",
+      "section4Body": "Your data is retained as long as your account is active. When you delete a CV or an analysis, the corresponding record is permanently removed. Payment records may continue to be retained after account closure due to financial/administrative obligations.",
+      "section5Heading": "5. Your Rights (Under KVKK)",
+      "section5Body": "Under Turkish Law No. 6698 on the Protection of Personal Data (\"KVKK\"), you have the right to learn whether your data is being processed, to request information about it if so, to learn the purpose of processing, to know the third parties to whom it is transferred domestically or abroad, to request correction if it is processed incompletely or incorrectly, to request its deletion/destruction, and to object. You can reach us via our {contactLink} page to exercise these rights.",
+      "section6Heading": "6. Account Deletion",
+      "section6Body": "You can close your account from your Account page. Once your account is closed, you will not be able to log in; your CV/analysis/payment records may continue to be kept in the system for a while longer due to data integrity and legal retention obligations.",
+      "section7Heading": "7. Cookies",
+      "section7Body": "See our {cookiesLink} page for information about our use of cookies."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "intro": "These Terms of Service explain the rules you must follow when using the CVora AI (the \"Application\") service. By using the Application, you are deemed to have accepted these terms.",
+      "section1Heading": "1. Scope of the Service",
+      "section1Body": "CVora AI is a tool that analyzes the CV document you upload using AI and provides a score, suggestions, and feedback. The analysis results provided are a suggestion; they do not guarantee success in recruitment processes.",
+      "section2Heading": "2. Account Responsibility",
+      "section2Items": [
+        "You are responsible for keeping your account information (especially your password) confidential.",
+        "You are responsible for the actions carried out through your account.",
+        "You must only create an account with accurate information belonging to yourself."
+      ],
+      "section3Heading": "3. Free and Premium Plans",
+      "section3Body": "The Free plan offers a limited number of analyses per month. The Premium plan offers unlimited monthly analyses and requires a subscription payment processed through Iyzico. You can cancel your Premium subscription at any time from your Account page.",
+      "section4Heading": "4. Prohibited Uses",
+      "section4Items": [
+        "Using the Application to analyze documents belonging to others without permission.",
+        "Using the Application in a way that damages its infrastructure or places excessive load on it.",
+        "Attempting to reverse-engineer the service or gain unauthorized access."
+      ],
+      "section5Heading": "5. Limitation of Liability",
+      "section5Body": "Analysis results are generated by AI and absolute accuracy is not guaranteed. The Application cannot be held liable for damages arising from decisions made based on the analysis results (job applications, hiring, etc.).",
+      "section6Heading": "6. Changes",
+      "section6Body": "These terms may be updated from time to time. Significant changes will be announced within the Application."
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "intro": "CVora AI uses your browser's local storage (localStorage) to manage your session. This storage technically serves the same purpose as a cookie: it keeps your session active.",
+      "section1Heading": "1. Storage We Use",
+      "section1ItemLabel": "Session token (access token):",
+      "section1ItemBody": "Stored in your browser's localStorage when you log in; used to verify your identity on every API request. Removed when you log out.",
+      "section1Note": "We do not currently use third-party advertising/tracking cookies. Iyzico's payment form may use its own security and fraud-prevention cookies; these cookies are subject to Iyzico's own privacy policy.",
+      "section2Heading": "2. How Can You Control This Storage?",
+      "section2Body": "You can clear your localStorage data at any time from your browser settings; doing so will automatically log you out of your session."
+    }
+  },
+  "errors": {
+    "AI_INVALID_RESPONSE": "A valid analysis result could not be obtained from the AI service.",
+    "AI_RATE_LIMITED": "The AI service is currently busy, please try again later.",
+    "AI_UNAVAILABLE": "The AI analysis service is currently unavailable. Please try again later.",
+    "ANALYSIS_NOT_FOUND": "The specified analysis could not be found.",
+    "CANCELLATION_FAILED": "The subscription could not be cancelled.",
+    "CHECKOUT_UNAVAILABLE": "Checkout could not be started.",
+    "CV_FILE_NOT_FOUND": "The CV file could not be found in storage.",
+    "CV_NOT_FOUND": "The specified CV could not be found.",
+    "EMAIL_ALREADY_REGISTERED": "This email address is already registered.",
+    "EMPTY_CV_TEXT": "No text to analyze could be found in the CV content.",
+    "FILE_TOO_LARGE": "The file size exceeds the 10 MB limit.",
+    "INCORRECT_CURRENT_PASSWORD": "The current password is incorrect.",
+    "INCORRECT_PASSWORD": "The password is incorrect.",
+    "INTERNAL_SERVER_ERROR": "An unexpected server error occurred.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "INVALID_FILE": "Invalid file.",
+    "INVALID_OR_EXPIRED_TOKEN": "The link has expired or is invalid.",
+    "INVALID_REQUEST": "Please check the information you entered and try again.",
+    "QUOTA_EXCEEDED": "You've used up your monthly analysis quota.",
+    "RATE_LIMITED": "Too many requests sent. Please try again later.",
+    "REQUEST_TOO_LARGE": "The request body exceeds the allowed size.",
+    "TEXT_EXTRACTION_FAILED": "Text could not be extracted from the CV file.",
+    "UNSUPPORTED_FILE_TYPE": "Text cannot be extracted from this file type.",
+    "WEAK_PASSWORD": "Password must be at least 8 characters and contain at least one letter and one digit.",
+    "NETWORK_ERROR": "Could not connect to the server.",
+    "NOT_FOUND": "CV not found.",
+    "GENERIC": "An unexpected error occurred. Please try again."
+  }
+}

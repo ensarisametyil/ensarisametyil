@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import HomePage from './HomePage'
+import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 import { setToken } from '../api/tokenStorage'
@@ -17,11 +18,13 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderHomePage() {
   return render(
-    <AuthProvider>
-      <BillingProvider>
-        <HomePage />
-      </BillingProvider>
-    </AuthProvider>,
+    <I18nProvider>
+      <AuthProvider>
+        <BillingProvider>
+          <HomePage />
+        </BillingProvider>
+      </AuthProvider>
+    </I18nProvider>,
   )
 }
 
@@ -115,8 +118,10 @@ describe('HomePage upload -> analyze flow', () => {
 
   it.each([
     [404, 'CV bulunamadı.'],
-    [429, 'Çok fazla analiz isteği gönderildi. Lütfen biraz sonra tekrar deneyin.'],
-    [503, 'AI analiz servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.'],
+    [429, 'Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.'],
+    // 503 with an unrecognized code falls to the generic message — only a recognized `code`
+    // (e.g. AI_UNAVAILABLE) gets the specific AI-unavailable text, never a status-based guess.
+    [503, 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'],
   ])('shows the correct message for a %i analyze response', async (status, expectedMessage) => {
     vi.stubGlobal(
       'fetch',
@@ -131,6 +136,22 @@ describe('HomePage upload -> analyze flow', () => {
 
     expect(await screen.findByText(expectedMessage)).toBeInTheDocument()
     // Never show the raw backend detail directly for these well-known statuses.
+    expect(screen.queryByText('internal backend detail')).not.toBeInTheDocument()
+  })
+
+  it('shows the recognized AI_UNAVAILABLE code as the specific AI-unavailable message', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, { cvId: 'cv-1', fileName: 'cv.pdf' }))
+        .mockResolvedValueOnce(jsonResponse(503, { code: 'AI_UNAVAILABLE', message: 'internal backend detail' })),
+    )
+
+    renderHomePage()
+    await uploadAndClickAnalyze()
+
+    expect(await screen.findByText('AI analiz servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.')).toBeInTheDocument()
     expect(screen.queryByText('internal backend detail')).not.toBeInTheDocument()
   })
 
@@ -165,20 +186,24 @@ describe('HomePage upload -> analyze flow', () => {
     expect(screen.getByRole('button', { name: "CV'yi Analiz Et" })).toBeEnabled()
   })
 
-  it('shows the backend quota-exceeded message when analyze returns 402', async () => {
-    const quotaMessage = "Aylık analiz hakkınızı doldurdunuz (2 analiz). Daha fazla analiz için Premium'a geçebilirsiniz."
+  it('shows the localized quota-exceeded message (by code, not the backend\'s raw Turkish text) when analyze returns 402', async () => {
+    // The backend's own message is always Turkish and carries dynamic details (exact limit,
+    // etc.) — the frontend maps the safe `code` to a localized, static message instead, so the
+    // active UI language is respected regardless of what the backend happened to say.
+    const backendMessage = "Aylık analiz hakkınızı doldurdunuz (2 analiz). Daha fazla analiz için Premium'a geçebilirsiniz."
     vi.stubGlobal(
       'fetch',
       vi
         .fn()
         .mockResolvedValueOnce(jsonResponse(200, { cvId: 'cv-1', fileName: 'cv.pdf' }))
-        .mockResolvedValueOnce(jsonResponse(402, { code: 'QUOTA_EXCEEDED', message: quotaMessage })),
+        .mockResolvedValueOnce(jsonResponse(402, { code: 'QUOTA_EXCEEDED', message: backendMessage })),
     )
 
     renderHomePage()
     await uploadAndClickAnalyze()
 
-    expect(await screen.findByText(quotaMessage)).toBeInTheDocument()
+    expect(await screen.findByText('Aylık analiz hakkınızı doldurdunuz.')).toBeInTheDocument()
+    expect(screen.queryByText(backendMessage)).not.toBeInTheDocument()
   })
 })
 
@@ -209,13 +234,7 @@ describe('HomePage quota-aware Analyze button', () => {
       }),
     )
 
-    render(
-      <AuthProvider>
-        <BillingProvider>
-          <HomePage />
-        </BillingProvider>
-      </AuthProvider>,
-    )
+    renderHomePage()
 
     const user = userEvent.setup()
     await user.upload(screen.getByTestId('cv-file-input'), makePdfFile())

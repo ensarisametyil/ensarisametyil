@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
+import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 import { setToken } from '../api/tokenStorage'
@@ -31,13 +32,15 @@ function renderWithSession(usage: Usage) {
   )
 
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        <BillingProvider>
-          <PlanBadge />
-        </BillingProvider>
-      </AuthProvider>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <BillingProvider>
+            <PlanBadge />
+          </BillingProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 

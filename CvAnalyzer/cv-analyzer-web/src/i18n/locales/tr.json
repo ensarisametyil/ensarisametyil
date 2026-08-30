@@ -1,0 +1,407 @@
+{
+  "app": {
+    "name": "CVora AI",
+    "tagline": "Yapay Zekâ ile CV Analizi",
+    "description": "Yapay zekâ destekli CV analiz platformu"
+  },
+  "languageSelector": {
+    "label": "Dil seçin",
+    "tr": "Türkçe",
+    "en": "English",
+    "de": "Deutsch"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "confirm": "Onayla",
+    "back": "Geri",
+    "close": "Kapat",
+    "dash": "—"
+  },
+  "publicHeader": {
+    "goToApp": "Uygulamaya Git",
+    "login": "Giriş Yap",
+    "registerFree": "Ücretsiz Başla"
+  },
+  "footer": {
+    "linksLabel": "Alt bilgi bağlantıları",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Şartları",
+    "cookies": "Çerez Politikası",
+    "contact": "İletişim",
+    "rights": "Tüm hakları saklıdır."
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "history": "Analiz Geçmişim",
+    "account": "Hesabım",
+    "logout": "Çıkış Yap"
+  },
+  "billing": {
+    "freePlan": "FREE PLAN",
+    "premiumPlan": "PREMIUM",
+    "usageUsed": "{used} / {limit} analiz kullanıldı",
+    "upgradeToPremium": "Premium'a Geç"
+  },
+  "landing": {
+    "hero": {
+      "title": "CV'nizi Yapay Zekâ ile Saniyeler İçinde Analiz Edin",
+      "subtitle": "CVora AI, CV'nizi yükler yüklemez güçlü/zayıf yönlerinizi, eksik becerilerinizi ve iyileştirme önerilerinizi ortaya çıkarır — başvurmadan önce CV'nizi güçlendirin.",
+      "ctaAuthenticated": "Uygulamaya Git",
+      "ctaAnonymous": "Ücretsiz Başla",
+      "hint": "Kredi kartı gerekmez — Free planla hemen başlayın."
+    },
+    "howItWorks": {
+      "heading": "Nasıl Çalışır?",
+      "step1Title": "CV'nizi yükleyin",
+      "step1Body": "PDF veya DOCX formatında CV'nizi yükleyin.",
+      "step2Title": "Yapay zekâ analiz etsin",
+      "step2Body": "Saniyeler içinde detaylı bir CV analizi alın.",
+      "step3Title": "Sonuçları inceleyin ve geliştirin",
+      "step3Body": "Puanınızı, önerilerinizi ve eksik anahtar kelimelerinizi görün."
+    },
+    "benefits": {
+      "heading": "CVora AI ile Neler Kazanırsınız?",
+      "objective": {
+        "title": "Objektif Değerlendirme",
+        "body": "CV'nizi işe alım uzmanı gözüyle, tarafsız bir puanla değerlendirin."
+      },
+      "concrete": {
+        "title": "Somut Öneriler",
+        "body": "Genel geçer tavsiyeler değil, CV'nize özel iyileştirme önerileri alın."
+      },
+      "keywords": {
+        "title": "Eksik Anahtar Kelimeler",
+        "body": "Başvurduğunuz pozisyonlarda öne çıkmanızı sağlayacak eksik becerileri görün."
+      },
+      "history": {
+        "title": "Geçmiş Analizleriniz",
+        "body": "Tüm analizlerinizi kaydedin, zaman içindeki gelişiminizi takip edin."
+      }
+    },
+    "plans": {
+      "heading": "Planlar",
+      "free": {
+        "title": "Free",
+        "priceNote": "Kredi kartı gerekmez",
+        "feature1": "Ayda 2 CV analizi",
+        "feature2": "Puan, güçlü/zayıf yönler, öneriler",
+        "feature3": "Analiz geçmişi",
+        "cta": "Ücretsiz Başla"
+      },
+      "premium": {
+        "title": "Premium",
+        "priceNote": "Sınırsız analiz",
+        "feature1": "Aylık sınırsız CV analizi",
+        "feature2": "Puan, güçlü/zayıf yönler, öneriler",
+        "feature3": "Analiz geçmişi",
+        "feature4": "Öncelikli destek",
+        "cta": "Premium'a Geç"
+      }
+    },
+    "security": {
+      "heading": "Güvenlik ve Gizlilik",
+      "body": "CV'niz kişisel ve hassas bilgiler içerebilir. CVora AI, CV içeriğinizi yalnızca analiz üretmek için kullanır, kimlikle doğrulanmış hesabınıza bağlı olarak saklar ve başka hiçbir kullanıcıyla paylaşmaz. Ödeme bilgileriniz bu uygulamaya asla ulaşmaz — İyzico'nun güvenli ödeme altyapısı üzerinden işlenir. Ayrıntılar için {privacyLink} sayfamızı inceleyebilirsiniz."
+    },
+    "faq": {
+      "heading": "Sıkça Sorulan Sorular",
+      "q1": {
+        "question": "CVora AI CV'mi nasıl analiz ediyor?",
+        "answer": "CV'nizi yükledikten sonra yapay zekâ modeli içeriği okur; genel bir puan, güçlü/zayıf yönler, beceri listesi, eksik anahtar kelimeler ve somut öneriler üretir. CV dosyanız sadece analiz için kullanılır."
+      },
+      "q2": {
+        "question": "Free ve Premium arasındaki fark nedir?",
+        "answer": "Free planda ayda 2 analiz hakkınız vardır. Premium planda aylık analiz sınırı yoktur."
+      },
+      "q3": {
+        "question": "Ödeme bilgilerim güvende mi?",
+        "answer": "Kart bilgileriniz bu uygulamaya asla ulaşmaz — ödeme İyzico'nun kendi güvenli ödeme formu üzerinden alınır. Premium yalnızca İyzico'dan gelen, sunucu tarafında doğrulanmış bir sonuca göre etkinleştirilir."
+      },
+      "q4": {
+        "question": "CV'mi analiz ettikten sonra silebilir miyim?",
+        "answer": "Evet. Analiz Geçmişim sayfanızdan her CV'yi ve analiz sonucunu istediğiniz zaman silebilirsiniz."
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Giriş Yap",
+      "email": "E-posta",
+      "password": "Parola",
+      "submit": "Giriş Yap",
+      "submitting": "Giriş yapılıyor...",
+      "forgotPassword": "Şifremi unuttum",
+      "noAccount": "Hesabın yok mu?",
+      "registerLink": "Kayıt ol"
+    },
+    "register": {
+      "title": "Kayıt Ol",
+      "email": "E-posta",
+      "password": "Parola",
+      "passwordHint": "En az 8 karakter, en az bir harf ve bir rakam içermelidir.",
+      "submit": "Kayıt Ol",
+      "submitting": "Kayıt olunuyor...",
+      "hasAccount": "Zaten hesabın var mı?",
+      "loginLink": "Giriş yap"
+    },
+    "forgotPassword": {
+      "title": "Şifremi Unuttum",
+      "email": "E-posta",
+      "submit": "Gönder",
+      "submitting": "Gönderiliyor...",
+      "backToLogin": "Giriş sayfasına dön"
+    },
+    "resetPassword": {
+      "invalidLinkTitle": "Geçersiz Bağlantı",
+      "invalidLinkMessage": "Şifre sıfırlama bağlantısı eksik veya geçersiz.",
+      "requestNewLink": "Yeniden şifre sıfırlama isteği gönder",
+      "successTitle": "Şifreniz Güncellendi",
+      "successMessage": "Yeni şifrenizle giriş yapabilirsiniz.",
+      "loginLink": "Giriş yap",
+      "title": "Yeni Şifre Belirle",
+      "newPassword": "Yeni Parola",
+      "confirmPassword": "Yeni Parola (Tekrar)",
+      "passwordHint": "En az 8 karakter, en az bir harf ve bir rakam içermelidir.",
+      "submit": "Şifreyi Güncelle",
+      "submitting": "Kaydediliyor..."
+    }
+  },
+  "validation": {
+    "passwordMinLength": "Parola en az 8 karakter olmalıdır.",
+    "passwordNeedsLetter": "Parola en az bir harf içermelidir.",
+    "passwordNeedsDigit": "Parola en az bir rakam içermelidir.",
+    "passwordsDontMatch": "Parolalar eşleşmiyor."
+  },
+  "home": {
+    "title": "CVora AI",
+    "subtitle": "Yapay zekâ destekli CV analiz platformu",
+    "uploadedCv": "Yüklenen CV",
+    "analyzedCv": "Analiz edilen CV",
+    "uploadAnotherCv": "Başka bir CV yükle"
+  },
+  "upload": {
+    "dropHint": "CV'nizi buraya sürükleyin ya da seçmek için tıklayın",
+    "sizeHint": "PDF veya DOCX, maksimum 10 MB",
+    "invalidType": "Sadece PDF ve DOCX dosyaları kabul edilir.",
+    "uploading": "Yükleniyor..."
+  },
+  "analyze": {
+    "button": "CV'yi Analiz Et",
+    "buttonAgain": "Tekrar Analiz Et",
+    "analyzing": "CV analiz ediliyor...",
+    "quotaExhausted": "Aylık analiz hakkınızı doldurdunuz. Premium'a geçerek daha fazla analiz yapabilirsiniz."
+  },
+  "analysis": {
+    "cvScore": "CV Skoru",
+    "summary": "Genel Değerlendirme",
+    "strengths": "Güçlü Yönler",
+    "weaknesses": "Geliştirilmesi Gerekenler",
+    "skills": "Yetenekler",
+    "experience": "Deneyim",
+    "education": "Eğitim",
+    "missingKeywords": "Eksik / Önerilen Anahtar Kelimeler",
+    "missingKeywordsNote": "Bu anahtar kelimeler yapay zekâ tarafından önerilmiştir; CV'nizde kesin olarak eksik olduğu anlamına gelmez, birer öneri olarak değerlendirin.",
+    "recommendations": "CV'ni Geliştirmek İçin Öneriler",
+    "tier": {
+      "excellent": "Çok İyi",
+      "good": "İyi",
+      "mid": "Geliştirilebilir",
+      "low": "Düşük"
+    },
+    "scoreAriaLabel": "CV puanı {score}/100"
+  },
+  "history": {
+    "title": "Analiz Geçmişim",
+    "empty": "Henüz bir analiz yapmadınız.",
+    "pageIndicator": "Sayfa {page} / {totalPages}",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "backToHistory": "← Analiz Geçmişime Dön",
+    "paginationLabel": "Sayfalar"
+  },
+  "account": {
+    "title": "Hesabım",
+    "profile": {
+      "heading": "Profil",
+      "email": "E-posta",
+      "accountStatus": "Hesap Durumu",
+      "accountActive": "Aktif",
+      "emailVerification": "E-posta Doğrulaması",
+      "emailVerified": "Doğrulandı",
+      "emailNotVerified": "Doğrulanmadı (bu ortamda e-posta doğrulama akışı henüz aktif değil)",
+      "plan": "Plan",
+      "usage": "Kullanım",
+      "planFree": "Free",
+      "planPremium": "Premium"
+    },
+    "subscription": {
+      "heading": "Abonelik",
+      "plan": "Plan",
+      "status": "Durum",
+      "provider": "Ödeme Sağlayıcı",
+      "startDate": "Başlangıç",
+      "cancelButton": "Aboneliği İptal Et",
+      "cancelConfirmQuestion": "Premium aboneliğinizi iptal etmek istediğinize emin misiniz?",
+      "cancelConfirmYes": "Evet, İptal Et",
+      "cancelling": "İptal ediliyor...",
+      "cancelDecline": "Vazgeç"
+    },
+    "paymentHistory": {
+      "heading": "Ödeme Geçmişi",
+      "empty": "Henüz bir ödeme işleminiz yok.",
+      "date": "Tarih",
+      "status": "Durum",
+      "provider": "Sağlayıcı",
+      "statusSucceeded": "Başarılı",
+      "statusFailed": "Başarısız",
+      "statusInitiated": "Başlatıldı"
+    },
+    "changePassword": {
+      "heading": "Şifre Değiştir",
+      "currentPassword": "Mevcut Şifre",
+      "newPassword": "Yeni Şifre",
+      "confirmPassword": "Yeni Şifre (Tekrar)",
+      "submit": "Şifreyi Güncelle",
+      "submitting": "Kaydediliyor...",
+      "passwordsDontMatch": "Yeni parolalar eşleşmiyor."
+    },
+    "deactivate": {
+      "heading": "Hesabı Kapat",
+      "hint": "Hesabınızı kapattığınızda tekrar giriş yapamazsınız. CV, analiz ve ödeme kayıtlarınız veri bütünlüğü gereği saklanmaya devam eder, ancak hesabınız pasif hale gelir.",
+      "openButton": "Hesabımı Kapat",
+      "confirmPassword": "Şifrenizi onaylayın",
+      "confirmButton": "Onayla ve Hesabı Kapat",
+      "confirming": "Kapatılıyor...",
+      "decline": "Vazgeç"
+    }
+  },
+  "checkout": {
+    "title": "Premium'a Geç",
+    "hint": "Ödeme formuna geçmeden önce fatura bilgilerinizi girin.",
+    "name": "Ad",
+    "surname": "Soyad",
+    "identityNumber": "TC Kimlik No",
+    "gsmNumber": "Cep Telefonu",
+    "city": "Şehir",
+    "addressLine": "Adres",
+    "submit": "Ödemeye Geç",
+    "submitting": "Ödeme başlatılıyor..."
+  },
+  "paymentResult": {
+    "successTitle": "Premium'a Geçtiniz!",
+    "successMessage": "Artık sınırsız CV analizi yapabilirsiniz.",
+    "failTitle": "Ödeme Tamamlanamadı",
+    "failMessage": "Ödemeniz onaylanamadı. Lütfen tekrar deneyin veya farklı bir ödeme yöntemi kullanın.",
+    "backHome": "Ana Sayfaya Dön"
+  },
+  "contact": {
+    "title": "İletişim",
+    "intro": "Sorularınız veya geri bildirimleriniz için aşağıdaki formu kullanabilirsiniz.",
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "subject": "Konu",
+    "message": "Mesaj",
+    "submit": "Gönder",
+    "submitting": "Gönderiliyor...",
+    "successMessage": "Mesajınız alındı. Teşekkür ederiz."
+  },
+  "legal": {
+    "disclaimer": "Bu metin, ürünün mevcut aşaması için hazırlanmış bir başlangıç taslağıdır ve hukuki danışmanlığın yerini tutmaz. Production'a çıkmadan önce bir hukuk danışmanı tarafından gözden geçirilmesi önerilir.",
+    "disclaimerShort": "Bu metin, ürünün mevcut aşaması için hazırlanmış bir başlangıç taslağıdır ve hukuki danışmanlığın yerini tutmaz.",
+    "updatedAt": "Son güncelleme: Ağustos 2026",
+    "privacy": {
+      "title": "Gizlilik Politikası",
+      "intro": "Bu Gizlilik Politikası, CVora AI (\"Uygulama\") kullanıcılarının kişisel verilerinin nasıl toplandığını, işlendiğini ve korunduğunu açıklar. CV'niz gibi belgeler hassas kişisel veriler (kimlik, iletişim, eğitim, iş geçmişi bilgileri) içerebileceğinden, bu belgeyi dikkatle hazırladık.",
+      "section1Heading": "1. Hangi Verileri Topluyoruz?",
+      "section1Items": [
+        "Hesap bilgileri: e-posta adresi, şifrenizin geri döndürülemez (hash'lenmiş) hâli.",
+        "Yüklediğiniz CV dosyası ve bu dosyadan çıkarılan metin içeriği.",
+        "Yapay zekâ analiz sonuçları (puan, güçlü/zayıf yönler, öneriler vb.).",
+        "Premium'a geçiş yaparsanız, ödeme sağlayıcısı İyzico'nun işlem sonucu ve size ait olmayan teknik referans kodları (kart bilgileriniz bu uygulamaya asla ulaşmaz).",
+        "İletişim formu üzerinden bize ilettiğiniz mesajlar."
+      ],
+      "section2Heading": "2. Verileri Neden İşliyoruz?",
+      "section2Items": [
+        "Hesabınızı oluşturmak ve kimliğinizi doğrulamak.",
+        "CV'nizi analiz edip size sonuç sunmak.",
+        "Free/Premium plan kullanım hakkınızı takip etmek.",
+        "Premium ödeme sürecini yürütmek ve doğrulamak.",
+        "İletişim taleplerinize yanıt vermek."
+      ],
+      "section3Heading": "3. Verileriniz Kimlerle Paylaşılıyor?",
+      "section3Body": "CV içeriğiniz, analiz üretmek amacıyla yapay zekâ sağlayıcısına iletilir. Ödeme işlemleriniz İyzico tarafından işlenir. Verileriniz, yasal zorunluluklar dışında üçüncü taraflarla pazarlama amacıyla paylaşılmaz veya satılmaz.",
+      "section4Heading": "4. Verileriniz Ne Kadar Süre Saklanır?",
+      "section4Body": "Hesabınız aktif olduğu sürece verileriniz saklanır. Bir CV'yi veya analizi sildiğinizde ilgili kayıt kalıcı olarak kaldırılır. Ödeme kayıtları, mali/idari yükümlülükler nedeniyle hesap kapatıldıktan sonra da saklanabilir.",
+      "section5Heading": "5. Haklarınız (KVKK Kapsamında)",
+      "section5Body": "6698 sayılı Kişisel Verilerin Korunması Kanunu (\"KVKK\") kapsamında; verilerinizin işlenip işlenmediğini öğrenme, işlenmişse buna ilişkin bilgi talep etme, işlenme amacını öğrenme, yurt içinde/dışında aktarıldığı üçüncü kişileri bilme, eksik/yanlış işlenmişse düzeltilmesini isteme, silinmesini/yok edilmesini isteme ve itiraz etme haklarına sahipsiniz. Bu haklarınızı kullanmak için {contactLink} sayfamızdan bize ulaşabilirsiniz.",
+      "section6Heading": "6. Hesap Silme",
+      "section6Body": "Hesap Sayfanız üzerinden hesabınızı kapatabilirsiniz. Hesabınız kapatıldığında giriş yapamazsınız; CV/analiz/ödeme kayıtlarınız veri bütünlüğü ve yasal saklama yükümlülükleri nedeniyle bir süre daha sistemde tutulabilir.",
+      "section7Heading": "7. Çerezler",
+      "section7Body": "Çerez kullanımımız hakkında bilgi için {cookiesLink} sayfamıza bakınız."
+    },
+    "terms": {
+      "title": "Kullanım Şartları",
+      "intro": "Bu Kullanım Şartları, CVora AI (\"Uygulama\") hizmetini kullanırken uymanız gereken kuralları açıklar. Uygulamayı kullanarak bu şartları kabul etmiş sayılırsınız.",
+      "section1Heading": "1. Hizmetin Kapsamı",
+      "section1Body": "CVora AI, yüklediğiniz CV belgesini yapay zekâ ile analiz ederek puan, öneri ve geri bildirim sunan bir araçtır. Sunulan analiz sonuçları bir öneridir; işe alım süreçlerinde başarı garantisi vermez.",
+      "section2Heading": "2. Hesap Sorumluluğu",
+      "section2Items": [
+        "Hesap bilgilerinizin (özellikle şifrenizin) gizliliğinden siz sorumlusunuz.",
+        "Hesabınız üzerinden gerçekleşen işlemlerden siz sorumlusunuz.",
+        "Sadece kendinize ait, doğru bilgilerle hesap oluşturmalısınız."
+      ],
+      "section3Heading": "3. Free ve Premium Planlar",
+      "section3Body": "Free plan ayda sınırlı sayıda analiz hakkı sunar. Premium plan, aylık sınırsız analiz sunar ve İyzico üzerinden işlenen bir abonelik ödemesi gerektirir. Premium aboneliğinizi Hesap Sayfanızdan istediğiniz zaman iptal edebilirsiniz.",
+      "section4Heading": "4. Yasak Kullanımlar",
+      "section4Items": [
+        "Uygulamayı başkalarına ait belgeleri izinsiz analiz etmek için kullanmak.",
+        "Uygulamanın altyapısına zarar verecek veya aşırı yük bindirecek şekilde kullanmak.",
+        "Hizmeti tersine mühendislik yapmaya veya yetkisiz erişim sağlamaya çalışmak."
+      ],
+      "section5Heading": "5. Sorumluluğun Sınırlandırılması",
+      "section5Body": "Analiz sonuçları yapay zekâ tarafından üretilir ve mutlak doğruluk garanti edilmez. Uygulama, analiz sonuçlarına dayanılarak alınan kararlardan (iş başvurusu, işe alım vb.) doğabilecek zararlardan sorumlu tutulamaz.",
+      "section6Heading": "6. Değişiklikler",
+      "section6Body": "Bu şartlar zaman zaman güncellenebilir. Önemli değişiklikler uygulama içinde duyurulacaktır."
+    },
+    "cookies": {
+      "title": "Çerez Politikası",
+      "intro": "CVora AI, oturumunuzu yönetmek için tarayıcınızın yerel depolama alanını (localStorage) kullanır. Bu depolama, teknik olarak çerezle aynı amaca hizmet eder: oturumunuzun açık kalmasını sağlar.",
+      "section1Heading": "1. Kullandığımız Depolama",
+      "section1ItemLabel": "Oturum belirteci (access token):",
+      "section1ItemBody": "Giriş yaptığınızda tarayıcınızın localStorage'ında saklanır; her API isteğinde kimliğinizi doğrulamak için kullanılır. Çıkış yaptığınızda silinir.",
+      "section1Note": "Şu anda üçüncü taraf reklam/izleme çerezi kullanmıyoruz. İyzico'nun ödeme formu kendi güvenlik ve dolandırıcılık önleme çerezlerini kullanabilir; bu çerezler İyzico'nun kendi gizlilik politikasına tabidir.",
+      "section2Heading": "2. Depolamayı Nasıl Kontrol Edebilirsiniz?",
+      "section2Body": "Tarayıcı ayarlarınızdan localStorage verilerini istediğiniz zaman temizleyebilirsiniz; bu işlem sizi otomatik olarak oturumdan çıkaracaktır."
+    }
+  },
+  "errors": {
+    "AI_INVALID_RESPONSE": "AI servisinden geçerli bir analiz sonucu alınamadı.",
+    "AI_RATE_LIMITED": "AI servisi şu anda yoğun, lütfen daha sonra tekrar deneyin.",
+    "AI_UNAVAILABLE": "AI analiz servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+    "ANALYSIS_NOT_FOUND": "Belirtilen analiz bulunamadı.",
+    "CANCELLATION_FAILED": "Abonelik iptal edilemedi.",
+    "CHECKOUT_UNAVAILABLE": "Ödeme başlatılamadı.",
+    "CV_FILE_NOT_FOUND": "CV dosyası depolama alanında bulunamadı.",
+    "CV_NOT_FOUND": "Belirtilen CV bulunamadı.",
+    "EMAIL_ALREADY_REGISTERED": "Bu e-posta adresi zaten kayıtlı.",
+    "EMPTY_CV_TEXT": "CV içeriğinden analiz edilecek metin bulunamadı.",
+    "FILE_TOO_LARGE": "Dosya boyutu 10 MB sınırını aşıyor.",
+    "INCORRECT_CURRENT_PASSWORD": "Mevcut parola hatalı.",
+    "INCORRECT_PASSWORD": "Parola hatalı.",
+    "INTERNAL_SERVER_ERROR": "Beklenmeyen bir sunucu hatası oluştu.",
+    "INVALID_CREDENTIALS": "E-posta veya parola hatalı.",
+    "INVALID_FILE": "Geçersiz dosya.",
+    "INVALID_OR_EXPIRED_TOKEN": "Bağlantının süresi dolmuş veya geçersiz.",
+    "INVALID_REQUEST": "Girilen bilgileri kontrol edip tekrar deneyin.",
+    "QUOTA_EXCEEDED": "Aylık analiz hakkınızı doldurdunuz.",
+    "RATE_LIMITED": "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.",
+    "REQUEST_TOO_LARGE": "İstek gövdesi izin verilen boyutu aşıyor.",
+    "TEXT_EXTRACTION_FAILED": "CV dosyasından metin çıkarılamadı.",
+    "UNSUPPORTED_FILE_TYPE": "Bu dosya türünden metin çıkarılamıyor.",
+    "WEAK_PASSWORD": "Parola en az 8 karakter olmalı, en az bir harf ve bir rakam içermelidir.",
+    "NETWORK_ERROR": "Sunucuya bağlanılamadı.",
+    "NOT_FOUND": "CV bulunamadı.",
+    "GENERIC": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+  }
+}

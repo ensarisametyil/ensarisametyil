@@ -1,3 +1,4 @@
+import { useTranslation } from '../hooks/useTranslation'
 import Spinner from './Spinner'
 import styles from './AnalyzeButton.module.css'
 
@@ -11,17 +12,18 @@ interface AnalyzeButtonProps {
 
 /** The primary "CV'yi Analiz Et" call to action. Disables itself while a request is in flight, or when disabledReason is set (e.g. monthly quota exhausted). */
 function AnalyzeButton({ isAnalyzing, hasExistingResult, onClick, disabledReason }: AnalyzeButtonProps) {
+  const { t } = useTranslation()
   const isDisabled = isAnalyzing || Boolean(disabledReason)
 
   return (
     <div className={styles.wrapper}>
       <button type="button" className={styles.button} onClick={onClick} disabled={isDisabled}>
         {isAnalyzing ? (
-          <Spinner label="CV analiz ediliyor..." />
+          <Spinner label={t('analyze.analyzing')} />
         ) : hasExistingResult ? (
-          'Tekrar Analiz Et'
+          t('analyze.buttonAgain')
         ) : (
-          "CV'yi Analiz Et"
+          t('analyze.button')
         )}
       </button>
       {disabledReason && !isAnalyzing && <p className={styles.disabledReason}>{disabledReason}</p>}

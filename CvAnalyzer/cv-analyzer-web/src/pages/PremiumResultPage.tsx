@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useBilling } from '../hooks/useBilling'
+import { useTranslation } from '../hooks/useTranslation'
 import styles from './PremiumResultPage.module.css'
 
 /**
@@ -12,6 +13,7 @@ import styles from './PremiumResultPage.module.css'
 function PremiumResultPage() {
   const [searchParams] = useSearchParams()
   const { refresh } = useBilling()
+  const { t } = useTranslation()
   const isSuccess = searchParams.get('status') === 'success'
 
   useEffect(() => {
@@ -24,14 +26,10 @@ function PremiumResultPage() {
         <span className={styles.icon} aria-hidden="true">
           {isSuccess ? '🎉' : '⚠️'}
         </span>
-        <h1>{isSuccess ? "Premium'a Geçtiniz!" : 'Ödeme Tamamlanamadı'}</h1>
-        <p>
-          {isSuccess
-            ? 'Artık sınırsız CV analizi yapabilirsiniz.'
-            : 'Ödemeniz onaylanamadı. Lütfen tekrar deneyin veya farklı bir ödeme yöntemi kullanın.'}
-        </p>
+        <h1>{isSuccess ? t('paymentResult.successTitle') : t('paymentResult.failTitle')}</h1>
+        <p>{isSuccess ? t('paymentResult.successMessage') : t('paymentResult.failMessage')}</p>
         <Link to="/" className={styles.homeLink}>
-          Ana Sayfaya Dön
+          {t('paymentResult.backHome')}
         </Link>
       </div>
     </main>

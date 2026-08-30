@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { startCheckout } from '../api/billingService'
+import { useTranslation } from '../hooks/useTranslation'
 import { getErrorMessage } from '../utils/errorMessages'
 import CheckoutFormRenderer from '../components/CheckoutFormRenderer'
 import ErrorBanner from '../components/ErrorBanner'
@@ -23,6 +24,7 @@ const EMPTY_BUYER: CheckoutBuyerInfo = {
  * payment (see docs/iyzico-integration.md).
  */
 function PremiumCheckoutPage() {
+  const { t } = useTranslation()
   const [buyer, setBuyer] = useState<CheckoutBuyerInfo>(EMPTY_BUYER)
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +42,7 @@ function PremiumCheckoutPage() {
       const result = await startCheckout(buyer)
       setCheckout(result)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(getErrorMessage(err, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -57,23 +59,23 @@ function PremiumCheckoutPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1>Premium'a Geç</h1>
-        <p className={styles.hint}>Ödeme formuna geçmeden önce fatura bilgilerinizi girin.</p>
+        <h1>{t('checkout.title')}</h1>
+        <p className={styles.hint}>{t('checkout.hint')}</p>
 
         {error && <ErrorBanner message={error} />}
 
         <label className={styles.field}>
-          <span>Ad</span>
+          <span>{t('checkout.name')}</span>
           <input type="text" value={buyer.name} onChange={handleChange('name')} required autoComplete="given-name" />
         </label>
 
         <label className={styles.field}>
-          <span>Soyad</span>
+          <span>{t('checkout.surname')}</span>
           <input type="text" value={buyer.surname} onChange={handleChange('surname')} required autoComplete="family-name" />
         </label>
 
         <label className={styles.field}>
-          <span>TC Kimlik No</span>
+          <span>{t('checkout.identityNumber')}</span>
           <input
             type="text"
             value={buyer.identityNumber}
@@ -85,22 +87,22 @@ function PremiumCheckoutPage() {
         </label>
 
         <label className={styles.field}>
-          <span>Cep Telefonu</span>
+          <span>{t('checkout.gsmNumber')}</span>
           <input type="tel" value={buyer.gsmNumber} onChange={handleChange('gsmNumber')} required autoComplete="tel" />
         </label>
 
         <label className={styles.field}>
-          <span>Şehir</span>
+          <span>{t('checkout.city')}</span>
           <input type="text" value={buyer.city} onChange={handleChange('city')} required autoComplete="address-level2" />
         </label>
 
         <label className={styles.field}>
-          <span>Adres</span>
+          <span>{t('checkout.addressLine')}</span>
           <input type="text" value={buyer.addressLine} onChange={handleChange('addressLine')} required autoComplete="street-address" />
         </label>
 
         <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? <Spinner label="Ödeme başlatılıyor..." /> : 'Ödemeye Geç'}
+          {isSubmitting ? <Spinner label={t('checkout.submitting')} /> : t('checkout.submit')}
         </button>
       </form>
     </main>

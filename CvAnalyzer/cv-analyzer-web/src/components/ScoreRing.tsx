@@ -1,4 +1,5 @@
 import { getScoreTier } from '../utils/scoreTier'
+import { useTranslation } from '../hooks/useTranslation'
 import styles from './ScoreRing.module.css'
 
 interface ScoreRingProps {
@@ -15,6 +16,7 @@ const TIER_COLOR_VAR: Record<ReturnType<typeof getScoreTier>, string> = {
 
 /** Circular progress ring showing the overall CV score, colored by tier. */
 function ScoreRing({ score, size = 140 }: ScoreRingProps) {
+  const { t } = useTranslation()
   const clamped = Math.max(0, Math.min(100, score))
   const tier = getScoreTier(clamped)
   const strokeWidth = size * 0.09
@@ -24,7 +26,7 @@ function ScoreRing({ score, size = 140 }: ScoreRingProps) {
 
   return (
     <div className={styles.wrapper} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`CV puanı ${clamped}/100`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={t('analysis.scoreAriaLabel', { score: clamped })}>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border)" strokeWidth={strokeWidth} />
         <circle
           cx={size / 2}

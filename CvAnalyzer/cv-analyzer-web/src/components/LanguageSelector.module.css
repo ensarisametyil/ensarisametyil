@@ -1,0 +1,43 @@
+.group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.option {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.option:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.option[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .option {
+    padding: 4px 6px;
+    font-size: 0.72rem;
+  }
+}

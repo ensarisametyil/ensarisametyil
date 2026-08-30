@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import ForgotPasswordPage from './ForgotPasswordPage'
+import { I18nProvider } from '../context/I18nContext'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -10,9 +11,11 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderPage() {
   return render(
-    <MemoryRouter>
-      <ForgotPasswordPage />
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter>
+        <ForgotPasswordPage />
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 

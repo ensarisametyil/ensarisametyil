@@ -1,4 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react'
+import { useTranslation } from '../hooks/useTranslation'
 import Spinner from './Spinner'
 import styles from './UploadBox.module.css'
 
@@ -16,6 +17,7 @@ function hasAllowedExtension(fileName: string): boolean {
 
 /** Drag-and-drop / click-to-browse CV upload area. Server-side validation remains authoritative. */
 function UploadBox({ onFileSelected, isUploading }: UploadBoxProps) {
+  const { t } = useTranslation()
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -26,7 +28,7 @@ function UploadBox({ onFileSelected, isUploading }: UploadBoxProps) {
     }
 
     if (!hasAllowedExtension(file.name)) {
-      setLocalError('Sadece PDF ve DOCX dosyaları kabul edilir.')
+      setLocalError(t('upload.invalidType'))
       return
     }
 
@@ -79,14 +81,14 @@ function UploadBox({ onFileSelected, isUploading }: UploadBoxProps) {
         />
 
         {isUploading ? (
-          <Spinner label="Yükleniyor..." />
+          <Spinner label={t('upload.uploading')} />
         ) : (
           <>
             <span className={styles.icon} aria-hidden="true">
               📄
             </span>
-            <p className={styles.title}>CV'nizi buraya sürükleyin ya da seçmek için tıklayın</p>
-            <p className={styles.hint}>PDF veya DOCX, maksimum 10 MB</p>
+            <p className={styles.title}>{t('upload.dropHint')}</p>
+            <p className={styles.hint}>{t('upload.sizeHint')}</p>
           </>
         )}
       </div>

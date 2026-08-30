@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import HistoryPage from './HistoryPage'
+import { I18nProvider } from '../context/I18nContext'
 import { API_BASE_URL } from '../api/config'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -10,6 +11,16 @@ function jsonResponse(status: number, body: unknown): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+function renderHistoryPage() {
+  return render(
+    <I18nProvider>
+      <MemoryRouter>
+        <HistoryPage />
+      </MemoryRouter>
+    </I18nProvider>,
+  )
 }
 
 describe('HistoryPage', () => {
@@ -37,11 +48,7 @@ describe('HistoryPage', () => {
     )
     vi.stubGlobal('fetch', fetchMock)
 
-    render(
-      <MemoryRouter>
-        <HistoryPage />
-      </MemoryRouter>,
-    )
+    renderHistoryPage()
 
     expect(await screen.findByText('my-cv.pdf')).toBeInTheDocument()
     expect(screen.getByText('75')).toBeInTheDocument()
@@ -56,11 +63,7 @@ describe('HistoryPage', () => {
       vi.fn().mockResolvedValueOnce(jsonResponse(200, { items: [], page: 1, pageSize: 20, totalCount: 0 })),
     )
 
-    render(
-      <MemoryRouter>
-        <HistoryPage />
-      </MemoryRouter>,
-    )
+    renderHistoryPage()
 
     expect(await screen.findByText('Henüz bir analiz yapmadınız.')).toBeInTheDocument()
   })
@@ -78,11 +81,7 @@ describe('HistoryPage', () => {
       ),
     )
 
-    render(
-      <MemoryRouter>
-        <HistoryPage />
-      </MemoryRouter>,
-    )
+    renderHistoryPage()
 
     await screen.findByText('cv.pdf')
     expect(screen.queryByRole('navigation', { name: 'Sayfalar' })).not.toBeInTheDocument()
@@ -110,11 +109,7 @@ describe('HistoryPage', () => {
       )
     vi.stubGlobal('fetch', fetchMock)
 
-    render(
-      <MemoryRouter>
-        <HistoryPage />
-      </MemoryRouter>,
-    )
+    renderHistoryPage()
 
     await screen.findByText('page-one.pdf')
     expect(screen.getByText('Sayfa 1 / 3')).toBeInTheDocument()
@@ -150,11 +145,7 @@ describe('HistoryPage', () => {
       )
     vi.stubGlobal('fetch', fetchMock)
 
-    render(
-      <MemoryRouter>
-        <HistoryPage />
-      </MemoryRouter>,
-    )
+    renderHistoryPage()
 
     await screen.findByText('page-one.pdf')
     await user.click(screen.getByRole('button', { name: 'Sonraki' }))

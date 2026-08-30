@@ -1,0 +1,407 @@
+{
+  "app": {
+    "name": "CVora AI",
+    "tagline": "KI-gestützte Lebenslaufanalyse",
+    "description": "KI-gestützte Plattform zur Lebenslaufanalyse"
+  },
+  "languageSelector": {
+    "label": "Sprache auswählen",
+    "tr": "Türkçe",
+    "en": "English",
+    "de": "Deutsch"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "close": "Schließen",
+    "dash": "—"
+  },
+  "publicHeader": {
+    "goToApp": "Zur App",
+    "login": "Anmelden",
+    "registerFree": "Kostenlos starten"
+  },
+  "footer": {
+    "linksLabel": "Footer-Links",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "cookies": "Cookie-Richtlinie",
+    "contact": "Kontakt",
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "nav": {
+    "home": "Startseite",
+    "history": "Analyseverlauf",
+    "account": "Konto",
+    "logout": "Abmelden"
+  },
+  "billing": {
+    "freePlan": "FREE-PLAN",
+    "premiumPlan": "PREMIUM",
+    "usageUsed": "{used} / {limit} Analysen verwendet",
+    "upgradeToPremium": "Auf Premium upgraden"
+  },
+  "landing": {
+    "hero": {
+      "title": "Analysieren Sie Ihren Lebenslauf in Sekunden mit KI",
+      "subtitle": "Sobald Sie Ihren Lebenslauf hochladen, zeigt CVora AI Ihre Stärken, Schwächen, fehlenden Fähigkeiten und Verbesserungsvorschläge auf — stärken Sie Ihren Lebenslauf, bevor Sie sich bewerben.",
+      "ctaAuthenticated": "Zur App",
+      "ctaAnonymous": "Kostenlos starten",
+      "hint": "Keine Kreditkarte erforderlich — starten Sie sofort mit dem Free-Plan."
+    },
+    "howItWorks": {
+      "heading": "So funktioniert's",
+      "step1Title": "Laden Sie Ihren Lebenslauf hoch",
+      "step1Body": "Laden Sie Ihren Lebenslauf im PDF- oder DOCX-Format hoch.",
+      "step2Title": "Lassen Sie die KI analysieren",
+      "step2Body": "Erhalten Sie innerhalb von Sekunden eine detaillierte Lebenslaufanalyse.",
+      "step3Title": "Ergebnisse prüfen und verbessern",
+      "step3Body": "Sehen Sie Ihre Punktzahl, Vorschläge und fehlende Schlüsselwörter."
+    },
+    "benefits": {
+      "heading": "Was Sie mit CVora AI gewinnen",
+      "objective": {
+        "title": "Objektive Bewertung",
+        "body": "Lassen Sie Ihren Lebenslauf mit einer unvoreingenommenen Punktzahl aus der Sicht eines Personalvermittlers bewerten."
+      },
+      "concrete": {
+        "title": "Konkrete Vorschläge",
+        "body": "Erhalten Sie auf Ihren Lebenslauf zugeschnittene Verbesserungsvorschläge statt allgemeiner Ratschläge."
+      },
+      "keywords": {
+        "title": "Fehlende Schlüsselwörter",
+        "body": "Erkennen Sie fehlende Fähigkeiten, die Ihnen bei den Positionen, auf die Sie sich bewerben, helfen würden, sich abzuheben."
+      },
+      "history": {
+        "title": "Ihre bisherigen Analysen",
+        "body": "Speichern Sie alle Ihre Analysen und verfolgen Sie Ihren Fortschritt im Zeitverlauf."
+      }
+    },
+    "plans": {
+      "heading": "Pläne",
+      "free": {
+        "title": "Free",
+        "priceNote": "Keine Kreditkarte erforderlich",
+        "feature1": "2 Lebenslaufanalysen pro Monat",
+        "feature2": "Punktzahl, Stärken/Schwächen, Vorschläge",
+        "feature3": "Analyseverlauf",
+        "cta": "Kostenlos starten"
+      },
+      "premium": {
+        "title": "Premium",
+        "priceNote": "Unbegrenzte Analysen",
+        "feature1": "Unbegrenzte monatliche Lebenslaufanalysen",
+        "feature2": "Punktzahl, Stärken/Schwächen, Vorschläge",
+        "feature3": "Analyseverlauf",
+        "feature4": "Bevorzugter Support",
+        "cta": "Auf Premium upgraden"
+      }
+    },
+    "security": {
+      "heading": "Sicherheit und Datenschutz",
+      "body": "Ihr Lebenslauf kann persönliche und sensible Informationen enthalten. CVora AI verwendet den Inhalt Ihres Lebenslaufs ausschließlich zur Erstellung der Analyse, speichert ihn verknüpft mit Ihrem authentifizierten Konto und teilt ihn mit keinem anderen Nutzer. Ihre Zahlungsdaten erreichen diese Anwendung niemals — sie werden über die sichere Zahlungsinfrastruktur von Iyzico verarbeitet. Details finden Sie auf unserer Seite {privacyLink}."
+    },
+    "faq": {
+      "heading": "Häufig gestellte Fragen",
+      "q1": {
+        "question": "Wie analysiert CVora AI meinen Lebenslauf?",
+        "answer": "Nachdem Sie Ihren Lebenslauf hochgeladen haben, liest das KI-Modell den Inhalt und erstellt eine Gesamtpunktzahl, Stärken/Schwächen, eine Liste der Fähigkeiten, fehlende Schlüsselwörter und konkrete Vorschläge. Ihre Lebenslaufdatei wird nur zur Erstellung der Analyse verwendet."
+      },
+      "q2": {
+        "question": "Was ist der Unterschied zwischen Free und Premium?",
+        "answer": "Der Free-Plan bietet Ihnen 2 Analysen pro Monat. Der Premium-Plan hat kein monatliches Analyselimit."
+      },
+      "q3": {
+        "question": "Sind meine Zahlungsinformationen sicher?",
+        "answer": "Ihre Kartendaten erreichen diese Anwendung niemals — die Zahlung wird über das eigene sichere Zahlungsformular von Iyzico abgewickelt. Premium wird nur basierend auf einem serverseitig verifizierten Ergebnis von Iyzico aktiviert."
+      },
+      "q4": {
+        "question": "Kann ich meinen Lebenslauf nach der Analyse löschen?",
+        "answer": "Ja. Sie können jeden Lebenslauf und sein Analyseergebnis jederzeit auf Ihrer Seite „Analyseverlauf“ löschen."
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "submit": "Anmelden",
+      "submitting": "Anmeldung läuft...",
+      "forgotPassword": "Passwort vergessen?",
+      "noAccount": "Noch kein Konto?",
+      "registerLink": "Registrieren"
+    },
+    "register": {
+      "title": "Registrieren",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "passwordHint": "Muss mindestens 8 Zeichen lang sein und mindestens einen Buchstaben und eine Ziffer enthalten.",
+      "submit": "Registrieren",
+      "submitting": "Registrierung läuft...",
+      "hasAccount": "Bereits ein Konto?",
+      "loginLink": "Anmelden"
+    },
+    "forgotPassword": {
+      "title": "Passwort vergessen",
+      "email": "E-Mail",
+      "submit": "Senden",
+      "submitting": "Wird gesendet...",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "resetPassword": {
+      "invalidLinkTitle": "Ungültiger Link",
+      "invalidLinkMessage": "Der Link zum Zurücksetzen des Passworts fehlt oder ist ungültig.",
+      "requestNewLink": "Neuen Link zum Zurücksetzen des Passworts anfordern",
+      "successTitle": "Ihr Passwort wurde aktualisiert",
+      "successMessage": "Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
+      "loginLink": "Anmelden",
+      "title": "Neues Passwort festlegen",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Neues Passwort (bestätigen)",
+      "passwordHint": "Muss mindestens 8 Zeichen lang sein und mindestens einen Buchstaben und eine Ziffer enthalten.",
+      "submit": "Passwort aktualisieren",
+      "submitting": "Wird gespeichert..."
+    }
+  },
+  "validation": {
+    "passwordMinLength": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+    "passwordNeedsLetter": "Das Passwort muss mindestens einen Buchstaben enthalten.",
+    "passwordNeedsDigit": "Das Passwort muss mindestens eine Ziffer enthalten.",
+    "passwordsDontMatch": "Die Passwörter stimmen nicht überein."
+  },
+  "home": {
+    "title": "CVora AI",
+    "subtitle": "KI-gestützte Plattform zur Lebenslaufanalyse",
+    "uploadedCv": "Hochgeladener Lebenslauf",
+    "analyzedCv": "Analysierter Lebenslauf",
+    "uploadAnotherCv": "Einen weiteren Lebenslauf hochladen"
+  },
+  "upload": {
+    "dropHint": "Ziehen Sie Ihren Lebenslauf hierher oder klicken Sie, um ihn auszuwählen",
+    "sizeHint": "PDF oder DOCX, maximal 10 MB",
+    "invalidType": "Es werden nur PDF- und DOCX-Dateien akzeptiert.",
+    "uploading": "Wird hochgeladen..."
+  },
+  "analyze": {
+    "button": "Lebenslauf analysieren",
+    "buttonAgain": "Erneut analysieren",
+    "analyzing": "Lebenslauf wird analysiert...",
+    "quotaExhausted": "Sie haben Ihr monatliches Analysekontingent aufgebraucht. Upgraden Sie auf Premium, um mehr Analysen durchzuführen."
+  },
+  "analysis": {
+    "cvScore": "Lebenslauf-Punktzahl",
+    "summary": "Gesamtbewertung",
+    "strengths": "Stärken",
+    "weaknesses": "Verbesserungsbereiche",
+    "skills": "Fähigkeiten",
+    "experience": "Erfahrung",
+    "education": "Ausbildung",
+    "missingKeywords": "Fehlende / vorgeschlagene Schlüsselwörter",
+    "missingKeywordsNote": "Diese Schlüsselwörter werden von der KI vorgeschlagen; sie bedeuten nicht zwangsläufig, dass sie in Ihrem Lebenslauf tatsächlich fehlen — betrachten Sie sie als Anregungen.",
+    "recommendations": "Vorschläge zur Verbesserung Ihres Lebenslaufs",
+    "tier": {
+      "excellent": "Ausgezeichnet",
+      "good": "Gut",
+      "mid": "Verbesserungswürdig",
+      "low": "Niedrig"
+    },
+    "scoreAriaLabel": "Lebenslauf-Punktzahl {score}/100"
+  },
+  "history": {
+    "title": "Analyseverlauf",
+    "empty": "Sie haben noch keine Analysen durchgeführt.",
+    "pageIndicator": "Seite {page} von {totalPages}",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "backToHistory": "← Zurück zum Analyseverlauf",
+    "paginationLabel": "Seiten"
+  },
+  "account": {
+    "title": "Konto",
+    "profile": {
+      "heading": "Profil",
+      "email": "E-Mail",
+      "accountStatus": "Kontostatus",
+      "accountActive": "Aktiv",
+      "emailVerification": "E-Mail-Bestätigung",
+      "emailVerified": "Bestätigt",
+      "emailNotVerified": "Nicht bestätigt (die E-Mail-Bestätigung ist in dieser Umgebung noch nicht aktiv)",
+      "plan": "Plan",
+      "usage": "Nutzung",
+      "planFree": "Free",
+      "planPremium": "Premium"
+    },
+    "subscription": {
+      "heading": "Abonnement",
+      "plan": "Plan",
+      "status": "Status",
+      "provider": "Zahlungsanbieter",
+      "startDate": "Beginn",
+      "cancelButton": "Abonnement kündigen",
+      "cancelConfirmQuestion": "Sind Sie sicher, dass Sie Ihr Premium-Abonnement kündigen möchten?",
+      "cancelConfirmYes": "Ja, kündigen",
+      "cancelling": "Wird gekündigt...",
+      "cancelDecline": "Abbrechen"
+    },
+    "paymentHistory": {
+      "heading": "Zahlungsverlauf",
+      "empty": "Sie haben noch keine Zahlungstransaktionen.",
+      "date": "Datum",
+      "status": "Status",
+      "provider": "Anbieter",
+      "statusSucceeded": "Erfolgreich",
+      "statusFailed": "Fehlgeschlagen",
+      "statusInitiated": "Gestartet"
+    },
+    "changePassword": {
+      "heading": "Passwort ändern",
+      "currentPassword": "Aktuelles Passwort",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Neues Passwort (bestätigen)",
+      "submit": "Passwort aktualisieren",
+      "submitting": "Wird gespeichert...",
+      "passwordsDontMatch": "Die neuen Passwörter stimmen nicht überein."
+    },
+    "deactivate": {
+      "heading": "Konto deaktivieren",
+      "hint": "Sobald Ihr Konto deaktiviert ist, können Sie sich nicht mehr anmelden. Ihre Lebenslauf-, Analyse- und Zahlungsdaten werden aus Gründen der Datenintegrität weiterhin aufbewahrt, aber Ihr Konto wird inaktiv.",
+      "openButton": "Mein Konto deaktivieren",
+      "confirmPassword": "Bestätigen Sie Ihr Passwort",
+      "confirmButton": "Bestätigen und Konto deaktivieren",
+      "confirming": "Wird deaktiviert...",
+      "decline": "Abbrechen"
+    }
+  },
+  "checkout": {
+    "title": "Auf Premium upgraden",
+    "hint": "Geben Sie Ihre Rechnungsdaten ein, bevor Sie zum Zahlungsformular weitergehen.",
+    "name": "Vorname",
+    "surname": "Nachname",
+    "identityNumber": "Ausweisnummer",
+    "gsmNumber": "Mobiltelefon",
+    "city": "Stadt",
+    "addressLine": "Adresse",
+    "submit": "Weiter zur Zahlung",
+    "submitting": "Zahlung wird gestartet..."
+  },
+  "paymentResult": {
+    "successTitle": "Sie sind jetzt Premium!",
+    "successMessage": "Sie können jetzt unbegrenzt Lebensläufe analysieren.",
+    "failTitle": "Zahlung konnte nicht abgeschlossen werden",
+    "failMessage": "Ihre Zahlung konnte nicht bestätigt werden. Bitte versuchen Sie es erneut oder verwenden Sie eine andere Zahlungsmethode.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "intro": "Für Ihre Fragen oder Ihr Feedback können Sie das folgende Formular verwenden.",
+    "name": "Vollständiger Name",
+    "email": "E-Mail",
+    "subject": "Betreff",
+    "message": "Nachricht",
+    "submit": "Senden",
+    "submitting": "Wird gesendet...",
+    "successMessage": "Ihre Nachricht wurde empfangen. Vielen Dank."
+  },
+  "legal": {
+    "disclaimer": "Dieser Text ist ein erster Entwurf für die aktuelle Phase des Produkts und ersetzt keine Rechtsberatung. Es wird empfohlen, ihn vor dem Produktivstart von einem Rechtsberater prüfen zu lassen.",
+    "disclaimerShort": "Dieser Text ist ein erster Entwurf für die aktuelle Phase des Produkts und ersetzt keine Rechtsberatung.",
+    "updatedAt": "Letzte Aktualisierung: August 2026",
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "intro": "Diese Datenschutzerklärung erläutert, wie CVora AI (die „Anwendung“) die personenbezogenen Daten ihrer Nutzer erhebt, verarbeitet und schützt. Da Dokumente wie Ihr Lebenslauf sensible personenbezogene Daten (Identität, Kontakt, Ausbildung, Berufserfahrung) enthalten können, haben wir dieses Dokument mit Sorgfalt erstellt.",
+      "section1Heading": "1. Welche Daten erheben wir?",
+      "section1Items": [
+        "Kontoinformationen: Ihre E-Mail-Adresse und die irreversible (gehashte) Form Ihres Passworts.",
+        "Die von Ihnen hochgeladene Lebenslaufdatei und der daraus extrahierte Textinhalt.",
+        "KI-Analyseergebnisse (Punktzahl, Stärken/Schwächen, Vorschläge usw.).",
+        "Wenn Sie auf Premium upgraden: das Transaktionsergebnis des Zahlungsanbieters Iyzico und technische Referenzcodes, die nicht auf Sie persönlich zurückführbar sind (Ihre Kartendaten erreichen diese Anwendung niemals).",
+        "Nachrichten, die Sie uns über das Kontaktformular senden."
+      ],
+      "section2Heading": "2. Warum verarbeiten wir diese Daten?",
+      "section2Items": [
+        "Um Ihr Konto zu erstellen und Ihre Identität zu überprüfen.",
+        "Um Ihren Lebenslauf zu analysieren und Ihnen ein Ergebnis zu präsentieren.",
+        "Um Ihre Nutzung des Free-/Premium-Plans zu verfolgen.",
+        "Um den Premium-Zahlungsprozess durchzuführen und zu verifizieren.",
+        "Um auf Ihre Kontaktanfragen zu antworten."
+      ],
+      "section3Heading": "3. Mit wem werden Ihre Daten geteilt?",
+      "section3Body": "Ihr Lebenslaufinhalt wird zum Zweck der Erstellung der Analyse an den KI-Anbieter übermittelt. Ihre Zahlungstransaktionen werden von Iyzico verarbeitet. Ihre Daten werden, außer bei gesetzlicher Verpflichtung, nicht zu Marketingzwecken an Dritte weitergegeben oder verkauft.",
+      "section4Heading": "4. Wie lange werden Ihre Daten gespeichert?",
+      "section4Body": "Ihre Daten werden gespeichert, solange Ihr Konto aktiv ist. Wenn Sie einen Lebenslauf oder eine Analyse löschen, wird der entsprechende Datensatz dauerhaft entfernt. Zahlungsdatensätze können aus finanziellen/administrativen Gründen auch nach Kontoschließung weiter aufbewahrt werden.",
+      "section5Heading": "5. Ihre Rechte (im Rahmen des KVKK)",
+      "section5Body": "Im Rahmen des türkischen Gesetzes Nr. 6698 zum Schutz personenbezogener Daten („KVKK“) haben Sie das Recht zu erfahren, ob Ihre Daten verarbeitet werden, gegebenenfalls Informationen darüber zu verlangen, den Zweck der Verarbeitung zu erfahren, die Dritten zu kennen, an die sie im In- oder Ausland übermittelt werden, bei unvollständiger oder fehlerhafter Verarbeitung deren Berichtigung zu verlangen, deren Löschung/Vernichtung zu verlangen und Widerspruch einzulegen. Sie können uns über unsere Seite {contactLink} erreichen, um diese Rechte auszuüben.",
+      "section6Heading": "6. Kontolöschung",
+      "section6Body": "Sie können Ihr Konto über Ihre Kontoseite schließen. Sobald Ihr Konto geschlossen ist, können Sie sich nicht mehr anmelden; Ihre Lebenslauf-/Analyse-/Zahlungsdaten können aus Gründen der Datenintegrität und gesetzlicher Aufbewahrungspflichten noch eine Weile im System verbleiben.",
+      "section7Heading": "7. Cookies",
+      "section7Body": "Informationen zu unserer Verwendung von Cookies finden Sie auf unserer Seite {cookiesLink}."
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "intro": "Diese Nutzungsbedingungen erläutern die Regeln, die Sie bei der Nutzung des Dienstes CVora AI (die „Anwendung“) einhalten müssen. Durch die Nutzung der Anwendung gelten diese Bedingungen als von Ihnen akzeptiert.",
+      "section1Heading": "1. Umfang des Dienstes",
+      "section1Body": "CVora AI ist ein Tool, das das von Ihnen hochgeladene Lebenslaufdokument mittels KI analysiert und eine Punktzahl, Vorschläge und Feedback liefert. Die bereitgestellten Analyseergebnisse sind eine Empfehlung; sie garantieren keinen Erfolg in Bewerbungsprozessen.",
+      "section2Heading": "2. Kontoverantwortung",
+      "section2Items": [
+        "Sie sind für die Vertraulichkeit Ihrer Kontoinformationen (insbesondere Ihres Passworts) verantwortlich.",
+        "Sie sind für die über Ihr Konto durchgeführten Vorgänge verantwortlich.",
+        "Sie dürfen ein Konto nur mit Ihren eigenen, korrekten Informationen erstellen."
+      ],
+      "section3Heading": "3. Free- und Premium-Pläne",
+      "section3Body": "Der Free-Plan bietet eine begrenzte Anzahl von Analysen pro Monat. Der Premium-Plan bietet unbegrenzte monatliche Analysen und erfordert eine über Iyzico abgewickelte Abonnementzahlung. Sie können Ihr Premium-Abonnement jederzeit über Ihre Kontoseite kündigen.",
+      "section4Heading": "4. Verbotene Nutzungen",
+      "section4Items": [
+        "Die Anwendung zu nutzen, um Dokumente Dritter ohne deren Erlaubnis zu analysieren.",
+        "Die Anwendung so zu nutzen, dass die Infrastruktur beschädigt oder übermäßig belastet wird.",
+        "Zu versuchen, den Dienst zurückzuentwickeln oder sich unbefugten Zugriff zu verschaffen."
+      ],
+      "section5Heading": "5. Haftungsbeschränkung",
+      "section5Body": "Analyseergebnisse werden von KI erstellt, absolute Genauigkeit wird nicht garantiert. Die Anwendung haftet nicht für Schäden, die aus Entscheidungen entstehen, die auf Grundlage der Analyseergebnisse getroffen wurden (Bewerbungen, Einstellungen usw.).",
+      "section6Heading": "6. Änderungen",
+      "section6Body": "Diese Bedingungen können von Zeit zu Zeit aktualisiert werden. Wesentliche Änderungen werden innerhalb der Anwendung bekannt gegeben."
+    },
+    "cookies": {
+      "title": "Cookie-Richtlinie",
+      "intro": "CVora AI verwendet den lokalen Speicher Ihres Browsers (localStorage), um Ihre Sitzung zu verwalten. Dieser Speicher dient technisch demselben Zweck wie ein Cookie: Er hält Ihre Sitzung aktiv.",
+      "section1Heading": "1. Von uns verwendeter Speicher",
+      "section1ItemLabel": "Sitzungstoken (Access Token):",
+      "section1ItemBody": "Wird bei der Anmeldung im localStorage Ihres Browsers gespeichert; wird bei jeder API-Anfrage zur Überprüfung Ihrer Identität verwendet. Wird bei der Abmeldung gelöscht.",
+      "section1Note": "Wir verwenden derzeit keine Werbe-/Tracking-Cookies von Drittanbietern. Das Zahlungsformular von Iyzico kann eigene Sicherheits- und Betrugspräventions-Cookies verwenden; diese Cookies unterliegen der eigenen Datenschutzerklärung von Iyzico.",
+      "section2Heading": "2. Wie können Sie diesen Speicher kontrollieren?",
+      "section2Body": "Sie können die localStorage-Daten jederzeit über Ihre Browsereinstellungen löschen; dadurch werden Sie automatisch von Ihrer Sitzung abgemeldet."
+    }
+  },
+  "errors": {
+    "AI_INVALID_RESPONSE": "Von der KI konnte kein gültiges Analyseergebnis abgerufen werden.",
+    "AI_RATE_LIMITED": "Der KI-Dienst ist derzeit ausgelastet, bitte versuchen Sie es später erneut.",
+    "AI_UNAVAILABLE": "Der KI-Analysedienst ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
+    "ANALYSIS_NOT_FOUND": "Die angegebene Analyse konnte nicht gefunden werden.",
+    "CANCELLATION_FAILED": "Das Abonnement konnte nicht gekündigt werden.",
+    "CHECKOUT_UNAVAILABLE": "Die Zahlung konnte nicht gestartet werden.",
+    "CV_FILE_NOT_FOUND": "Die Lebenslaufdatei wurde im Speicher nicht gefunden.",
+    "CV_NOT_FOUND": "Der angegebene Lebenslauf konnte nicht gefunden werden.",
+    "EMAIL_ALREADY_REGISTERED": "Diese E-Mail-Adresse ist bereits registriert.",
+    "EMPTY_CV_TEXT": "Im Inhalt des Lebenslaufs konnte kein zu analysierender Text gefunden werden.",
+    "FILE_TOO_LARGE": "Die Dateigröße überschreitet das Limit von 10 MB.",
+    "INCORRECT_CURRENT_PASSWORD": "Das aktuelle Passwort ist falsch.",
+    "INCORRECT_PASSWORD": "Das Passwort ist falsch.",
+    "INTERNAL_SERVER_ERROR": "Ein unerwarteter Serverfehler ist aufgetreten.",
+    "INVALID_CREDENTIALS": "Falsche E-Mail-Adresse oder falsches Passwort.",
+    "INVALID_FILE": "Ungültige Datei.",
+    "INVALID_OR_EXPIRED_TOKEN": "Der Link ist abgelaufen oder ungültig.",
+    "INVALID_REQUEST": "Bitte überprüfen Sie die eingegebenen Informationen und versuchen Sie es erneut.",
+    "QUOTA_EXCEEDED": "Sie haben Ihr monatliches Analysekontingent aufgebraucht.",
+    "RATE_LIMITED": "Zu viele Anfragen gesendet. Bitte versuchen Sie es später erneut.",
+    "REQUEST_TOO_LARGE": "Der Anfragetext überschreitet die zulässige Größe.",
+    "TEXT_EXTRACTION_FAILED": "Aus der Lebenslaufdatei konnte kein Text extrahiert werden.",
+    "UNSUPPORTED_FILE_TYPE": "Aus diesem Dateityp kann kein Text extrahiert werden.",
+    "WEAK_PASSWORD": "Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Buchstaben und eine Ziffer enthalten.",
+    "NETWORK_ERROR": "Verbindung zum Server konnte nicht hergestellt werden.",
+    "NOT_FOUND": "Lebenslauf nicht gefunden.",
+    "GENERIC": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  }
+}

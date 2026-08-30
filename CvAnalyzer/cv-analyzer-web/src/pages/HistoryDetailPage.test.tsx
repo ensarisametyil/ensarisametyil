@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import HistoryDetailPage from './HistoryDetailPage'
+import { I18nProvider } from '../context/I18nContext'
 import { API_BASE_URL } from '../api/config'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -13,11 +14,13 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderDetailPage(id: string) {
   return render(
-    <MemoryRouter initialEntries={[`/history/${id}`]}>
-      <Routes>
-        <Route path="/history/:id" element={<HistoryDetailPage />} />
-      </Routes>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter initialEntries={[`/history/${id}`]}>
+        <Routes>
+          <Route path="/history/:id" element={<HistoryDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 
@@ -65,6 +68,8 @@ describe('HistoryDetailPage', () => {
 
     renderDetailPage('unknown-id')
 
-    expect(await screen.findByText('CV bulunamadı.')).toBeInTheDocument()
+    // The backend's recognized ANALYSIS_NOT_FOUND code maps to its own specific localized
+    // message (not the generic 404 fallback), and never the backend's raw message text.
+    expect(await screen.findByText('Belirtilen analiz bulunamadı.')).toBeInTheDocument()
   })
 })

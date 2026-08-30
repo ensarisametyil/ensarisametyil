@@ -1,34 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from '../hooks/useTranslation'
 import Footer from '../components/Footer'
 import PublicHeader from '../components/PublicHeader'
+import { withLink } from '../utils/withLink'
 import styles from './LandingPage.module.css'
 
-const FAQ_ITEMS = [
-  {
-    question: 'CVora AI CV\'mi nasıl analiz ediyor?',
-    answer:
-      'CV\'nizi yükledikten sonra yapay zekâ modeli içeriği okur; genel bir puan, güçlü/zayıf yönler, beceri listesi, eksik anahtar kelimeler ve somut öneriler üretir. CV dosyanız sadece analiz için kullanılır.',
-  },
-  {
-    question: 'Free ve Premium arasındaki fark nedir?',
-    answer: 'Free planda ayda 2 analiz hakkınız vardır. Premium planda aylık analiz sınırı yoktur.',
-  },
-  {
-    question: 'Ödeme bilgilerim güvende mi?',
-    answer:
-      'Kart bilgileriniz bu uygulamaya asla ulaşmaz — ödeme İyzico\'nun kendi güvenli ödeme formu üzerinden alınır. Premium yalnızca İyzico\'dan gelen, sunucu tarafında doğrulanmış bir sonuca göre etkinleştirilir.',
-  },
-  {
-    question: 'CV\'mi analiz ettikten sonra silebilir miyim?',
-    answer: 'Evet. Analiz Geçmişim sayfanızdan her CV\'yi ve analiz sonucunu istediğiniz zaman silebilirsiniz.',
-  },
-]
+const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
 
 function LandingPage() {
   const { isAuthenticated } = useAuth()
+  const { t } = useTranslation()
   const primaryCtaTarget = isAuthenticated ? '/app' : '/register'
-  const primaryCtaLabel = isAuthenticated ? "Uygulamaya Git" : 'Ücretsiz Başla'
+  const primaryCtaLabel = isAuthenticated ? t('landing.hero.ctaAuthenticated') : t('landing.hero.ctaAnonymous')
 
   return (
     <div className={styles.page}>
@@ -36,116 +20,116 @@ function LandingPage() {
 
       <main>
         <section className={styles.hero}>
-          <h1>CV'nizi Yapay Zekâ ile Saniyeler İçinde Analiz Edin</h1>
-          <p className={styles.heroSubtitle}>
-            CVora AI, CV'nizi yükler yüklemez güçlü/zayıf yönlerinizi, eksik becerilerinizi ve iyileştirme
-            önerilerinizi ortaya çıkarır — başvurmadan önce CV'nizi güçlendirin.
-          </p>
+          <h1>{t('landing.hero.title')}</h1>
+          <p className={styles.heroSubtitle}>{t('landing.hero.subtitle')}</p>
           <div className={styles.heroActions}>
             <Link to={primaryCtaTarget} className={styles.heroCta}>
               {primaryCtaLabel}
             </Link>
-            <span className={styles.heroHint}>Kredi kartı gerekmez — Free planla hemen başlayın.</span>
+            <span className={styles.heroHint}>{t('landing.hero.hint')}</span>
           </div>
         </section>
 
         <section className={styles.howItWorks} aria-labelledby="how-it-works-heading">
-          <h2 id="how-it-works-heading">Nasıl Çalışır?</h2>
+          <h2 id="how-it-works-heading">{t('landing.howItWorks.heading')}</h2>
           <ol className={styles.steps}>
             <li>
               <span className={styles.stepNumber}>1</span>
               <div>
-                <h3>CV'nizi yükleyin</h3>
-                <p>PDF veya DOCX formatında CV'nizi yükleyin.</p>
+                <h3>{t('landing.howItWorks.step1Title')}</h3>
+                <p>{t('landing.howItWorks.step1Body')}</p>
               </div>
             </li>
             <li>
               <span className={styles.stepNumber}>2</span>
               <div>
-                <h3>Yapay zekâ analiz etsin</h3>
-                <p>Saniyeler içinde detaylı bir CV analizi alın.</p>
+                <h3>{t('landing.howItWorks.step2Title')}</h3>
+                <p>{t('landing.howItWorks.step2Body')}</p>
               </div>
             </li>
             <li>
               <span className={styles.stepNumber}>3</span>
               <div>
-                <h3>Sonuçları inceleyin ve geliştirin</h3>
-                <p>Puanınızı, önerilerinizi ve eksik anahtar kelimelerinizi görün.</p>
+                <h3>{t('landing.howItWorks.step3Title')}</h3>
+                <p>{t('landing.howItWorks.step3Body')}</p>
               </div>
             </li>
           </ol>
         </section>
 
         <section className={styles.benefits} aria-labelledby="benefits-heading">
-          <h2 id="benefits-heading">CVora AI ile Neler Kazanırsınız?</h2>
+          <h2 id="benefits-heading">{t('landing.benefits.heading')}</h2>
           <div className={styles.benefitGrid}>
             <div className={styles.benefitCard}>
-              <h3>Objektif Değerlendirme</h3>
-              <p>CV'nizi işe alım uzmanı gözüyle, tarafsız bir puanla değerlendirin.</p>
+              <h3>{t('landing.benefits.objective.title')}</h3>
+              <p>{t('landing.benefits.objective.body')}</p>
             </div>
             <div className={styles.benefitCard}>
-              <h3>Somut Öneriler</h3>
-              <p>Genel geçer tavsiyeler değil, CV'nize özel iyileştirme önerileri alın.</p>
+              <h3>{t('landing.benefits.concrete.title')}</h3>
+              <p>{t('landing.benefits.concrete.body')}</p>
             </div>
             <div className={styles.benefitCard}>
-              <h3>Eksik Anahtar Kelimeler</h3>
-              <p>Başvurduğunuz pozisyonlarda öne çıkmanızı sağlayacak eksik becerileri görün.</p>
+              <h3>{t('landing.benefits.keywords.title')}</h3>
+              <p>{t('landing.benefits.keywords.body')}</p>
             </div>
             <div className={styles.benefitCard}>
-              <h3>Geçmiş Analizleriniz</h3>
-              <p>Tüm analizlerinizi kaydedin, zaman içindeki gelişiminizi takip edin.</p>
+              <h3>{t('landing.benefits.history.title')}</h3>
+              <p>{t('landing.benefits.history.body')}</p>
             </div>
           </div>
         </section>
 
         <section className={styles.plans} aria-labelledby="plans-heading">
-          <h2 id="plans-heading">Planlar</h2>
+          <h2 id="plans-heading">{t('landing.plans.heading')}</h2>
           <div className={styles.planGrid}>
             <div className={styles.planCard}>
-              <h3>Free</h3>
-              <p className={styles.planPriceNote}>Kredi kartı gerekmez</p>
+              <h3>{t('landing.plans.free.title')}</h3>
+              <p className={styles.planPriceNote}>{t('landing.plans.free.priceNote')}</p>
               <ul>
-                <li>Ayda 2 CV analizi</li>
-                <li>Puan, güçlü/zayıf yönler, öneriler</li>
-                <li>Analiz geçmişi</li>
+                <li>{t('landing.plans.free.feature1')}</li>
+                <li>{t('landing.plans.free.feature2')}</li>
+                <li>{t('landing.plans.free.feature3')}</li>
               </ul>
               <Link to={isAuthenticated ? '/app' : '/register'} className={styles.planCta}>
-                Ücretsiz Başla
+                {t('landing.plans.free.cta')}
               </Link>
             </div>
             <div className={`${styles.planCard} ${styles.planCardHighlight}`}>
-              <h3>Premium</h3>
-              <p className={styles.planPriceNote}>Sınırsız analiz</p>
+              <h3>{t('landing.plans.premium.title')}</h3>
+              <p className={styles.planPriceNote}>{t('landing.plans.premium.priceNote')}</p>
               <ul>
-                <li>Aylık sınırsız CV analizi</li>
-                <li>Puan, güçlü/zayıf yönler, öneriler</li>
-                <li>Analiz geçmişi</li>
-                <li>Öncelikli destek</li>
+                <li>{t('landing.plans.premium.feature1')}</li>
+                <li>{t('landing.plans.premium.feature2')}</li>
+                <li>{t('landing.plans.premium.feature3')}</li>
+                <li>{t('landing.plans.premium.feature4')}</li>
               </ul>
               <Link to={isAuthenticated ? '/app' : '/register'} className={styles.planCta}>
-                Premium'a Geç
+                {t('landing.plans.premium.cta')}
               </Link>
             </div>
           </div>
         </section>
 
         <section className={styles.security} aria-labelledby="security-heading">
-          <h2 id="security-heading">Güvenlik ve Gizlilik</h2>
+          <h2 id="security-heading">{t('landing.security.heading')}</h2>
           <p>
-            CV'niz kişisel ve hassas bilgiler içerebilir. CVora AI, CV içeriğinizi yalnızca analiz üretmek için
-            kullanır, kimlikle doğrulanmış hesabınıza bağlı olarak saklar ve başka hiçbir kullanıcıyla paylaşmaz.
-            Ödeme bilgileriniz bu uygulamaya asla ulaşmaz — İyzico'nun güvenli ödeme altyapısı üzerinden işlenir.
-            Ayrıntılar için <Link to="/privacy">Gizlilik Politikası</Link> sayfamızı inceleyebilirsiniz.
+            {withLink(
+              t('landing.security.body'),
+              'privacyLink',
+              <Link key="privacy-link" to="/privacy">
+                {t('footer.privacy')}
+              </Link>,
+            )}
           </p>
         </section>
 
         <section className={styles.faq} aria-labelledby="faq-heading">
-          <h2 id="faq-heading">Sıkça Sorulan Sorular</h2>
+          <h2 id="faq-heading">{t('landing.faq.heading')}</h2>
           <dl>
-            {FAQ_ITEMS.map((item) => (
-              <div key={item.question} className={styles.faqItem}>
-                <dt>{item.question}</dt>
-                <dd>{item.answer}</dd>
+            {FAQ_KEYS.map((key) => (
+              <div key={key} className={styles.faqItem}>
+                <dt>{t(`landing.faq.${key}.question`)}</dt>
+                <dd>{t(`landing.faq.${key}.answer`)}</dd>
               </div>
             ))}
           </dl>

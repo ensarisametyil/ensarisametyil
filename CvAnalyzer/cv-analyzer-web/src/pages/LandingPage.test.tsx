@@ -2,18 +2,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import LandingPage from './LandingPage'
+import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 
 function renderLanding() {
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        <BillingProvider>
-          <LandingPage />
-        </BillingProvider>
-      </AuthProvider>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <BillingProvider>
+            <LandingPage />
+          </BillingProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 

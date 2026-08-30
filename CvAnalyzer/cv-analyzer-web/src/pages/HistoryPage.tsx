@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listAnalyses } from '../api/analysisService'
+import { useTranslation } from '../hooks/useTranslation'
 import { getErrorMessage } from '../utils/errorMessages'
-import { formatDate } from '../utils/formatDate'
+import { formatDate } from '../i18n/format'
 import { getScoreTier } from '../utils/scoreTier'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
@@ -17,6 +18,7 @@ const PAGE_SIZE = 20
  * force the browser to load and render all of them on this single page).
  */
 function HistoryPage() {
+  const { t, locale } = useTranslation()
   const [page, setPage] = useState(1)
   const [analyses, setAnalyses] = useState<AnalysisSummary[] | null>(null)
   const [totalCount, setTotalCount] = useState(0)
@@ -34,14 +36,14 @@ function HistoryPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(getErrorMessage(err))
+          setError(getErrorMessage(err, t))
         }
       })
 
     return () => {
       cancelled = true
     }
-  }, [page])
+  }, [page, t])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
@@ -53,17 +55,17 @@ function HistoryPage() {
 
   return (
     <main className={styles.page}>
-      <h1>Analiz Geçmişim</h1>
+      <h1>{t('history.title')}</h1>
 
       {error && <ErrorBanner message={error} />}
 
       {!analyses && !error && (
         <div className={styles.loading}>
-          <Spinner label="Yükleniyor..." />
+          <Spinner label={t('common.loading')} />
         </div>
       )}
 
-      {analyses && analyses.length === 0 && <p className={styles.empty}>Henüz bir analiz yapmadınız.</p>}
+      {analyses && analyses.length === 0 && <p className={styles.empty}>{t('history.empty')}</p>}
 
       {analyses && analyses.length > 0 && (
         <>
@@ -73,7 +75,7 @@ function HistoryPage() {
                 <div className={styles.rowMain}>
                   <span className={styles.fileName}>{analysis.cvFileName}</span>
                   <span className={styles.summary}>{analysis.summary}</span>
-                  <span className={styles.date}>{formatDate(analysis.createdAt)}</span>
+                  <span className={styles.date}>{formatDate(analysis.createdAt, locale)}</span>
                 </div>
                 <span className={styles.scoreBadge} data-tier={getScoreTier(analysis.overallScore)}>
                   {analysis.overallScore}
@@ -83,25 +85,23 @@ function HistoryPage() {
           </div>
 
           {totalPages > 1 && (
-            <nav className={styles.pagination} aria-label="Sayfalar">
+            <nav className={styles.pagination} aria-label={t('history.paginationLabel')}>
               <button
                 type="button"
                 className={styles.pageButton}
                 onClick={() => goToPage(page - 1)}
                 disabled={page <= 1}
               >
-                Önceki
+                {t('history.previous')}
               </button>
-              <span className={styles.pageIndicator}>
-                Sayfa {page} / {totalPages}
-              </span>
+              <span className={styles.pageIndicator}>{t('history.pageIndicator', { page, totalPages })}</span>
               <button
                 type="button"
                 className={styles.pageButton}
                 onClick={() => goToPage(page + 1)}
                 disabled={page >= totalPages}
               >
-                Sonraki
+                {t('history.next')}
               </button>
             </nav>
           )}

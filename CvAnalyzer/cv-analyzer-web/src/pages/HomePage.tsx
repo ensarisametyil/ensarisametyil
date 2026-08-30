@@ -1,5 +1,6 @@
 import { useCvAnalysis } from '../hooks/useCvAnalysis'
 import { useBilling } from '../hooks/useBilling'
+import { useTranslation } from '../hooks/useTranslation'
 import UploadBox from '../components/UploadBox'
 import AnalyzeButton from '../components/AnalyzeButton'
 import ErrorBanner from '../components/ErrorBanner'
@@ -7,6 +8,7 @@ import AnalysisDashboard from '../components/AnalysisDashboard'
 import styles from './HomePage.module.css'
 
 function HomePage() {
+  const { t } = useTranslation()
   const { status, cv, analysis, uploadError, analyzeError, uploadFile, analyze, reset } = useCvAnalysis()
   const { usage, refresh: refreshUsage } = useBilling()
 
@@ -20,9 +22,7 @@ function HomePage() {
   // remaining is null for an unlimited plan (never blocks) — only a Free user who has spent
   // every credit this period (remaining === 0) gets the button disabled ahead of a wasted click.
   const quotaExhausted = usage?.remaining === 0
-  const analyzeDisabledReason = quotaExhausted
-    ? "Aylık analiz hakkınızı doldurdunuz. Premium'a geçerek daha fazla analiz yapabilirsiniz."
-    : undefined
+  const analyzeDisabledReason = quotaExhausted ? t('analyze.quotaExhausted') : undefined
 
   const handleAnalyze = async () => {
     await analyze()
@@ -34,8 +34,8 @@ function HomePage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <h1>CVora AI</h1>
-        <p>Yapay zekâ destekli CV analiz platformu</p>
+        <h1>{t('home.title')}</h1>
+        <p>{t('home.subtitle')}</p>
       </header>
 
       {!hasAnalysis && (
@@ -46,7 +46,7 @@ function HomePage() {
           {cv && (
             <div className={styles.cvInfoRow}>
               <div>
-                <p className={styles.cvInfoLabel}>Yüklenen CV</p>
+                <p className={styles.cvInfoLabel}>{t('home.uploadedCv')}</p>
                 <p className={styles.cvInfoName}>{cv.fileName}</p>
               </div>
               <AnalyzeButton
@@ -66,7 +66,7 @@ function HomePage() {
         <section className={styles.resultSection}>
           <div className={styles.resultHeader}>
             <div>
-              <p className={styles.cvInfoLabel}>Analiz edilen CV</p>
+              <p className={styles.cvInfoLabel}>{t('home.analyzedCv')}</p>
               <p className={styles.cvInfoName}>{cv?.fileName}</p>
             </div>
             <div className={styles.resultActions}>
@@ -77,7 +77,7 @@ function HomePage() {
                 disabledReason={analyzeDisabledReason}
               />
               <button type="button" className={styles.resetButton} onClick={reset}>
-                Başka bir CV yükle
+                {t('home.uploadAnotherCv')}
               </button>
             </div>
           </div>

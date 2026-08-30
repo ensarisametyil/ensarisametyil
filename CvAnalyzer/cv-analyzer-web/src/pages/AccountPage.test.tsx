@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import AccountPage from './AccountPage'
+import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 import { setToken } from '../api/tokenStorage'
@@ -53,13 +54,15 @@ function routeFetch(routes: Record<string, (init?: RequestInit) => Response>) {
 function renderAccountPage() {
   setToken('existing-token')
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        <BillingProvider>
-          <AccountPage />
-        </BillingProvider>
-      </AuthProvider>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <BillingProvider>
+            <AccountPage />
+          </BillingProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 

@@ -1,44 +1,32 @@
 import PublicHeader from '../components/PublicHeader'
 import Footer from '../components/Footer'
+import { useTranslation } from '../hooks/useTranslation'
 import styles from './LegalPage.module.css'
 
 function CookiesPage() {
+  const { t } = useTranslation()
+
   return (
     <div className={styles.page}>
       <PublicHeader />
       <main className={styles.content}>
-        <h1>Çerez Politikası</h1>
-        <p className={styles.updatedAt}>Son güncelleme: Ağustos 2026</p>
+        <h1>{t('legal.cookies.title')}</h1>
+        <p className={styles.updatedAt}>{t('legal.updatedAt')}</p>
 
-        <p>
-          CVora AI, oturumunuzu yönetmek için tarayıcınızın yerel depolama alanını (localStorage) kullanır.
-          Bu depolama, teknik olarak çerezle aynı amaca hizmet eder: oturumunuzun açık kalmasını sağlar.
-        </p>
+        <p>{t('legal.cookies.intro')}</p>
 
-        <h2>1. Kullandığımız Depolama</h2>
+        <h2>{t('legal.cookies.section1Heading')}</h2>
         <ul>
           <li>
-            <strong>Oturum belirteci (access token):</strong> Giriş yaptığınızda tarayıcınızın
-            localStorage'ında saklanır; her API isteğinde kimliğinizi doğrulamak için kullanılır. Çıkış
-            yaptığınızda silinir.
+            <strong>{t('legal.cookies.section1ItemLabel')}</strong> {t('legal.cookies.section1ItemBody')}
           </li>
         </ul>
-        <p>
-          Şu anda üçüncü taraf reklam/izleme çerezi kullanmıyoruz. İyzico'nun ödeme formu kendi güvenlik ve
-          dolandırıcılık önleme çerezlerini kullanabilir; bu çerezler İyzico'nun kendi gizlilik politikasına
-          tabidir.
-        </p>
+        <p>{t('legal.cookies.section1Note')}</p>
 
-        <h2>2. Depolamayı Nasıl Kontrol Edebilirsiniz?</h2>
-        <p>
-          Tarayıcı ayarlarınızdan localStorage verilerini istediğiniz zaman temizleyebilirsiniz; bu işlem
-          sizi otomatik olarak oturumdan çıkaracaktır.
-        </p>
+        <h2>{t('legal.cookies.section2Heading')}</h2>
+        <p>{t('legal.cookies.section2Body')}</p>
 
-        <p className={styles.disclaimer}>
-          Bu metin, ürünün mevcut aşaması için hazırlanmış bir başlangıç taslağıdır ve hukuki danışmanlığın
-          yerini tutmaz.
-        </p>
+        <p className={styles.disclaimer}>{t('legal.disclaimerShort')}</p>
       </main>
       <Footer />
     </div>

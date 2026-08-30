@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { resetPassword } from '../api/authService'
+import { useTranslation } from '../hooks/useTranslation'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
 import { getErrorMessage } from '../utils/errorMessages'
@@ -9,6 +10,7 @@ import styles from './AuthPage.module.css'
 
 /** Reads the reset token from the URL (?token=...) and lets the user set a new password. */
 function ResetPasswordPage() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
 
@@ -23,11 +25,11 @@ function ResetPasswordPage() {
     setError(null)
 
     if (newPassword !== confirmPassword) {
-      setError('Parolalar eşleşmiyor.')
+      setError(t('validation.passwordsDontMatch'))
       return
     }
 
-    const policyError = getPasswordPolicyError(newPassword)
+    const policyError = getPasswordPolicyError(newPassword, t)
     if (policyError) {
       setError(policyError)
       return
@@ -38,7 +40,7 @@ function ResetPasswordPage() {
       await resetPassword(token, newPassword)
       setSuccess(true)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(getErrorMessage(err, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -48,10 +50,10 @@ function ResetPasswordPage() {
     return (
       <main className={styles.page}>
         <div className={styles.card}>
-          <h1>Geçersiz Bağlantı</h1>
-          <ErrorBanner message="Şifre sıfırlama bağlantısı eksik veya geçersiz." />
+          <h1>{t('auth.resetPassword.invalidLinkTitle')}</h1>
+          <ErrorBanner message={t('auth.resetPassword.invalidLinkMessage')} />
           <p className={styles.switchText}>
-            <Link to="/forgot-password">Yeniden şifre sıfırlama isteği gönder</Link>
+            <Link to="/forgot-password">{t('auth.resetPassword.requestNewLink')}</Link>
           </p>
         </div>
       </main>
@@ -62,12 +64,12 @@ function ResetPasswordPage() {
     return (
       <main className={styles.page}>
         <div className={styles.card}>
-          <h1>Şifreniz Güncellendi</h1>
+          <h1>{t('auth.resetPassword.successTitle')}</h1>
           <p className={styles.hint} role="status">
-            Yeni şifrenizle giriş yapabilirsiniz.
+            {t('auth.resetPassword.successMessage')}
           </p>
           <p className={styles.switchText}>
-            <Link to="/login">Giriş yap</Link>
+            <Link to="/login">{t('auth.resetPassword.loginLink')}</Link>
           </p>
         </div>
       </main>
@@ -77,12 +79,12 @@ function ResetPasswordPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1>Yeni Şifre Belirle</h1>
+        <h1>{t('auth.resetPassword.title')}</h1>
 
         {error && <ErrorBanner message={error} />}
 
         <label className={styles.field}>
-          <span>Yeni Parola</span>
+          <span>{t('auth.resetPassword.newPassword')}</span>
           <input
             type="password"
             value={newPassword}
@@ -93,7 +95,7 @@ function ResetPasswordPage() {
         </label>
 
         <label className={styles.field}>
-          <span>Yeni Parola (Tekrar)</span>
+          <span>{t('auth.resetPassword.confirmPassword')}</span>
           <input
             type="password"
             value={confirmPassword}
@@ -102,10 +104,10 @@ function ResetPasswordPage() {
             autoComplete="new-password"
           />
         </label>
-        <p className={styles.hint}>En az 8 karakter, en az bir harf ve bir rakam içermelidir.</p>
+        <p className={styles.hint}>{t('auth.resetPassword.passwordHint')}</p>
 
         <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? <Spinner label="Kaydediliyor..." /> : 'Şifreyi Güncelle'}
+          {isSubmitting ? <Spinner label={t('auth.resetPassword.submitting')} /> : t('auth.resetPassword.submit')}
         </button>
       </form>
     </main>

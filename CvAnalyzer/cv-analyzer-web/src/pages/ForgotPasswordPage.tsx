@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { forgotPassword } from '../api/authService'
+import { useTranslation } from '../hooks/useTranslation'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
 import { getErrorMessage } from '../utils/errorMessages'
@@ -10,9 +11,12 @@ import styles from './AuthPage.module.css'
  * Collects an email and calls the enumeration-safe forgot-password endpoint, which always
  * responds with the same message whether or not the email is registered. This environment has no
  * real email provider wired up (see docs/authentication.md) — the message shown is the backend's
- * own honest one, never a fabricated "e-posta gönderildi" claim.
+ * own honest one, never a fabricated "email sent" claim. That backend message is always Turkish
+ * (see docs/i18n.md — it isn't a mapped error `code`, so it can't be localized without changing
+ * the API contract), so it is shown as-is regardless of the active UI language.
  */
 function ForgotPasswordPage() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +31,7 @@ function ForgotPasswordPage() {
       const response = await forgotPassword(email)
       setMessage(response.message)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(getErrorMessage(err, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -36,7 +40,7 @@ function ForgotPasswordPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1>Şifremi Unuttum</h1>
+        <h1>{t('auth.forgotPassword.title')}</h1>
 
         {error && <ErrorBanner message={error} />}
         {message && (
@@ -48,7 +52,7 @@ function ForgotPasswordPage() {
         {!message && (
           <>
             <label className={styles.field}>
-              <span>E-posta</span>
+              <span>{t('auth.forgotPassword.email')}</span>
               <input
                 type="email"
                 value={email}
@@ -59,13 +63,13 @@ function ForgotPasswordPage() {
             </label>
 
             <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-              {isSubmitting ? <Spinner label="Gönderiliyor..." /> : 'Gönder'}
+              {isSubmitting ? <Spinner label={t('auth.forgotPassword.submitting')} /> : t('auth.forgotPassword.submit')}
             </button>
           </>
         )}
 
         <p className={styles.switchText}>
-          <Link to="/login">Giriş sayfasına dön</Link>
+          <Link to="/login">{t('auth.forgotPassword.backToLogin')}</Link>
         </p>
       </form>
     </main>

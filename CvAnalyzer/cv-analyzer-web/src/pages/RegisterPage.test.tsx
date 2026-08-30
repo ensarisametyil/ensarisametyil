@@ -3,15 +3,18 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext'
+import { I18nProvider } from '../context/I18nContext'
 import RegisterPage from './RegisterPage'
 
 function renderRegisterPage() {
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        <RegisterPage />
-      </AuthProvider>
-    </MemoryRouter>,
+    <I18nProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <RegisterPage />
+        </AuthProvider>
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 

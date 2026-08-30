@@ -2,7 +2,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import PremiumCheckoutPage from './PremiumCheckoutPage'
+import { I18nProvider } from '../context/I18nContext'
 import { API_BASE_URL } from '../api/config'
+
+function renderPage() {
+  return render(
+    <I18nProvider>
+      <PremiumCheckoutPage />
+    </I18nProvider>,
+  )
+}
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -32,7 +41,7 @@ describe('PremiumCheckoutPage', () => {
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
 
-    render(<PremiumCheckoutPage />)
+    renderPage()
     await fillBuyerForm(user)
     await user.click(screen.getByRole('button', { name: 'Ödemeye Geç' }))
 
@@ -52,18 +61,18 @@ describe('PremiumCheckoutPage', () => {
     })
   })
 
-  it('shows the backend error message when checkout cannot be started (e.g. already Premium)', async () => {
+  it('shows a localized error message (by code, not the backend\'s raw text) when checkout cannot be started (e.g. already Premium)', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValueOnce(jsonResponse(503, { code: 'CHECKOUT_UNAVAILABLE', message: 'Zaten Premium plandasınız.' })),
     )
     const user = userEvent.setup()
 
-    render(<PremiumCheckoutPage />)
+    renderPage()
     await fillBuyerForm(user)
     await user.click(screen.getByRole('button', { name: 'Ödemeye Geç' }))
 
-    expect(await screen.findByText('Zaten Premium plandasınız.')).toBeInTheDocument()
+    expect(await screen.findByText('Ödeme başlatılamadı.')).toBeInTheDocument()
     expect(screen.queryByTestId('checkout-form-container')).not.toBeInTheDocument()
   })
 })

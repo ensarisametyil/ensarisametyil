@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, type Location } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from '../hooks/useTranslation'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
 import { getErrorMessage } from '../utils/errorMessages'
@@ -12,6 +13,7 @@ interface LocationState {
 
 function LoginPage() {
   const { login } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -30,7 +32,7 @@ function LoginPage() {
       await login(email, password)
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(getErrorMessage(err, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -39,12 +41,12 @@ function LoginPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1>Giriş Yap</h1>
+        <h1>{t('auth.login.title')}</h1>
 
         {error && <ErrorBanner message={error} />}
 
         <label className={styles.field}>
-          <span>E-posta</span>
+          <span>{t('auth.login.email')}</span>
           <input
             type="email"
             value={email}
@@ -55,7 +57,7 @@ function LoginPage() {
         </label>
 
         <label className={styles.field}>
-          <span>Parola</span>
+          <span>{t('auth.login.password')}</span>
           <input
             type="password"
             value={password}
@@ -66,14 +68,14 @@ function LoginPage() {
         </label>
 
         <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? <Spinner label="Giriş yapılıyor..." /> : 'Giriş Yap'}
+          {isSubmitting ? <Spinner label={t('auth.login.submitting')} /> : t('auth.login.submit')}
         </button>
 
         <p className={styles.switchText}>
-          <Link to="/forgot-password">Şifremi unuttum</Link>
+          <Link to="/forgot-password">{t('auth.login.forgotPassword')}</Link>
         </p>
         <p className={styles.switchText}>
-          Hesabın yok mu? <Link to="/register">Kayıt ol</Link>
+          {t('auth.login.noAccount')} <Link to="/register">{t('auth.login.registerLink')}</Link>
         </p>
       </form>
     </main>

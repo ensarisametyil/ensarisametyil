@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { analyzeCv, uploadCv } from '../api/cvService'
 import { getErrorMessage } from '../utils/errorMessages'
+import { useTranslation } from './useTranslation'
 import type { CvAnalysisResult, CvUploadResponse } from '../types/cv'
 
 export type CvFlowStatus = 'idle' | 'uploading' | 'uploaded' | 'analyzing' | 'analyzed'
@@ -21,6 +22,7 @@ export interface UseCvAnalysis {
  * presentational and every API call lives in one place (cvService).
  */
 export function useCvAnalysis(): UseCvAnalysis {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<CvFlowStatus>('idle')
   const [cv, setCv] = useState<CvUploadResponse | null>(null)
   const [analysis, setAnalysis] = useState<CvAnalysisResult | null>(null)
@@ -39,10 +41,10 @@ export function useCvAnalysis(): UseCvAnalysis {
       setStatus('uploaded')
     } catch (error) {
       setCv(null)
-      setUploadError(getErrorMessage(error))
+      setUploadError(getErrorMessage(error, t))
       setStatus('idle')
     }
-  }, [])
+  }, [t])
 
   const analyze = useCallback(async () => {
     // Guards against a spammed button click starting a second (billable) request while one
@@ -59,10 +61,10 @@ export function useCvAnalysis(): UseCvAnalysis {
       setAnalysis(result)
       setStatus('analyzed')
     } catch (error) {
-      setAnalyzeError(getErrorMessage(error))
+      setAnalyzeError(getErrorMessage(error, t))
       setStatus('uploaded')
     }
-  }, [cv, status])
+  }, [cv, status, t])
 
   const reset = useCallback(() => {
     setStatus('idle')

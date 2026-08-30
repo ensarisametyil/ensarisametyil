@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from '../hooks/useTranslation'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
 import { getErrorMessage } from '../utils/errorMessages'
@@ -9,6 +10,7 @@ import styles from './AuthPage.module.css'
 
 function RegisterPage() {
   const { register } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,7 +21,7 @@ function RegisterPage() {
     event.preventDefault()
     setError(null)
 
-    const policyError = getPasswordPolicyError(password)
+    const policyError = getPasswordPolicyError(password, t)
     if (policyError) {
       setError(policyError)
       return
@@ -30,7 +32,7 @@ function RegisterPage() {
       await register(email, password)
       navigate('/app', { replace: true })
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(getErrorMessage(err, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -39,12 +41,12 @@ function RegisterPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1>Kayıt Ol</h1>
+        <h1>{t('auth.register.title')}</h1>
 
         {error && <ErrorBanner message={error} />}
 
         <label className={styles.field}>
-          <span>E-posta</span>
+          <span>{t('auth.register.email')}</span>
           <input
             type="email"
             value={email}
@@ -55,7 +57,7 @@ function RegisterPage() {
         </label>
 
         <label className={styles.field}>
-          <span>Parola</span>
+          <span>{t('auth.register.password')}</span>
           <input
             type="password"
             value={password}
@@ -64,14 +66,14 @@ function RegisterPage() {
             autoComplete="new-password"
           />
         </label>
-        <p className={styles.hint}>En az 8 karakter, en az bir harf ve bir rakam içermelidir.</p>
+        <p className={styles.hint}>{t('auth.register.passwordHint')}</p>
 
         <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? <Spinner label="Kayıt olunuyor..." /> : 'Kayıt Ol'}
+          {isSubmitting ? <Spinner label={t('auth.register.submitting')} /> : t('auth.register.submit')}
         </button>
 
         <p className={styles.switchText}>
-          Zaten hesabın var mı? <Link to="/login">Giriş yap</Link>
+          {t('auth.register.hasAccount')} <Link to="/login">{t('auth.register.loginLink')}</Link>
         </p>
       </form>
     </main>

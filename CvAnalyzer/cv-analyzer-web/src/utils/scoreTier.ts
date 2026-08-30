@@ -7,16 +7,3 @@ export function getScoreTier(score: number): ScoreTier {
   if (score >= 50) return 'mid'
   return 'low'
 }
-
-export function getScoreTierLabel(tier: ScoreTier): string {
-  switch (tier) {
-    case 'excellent':
-      return 'Çok İyi'
-    case 'good':
-      return 'İyi'
-    case 'mid':
-      return 'Geliştirilebilir'
-    case 'low':
-      return 'Düşük'
-  }
-}
