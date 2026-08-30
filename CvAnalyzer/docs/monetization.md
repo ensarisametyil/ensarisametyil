@@ -22,20 +22,43 @@ Free:
 
 Premium:
   MonthlyAnalysisLimit = appsettings.json → Plans:PremiumMonthlyAnalysisLimit (varsayılan: null = sınırsız)
+  MonthlyPriceUsd = appsettings.json → Plans:PremiumMonthlyPriceUsd (varsayılan: 10.00) — Aşama 15
   Features = AtsAnalysis, JobDescriptionAnalysis, CvRewrite, AdvancedRecommendations (altyapı hazır, endpoint yok)
 ```
 
 ```json
 "Plans": {
   "FreeMonthlyAnalysisLimit": 2,
-  "PremiumMonthlyAnalysisLimit": null
+  "PremiumMonthlyAnalysisLimit": null,
+  "PremiumMonthlyPriceUsd": 10.00
 }
 ```
 
 `PremiumMonthlyAnalysisLimit` bilinçli olarak `null` (sınırsız) bırakıldı, ama **configuration
 üzerinden bir sayıya çevrilebilir** — ileride AI maliyetini kontrol etmek gerekirse kod
-değişikliği gerekmez. Plan **fiyatı** bu aşamada hiçbir yerde tanımlanmadı (spec'in 19. maddesi
-gereği) — fiyatlandırma İyzico entegrasyonundan önce ayrıca netleştirilecek.
+değişikliği gerekmez.
+
+**(Aşama 15 ile güncellendi)** Plan fiyatı artık `PlanCatalog`/`PlanDefinition` üzerinden
+backend'in kendi, tek merkezi kaynağıdır — `Plans:PremiumMonthlyPriceUsd`. Bu değer:
+
+- **Hiçbir zaman bir request'ten okunmaz.** `CheckoutRequestDto`'nun price/amount/currency alanı
+  yoktur — bir istemci bu alanları göndermeye çalışsa bile ASP.NET Core'un model binder'ı bunları
+  sessizce yok sayar (bkz. `BillingControllerTests.CheckoutRequestDto_NeverAcceptsAPlanOrPaymentOutcomeFieldFromTheClient`).
+- `PaymentService.StartPremiumCheckoutAsync`, her checkout başlatıldığında bu değeri
+  `PaymentTransaction.AmountUsd`/`Currency` alanlarına **backend'in kendi config'inden** yazar —
+  hiçbir zaman İyzico'nun döndürdüğü bir değerden veya istemciden değil.
+- `GET /api/billing/plans` (yeni, `[AllowAnonymous]`) üzerinden hem giriş yapmamış Landing Page
+  ziyaretçisine hem de authenticated sayfalara (Checkout, Account) tek bir tutarlı kaynaktan
+  sunulur.
+- `GET /api/billing/payments` artık `Amount`/`Currency` alanlarını da döndürür — Stage 9'daki
+  "bu uygulama hiçbir yerde bir plan fiyatı tanımlamadı" kararı, artık gerçek bir fiyat
+  tanımlandığı için bilinçli olarak tersine çevrildi.
+
+**Önemli sınır (bkz. `docs/iyzico-integration.md` §"Fiyat" için eklenen not):** Bu backend-owned
+fiyat, İyzico'nun kendi `PremiumPricingPlanReferenceCode` planının **gerçek tahsilat tutarıyla**
+otomatik senkronize değildir — ikisi ayrı sistemlerde ayrı ayrı tutulur. İyzico merchant panelinde
+oluşturulacak gerçek "Premium" pricing plan'ının tutarının da $10.00 olarak ayarlanması,
+entegrasyonu kuracak kişinin elle doğrulaması gereken bir adımdır.
 
 ## 2. Subscription Mimarisi
 
@@ -253,9 +276,9 @@ kullanan orkestrasyon katmanını ekledi:
   `RetrieveSubscriptionStatusAsync` ile sunucu-sunucu doğrular, yerel `Subscription`
   satırını ancak o zaman günceller.
 - `GET /api/billing/payments` — çağıranın kendi `PaymentTransaction` kayıtlarının özetini
-  (tarih/durum/sağlayıcı/referans kodu) döner, en yeniden eskiye. **Asla bir tutar
-  içermez** — bu uygulama hiçbir yerde bir plan fiyatı tanımlamadı (§1) — ve asla ham bir
-  İyzico response'u göstermez.
+  (tarih/durum/sağlayıcı/referans kodu, **Aşama 15'ten itibaren tutar/para birimi de**) döner,
+  en yeniden eskiye. Tutar her zaman `PaymentService`'in checkout başlatılırken `PlanCatalog`'dan
+  okuyup o satıra yazdığı, backend'in kendi değeridir — asla ham bir İyzico response'u göstermez.
 
 Frontend tarafında bu üçü, `AccountPage`'in "Abonelik" ve "Ödeme Geçmişi" bölümlerini
 besler (bkz. `docs/frontend-authentication.md` "Aşama 10 Eklemeleri"). "Aboneliği İptal

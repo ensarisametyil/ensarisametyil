@@ -8,8 +8,12 @@ public sealed record CheckoutCallbackOutcome(bool Success);
 
 public sealed record CancelSubscriptionResult(bool Success, string? ErrorMessage);
 
-/// <summary>One row of the caller's own payment history — Date/Status/Provider/Reference only; never an amount (this app never defined a plan price, see docs/monetization.md) and never any raw provider payload.</summary>
-public sealed record PaymentTransactionSummary(DateTime Date, string Status, string? Provider, string? SubscriptionReference);
+/// <summary>
+/// One row of the caller's own payment history. Amount/Currency (added Stage 15) are the
+/// backend's own catalog price at the time this transaction was started — never a raw Iyzico
+/// payload, and never anything the client could have influenced (see PaymentService.StartPremiumCheckoutAsync).
+/// </summary>
+public sealed record PaymentTransactionSummary(DateTime Date, string Status, string? Provider, string? SubscriptionReference, decimal? Amount, string? Currency);
 
 /// <summary>
 /// Distinguishes "this call was not authentically from Iyzico" (Rejected — must surface as 401,

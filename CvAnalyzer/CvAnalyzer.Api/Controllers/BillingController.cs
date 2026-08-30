@@ -36,6 +36,7 @@ public class BillingController : ControllerBase
     private readonly IAnalysisQuotaService _quotaService;
     private readonly IPaymentService _paymentService;
     private readonly ISubscriptionService _subscriptionService;
+    private readonly IPlanCatalog _planCatalog;
     private readonly IyzicoOptions _iyzicoOptions;
     private readonly ILogger<BillingController> _logger;
 
@@ -43,14 +44,34 @@ public class BillingController : ControllerBase
         IAnalysisQuotaService quotaService,
         IPaymentService paymentService,
         ISubscriptionService subscriptionService,
+        IPlanCatalog planCatalog,
         IOptions<IyzicoOptions> iyzicoOptions,
         ILogger<BillingController> logger)
     {
         _quotaService = quotaService;
         _paymentService = paymentService;
         _subscriptionService = subscriptionService;
+        _planCatalog = planCatalog;
         _iyzicoOptions = iyzicoOptions.Value;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Public plan catalog (limits + price) — the single backend-owned source of truth the
+    /// frontend reads Premium's price from, rather than hard-coding it. Unauthenticated on
+    /// purpose: the public Landing page must be able to show "$10/month" before anyone signs in.
+    /// </summary>
+    [HttpGet("plans")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PlanCatalogDto), StatusCodes.Status200OK)]
+    public IActionResult GetPlans()
+    {
+        var free = _planCatalog.GetPlan(Models.Entities.PlanType.Free);
+        var premium = _planCatalog.GetPlan(Models.Entities.PlanType.Premium);
+
+        return Ok(new PlanCatalogDto(
+            new PlanPricingDto(free.MonthlyAnalysisLimit, free.MonthlyPriceUsd, null),
+            new PlanPricingDto(premium.MonthlyAnalysisLimit, premium.MonthlyPriceUsd, premium.MonthlyPriceUsd is null ? null : "USD")));
     }
 
     [HttpGet("usage")]
@@ -111,14 +132,14 @@ public class BillingController : ControllerBase
         return Ok(new { message = "Aboneliğiniz iptal edildi." });
     }
 
-    /// <summary>The caller's own past checkout attempts, newest first — never any other user's rows, never an amount (no plan price is defined anywhere in this app), never a raw provider payload.</summary>
+    /// <summary>The caller's own past checkout attempts, newest first — never any other user's rows, and never a raw provider payload.</summary>
     [HttpGet("payments")]
     [ProducesResponseType(typeof(List<PaymentHistoryItemDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPaymentHistory(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
         var history = await _paymentService.GetPaymentHistoryAsync(userId, cancellationToken);
-        return Ok(history.Select(h => new PaymentHistoryItemDto(h.Date, h.Status, h.Provider, h.SubscriptionReference)).ToList());
+        return Ok(history.Select(h => new PaymentHistoryItemDto(h.Date, h.Status, h.Provider, h.SubscriptionReference, h.Amount, h.Currency)).ToList());
     }
 
     /// <summary>

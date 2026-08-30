@@ -11,6 +11,7 @@ public class PaymentService : IPaymentService
     private readonly IPaymentProvider _provider;
     private readonly IIyzicoWebhookSignatureVerifier _signatureVerifier;
     private readonly ISubscriptionService _subscriptionService;
+    private readonly IPlanCatalog _planCatalog;
     private readonly IUserOperationLock _userLock;
     private readonly IyzicoOptions _options;
     private readonly TimeProvider _timeProvider;
@@ -21,6 +22,7 @@ public class PaymentService : IPaymentService
         IPaymentProvider provider,
         IIyzicoWebhookSignatureVerifier signatureVerifier,
         ISubscriptionService subscriptionService,
+        IPlanCatalog planCatalog,
         IUserOperationLock userLock,
         IOptions<IyzicoOptions> options,
         TimeProvider timeProvider,
@@ -30,6 +32,7 @@ public class PaymentService : IPaymentService
         _provider = provider;
         _signatureVerifier = signatureVerifier;
         _subscriptionService = subscriptionService;
+        _planCatalog = planCatalog;
         _userLock = userLock;
         _options = options.Value;
         _timeProvider = timeProvider;
@@ -51,6 +54,12 @@ public class PaymentService : IPaymentService
             return new CheckoutStartResult(false, null, null, "Ödeme servisi şu anda kullanılamıyor.");
         }
 
+        // The price is resolved from the server-side plan catalog, and only from there — the
+        // caller's request (CheckoutRequestDto) carries no price/amount/currency field for this
+        // to ever be influenced by. Stamped onto the transaction now so it stays a stable
+        // historical fact even if the catalog's price changes later.
+        var premiumPrice = _planCatalog.GetPlan(PlanType.Premium).MonthlyPriceUsd;
+
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         var transaction = new PaymentTransaction
         {
@@ -58,6 +67,8 @@ public class PaymentService : IPaymentService
             UserId = userId,
             ConversationId = Guid.NewGuid().ToString("N"),
             Status = PaymentTransactionStatus.Initiated,
+            AmountUsd = premiumPrice,
+            Currency = premiumPrice is null ? null : "USD",
             CreatedAt = now,
         };
         _db.PaymentTransactions.Add(transaction);
@@ -263,7 +274,7 @@ public class PaymentService : IPaymentService
         await _db.PaymentTransactions
             .Where(t => t.UserId == userId)
             .OrderByDescending(t => t.CreatedAt)
-            .Select(t => new PaymentTransactionSummary(t.CreatedAt, t.Status.ToString(), t.ProviderSubscriptionReferenceCode != null ? "Iyzico" : null, t.ProviderSubscriptionReferenceCode))
+            .Select(t => new PaymentTransactionSummary(t.CreatedAt, t.Status.ToString(), t.ProviderSubscriptionReferenceCode != null ? "Iyzico" : null, t.ProviderSubscriptionReferenceCode, t.AmountUsd, t.Currency))
             .ToListAsync(cancellationToken);
 
     private async Task MarkFailedAsync(PaymentTransaction transaction, string reason, CancellationToken cancellationToken)

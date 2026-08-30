@@ -39,10 +39,33 @@ export interface SubscriptionDetails {
   canCancel: boolean
 }
 
-/** One row of GET /api/billing/payments — deliberately no amount (this app never defined a plan price) and no raw provider payload. */
+/**
+ * One row of GET /api/billing/payments. amount/currency (Stage 15) are the backend's own catalog
+ * price recorded at checkout time — never a raw provider payload, and never anything computed
+ * client-side.
+ */
 export interface PaymentHistoryItem {
   date: string
   status: string
   provider: string | null
   subscriptionReference: string | null
+  amount: number | null
+  currency: string | null
+}
+
+/** One plan's public catalog info — what it grants and what it costs. Never user-specific. */
+export interface PlanPricing {
+  monthlyAnalysisLimit: number | null
+  monthlyPriceUsd: number | null
+  currency: string | null
+}
+
+/**
+ * Response of GET /api/billing/plans — the single backend-owned source of truth for Premium's
+ * price. The frontend never invents or hard-codes this figure; every price shown anywhere in the
+ * app (Landing, checkout, account) is read from here.
+ */
+export interface PlanCatalogResponse {
+  free: PlanPricing
+  premium: PlanPricing
 }

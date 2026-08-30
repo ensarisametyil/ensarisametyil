@@ -31,12 +31,14 @@ public class PlanCatalog : IPlanCatalog
         {
             Plan = PlanType.Free,
             MonthlyAnalysisLimit = _options.FreeMonthlyAnalysisLimit,
+            MonthlyPriceUsd = null,
             Features = FreeFeatures,
         },
         PlanType.Premium => new PlanDefinition
         {
             Plan = PlanType.Premium,
             MonthlyAnalysisLimit = _options.PremiumMonthlyAnalysisLimit,
+            MonthlyPriceUsd = _options.PremiumMonthlyPriceUsd,
             Features = PremiumFeatures,
         },
         _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, "Unknown plan type."),

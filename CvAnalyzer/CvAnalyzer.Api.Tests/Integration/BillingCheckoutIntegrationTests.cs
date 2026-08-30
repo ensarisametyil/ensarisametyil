@@ -39,10 +39,10 @@ public class BillingCheckoutIntegrationTests : IClassFixture<CustomWebApplicatio
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // A malicious/buggy client throws in fields that would matter if the backend ever
-        // trusted client-supplied plan/outcome state — CheckoutRequestDto simply has no such
-        // properties to bind them into, so ASP.NET Core's model binder silently drops them.
+        // trusted client-supplied plan/outcome/price state — CheckoutRequestDto simply has no
+        // such properties to bind them into, so ASP.NET Core's model binder silently drops them.
         using var content = new StringContent(
-            """{"name":"Ada","surname":"Lovelace","identityNumber":"11111111111","gsmNumber":"5551234567","city":"Istanbul","addressLine":"Test Sk. No:1","plan":"Premium","isPremium":true,"paymentSuccess":true,"subscriptionStatus":"Active"}""",
+            """{"name":"Ada","surname":"Lovelace","identityNumber":"11111111111","gsmNumber":"5551234567","city":"Istanbul","addressLine":"Test Sk. No:1","plan":"Premium","isPremium":true,"paymentSuccess":true,"subscriptionStatus":"Active","price":0,"amount":1,"currency":"XXX"}""",
             System.Text.Encoding.UTF8, "application/json");
 
         var checkoutResponse = await _client.PostAsync("/api/billing/checkout", content);
@@ -51,6 +51,34 @@ public class BillingCheckoutIntegrationTests : IClassFixture<CustomWebApplicatio
         var usageResponse = await _client.GetAsync("/api/billing/usage");
         var usage = await usageResponse.Content.ReadFromJsonAsync<UsageDto>();
         Assert.Equal("FREE", usage!.Plan);
+    }
+
+    [Fact]
+    public async Task GetPlans_ReachableWithoutAnyToken_ReturnsTheServerSideDefinedPremiumPrice()
+    {
+        var response = await _client.GetAsync("/api/billing/plans");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<PlanCatalogDto>();
+        Assert.NotNull(body!.Premium.MonthlyPriceUsd);
+        Assert.Equal("USD", body.Premium.Currency);
+        Assert.Null(body.Free.MonthlyPriceUsd);
+    }
+
+    [Fact]
+    public async Task GetPaymentHistory_WithoutToken_ReturnsUnauthorized()
+    {
+        var response = await _client.GetAsync("/api/billing/payments");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CancelSubscription_WithoutToken_ReturnsUnauthorized()
+    {
+        var response = await _client.PostAsync("/api/billing/subscription/cancel", null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

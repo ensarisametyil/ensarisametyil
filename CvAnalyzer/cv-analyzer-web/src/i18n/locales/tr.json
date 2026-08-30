@@ -97,7 +97,9 @@
         "feature2": "Puan, güçlü/zayıf yönler, öneriler",
         "feature3": "Analiz geçmişi",
         "feature4": "Öncelikli destek",
-        "cta": "Premium'a Geç"
+        "cta": "Premium'a Geç",
+        "badge": "En Popüler",
+        "perMonth": "/ay"
       }
     },
     "security": {
@@ -260,6 +262,7 @@
       "date": "Tarih",
       "status": "Durum",
       "provider": "Sağlayıcı",
+      "amount": "Tutar",
       "statusSucceeded": "Başarılı",
       "statusFailed": "Başarısız",
       "statusInitiated": "Başlatıldı"
@@ -293,7 +296,11 @@
     "city": "Şehir",
     "addressLine": "Adres",
     "submit": "Ödemeye Geç",
-    "submitting": "Ödeme başlatılıyor..."
+    "submitting": "Ödeme başlatılıyor...",
+    "orderSummaryPlan": "Premium Plan",
+    "perMonth": "/ay",
+    "trustNote": "Kart bilgileriniz İyzico'nun güvenli ödeme altyapısı üzerinden işlenir, bu uygulamaya asla ulaşmaz.",
+    "cancelAnytimeNote": "İstediğiniz zaman iptal edebilirsiniz."
   },
   "paymentResult": {
     "successTitle": "Premium'a Geçtiniz!",

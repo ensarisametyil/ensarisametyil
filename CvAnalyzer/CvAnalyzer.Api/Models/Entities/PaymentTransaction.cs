@@ -23,6 +23,18 @@ public class PaymentTransaction
     /// <summary>Iyzico's subscriptionReferenceCode — set once the checkout result / webhook resolves it; the idempotency key for "have we already activated this subscription".</summary>
     public string? ProviderSubscriptionReferenceCode { get; set; }
 
+    /// <summary>
+    /// The price this transaction was started at, resolved from IPlanCatalog (server-side
+    /// config) at the moment PaymentService.StartPremiumCheckoutAsync created this row — never
+    /// from anything a client submitted (CheckoutRequestDto has no price/amount field at all).
+    /// Recorded here so it stays a stable historical fact even if the catalog price changes
+    /// later.
+    /// </summary>
+    public decimal? AmountUsd { get; set; }
+
+    /// <summary>ISO 4217 currency code for <see cref="AmountUsd"/> — "USD" today, kept as a column rather than assumed so a future non-USD plan doesn't need a schema change.</summary>
+    public string? Currency { get; set; }
+
     public PaymentTransactionStatus Status { get; set; }
 
     /// <summary>Safe, generic reason (never a raw provider payload or secret) — e.g. "kart reddedildi", "imza doğrulanamadı".</summary>

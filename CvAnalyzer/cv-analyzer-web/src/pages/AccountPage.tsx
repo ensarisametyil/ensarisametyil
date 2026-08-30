@@ -7,7 +7,7 @@ import { changePassword, deactivateAccount } from '../api/authService'
 import { cancelSubscription, getPaymentHistory, getSubscription } from '../api/billingService'
 import { getErrorMessage } from '../utils/errorMessages'
 import { getPasswordPolicyError } from '../utils/passwordPolicy'
-import { formatDate } from '../i18n/format'
+import { formatCurrency, formatDate } from '../i18n/format'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
 import type { PaymentHistoryItem, SubscriptionDetails } from '../types/billing'
@@ -202,6 +202,7 @@ function PaymentHistorySection({ items }: { items: PaymentHistoryItem[] }) {
                 <th scope="col">{t('account.paymentHistory.date')}</th>
                 <th scope="col">{t('account.paymentHistory.status')}</th>
                 <th scope="col">{t('account.paymentHistory.provider')}</th>
+                <th scope="col">{t('account.paymentHistory.amount')}</th>
               </tr>
             </thead>
             <tbody>
@@ -210,6 +211,7 @@ function PaymentHistorySection({ items }: { items: PaymentHistoryItem[] }) {
                   <td>{formatDate(item.date, locale)}</td>
                   <td>{statusLabel(item.status)}</td>
                   <td>{item.provider ?? t('common.dash')}</td>
+                  <td>{item.amount != null ? formatCurrency(item.amount, item.currency ?? 'USD', locale) : t('common.dash')}</td>
                 </tr>
               ))}
             </tbody>

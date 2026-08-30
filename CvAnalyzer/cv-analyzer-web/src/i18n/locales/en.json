@@ -97,7 +97,9 @@
         "feature2": "Score, strengths/weaknesses, suggestions",
         "feature3": "Analysis history",
         "feature4": "Priority support",
-        "cta": "Upgrade to Premium"
+        "cta": "Upgrade to Premium",
+        "badge": "Most Popular",
+        "perMonth": "/month"
       }
     },
     "security": {
@@ -260,6 +262,7 @@
       "date": "Date",
       "status": "Status",
       "provider": "Provider",
+      "amount": "Amount",
       "statusSucceeded": "Succeeded",
       "statusFailed": "Failed",
       "statusInitiated": "Initiated"
@@ -293,7 +296,11 @@
     "city": "City",
     "addressLine": "Address",
     "submit": "Proceed to Payment",
-    "submitting": "Starting payment..."
+    "submitting": "Starting payment...",
+    "orderSummaryPlan": "Premium Plan",
+    "perMonth": "/month",
+    "trustNote": "Your card details are processed through Iyzico's secure payment infrastructure and never reach this app.",
+    "cancelAnytimeNote": "Cancel anytime."
   },
   "paymentResult": {
     "successTitle": "You're Now on Premium!",

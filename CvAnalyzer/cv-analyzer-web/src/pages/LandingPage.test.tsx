@@ -104,4 +104,36 @@ describe('LandingPage', () => {
     // never /premium/checkout, since there is nothing for them to check out.
     await waitFor(() => expect(screen.getByRole('link', { name: "Premium'a Geç" })).toHaveAttribute('href', '/app'))
   })
+
+  it("shows Premium's real price fetched from the backend's plan catalog — never a hard-coded figure", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/api/billing/plans')) {
+          return Promise.resolve(
+            jsonResponse(200, {
+              free: { monthlyAnalysisLimit: 2, monthlyPriceUsd: null, currency: null },
+              premium: { monthlyAnalysisLimit: null, monthlyPriceUsd: 10, currency: 'USD' },
+            }),
+          )
+        }
+        throw new Error(`unexpected fetch to ${url}`)
+      }),
+    )
+
+    renderLanding()
+
+    expect(await screen.findByText('$10,00')).toBeInTheDocument()
+    expect(screen.getByText('/ay')).toBeInTheDocument()
+  })
+
+  it('falls back to the static feature note (never a guessed price) if the plan catalog fetch fails', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('network down'))))
+
+    renderLanding()
+
+    expect(await screen.findByText('Sınırsız analiz')).toBeInTheDocument()
+    expect(screen.queryByText('/ay')).not.toBeInTheDocument()
+  })
 })

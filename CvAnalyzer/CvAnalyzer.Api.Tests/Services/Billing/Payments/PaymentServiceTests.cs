@@ -31,7 +31,7 @@ public class PaymentServiceTests
     };
 
     private static (PaymentService Sut, FakePaymentProvider Provider, AppDbContext Db, FakeTimeProvider Clock) CreateSut(
-        IyzicoOptions? options = null, IUserOperationLock? userLock = null)
+        IyzicoOptions? options = null, IUserOperationLock? userLock = null, PlanOptions? planOptions = null)
     {
         var db = CreateDbContext();
         var provider = new FakePaymentProvider();
@@ -42,6 +42,7 @@ public class PaymentServiceTests
             provider,
             new IyzicoWebhookSignatureVerifier(Options.Create(opts)),
             new SubscriptionService(db, clock),
+            new PlanCatalog(Options.Create(planOptions ?? new PlanOptions { PremiumMonthlyPriceUsd = 10.00m })),
             userLock ?? new UserOperationLock(),
             Options.Create(opts),
             clock,
@@ -75,6 +76,28 @@ public class PaymentServiceTests
         Assert.Equal(userId, transaction.UserId);
         Assert.Equal("test-token", transaction.CheckoutToken);
         Assert.Equal(PaymentTransactionStatus.Initiated, transaction.Status);
+        Assert.Equal(10.00m, transaction.AmountUsd);
+        Assert.Equal("USD", transaction.Currency);
+    }
+
+    [Theory]
+    [InlineData(0.00)]
+    [InlineData(1.00)]
+    [InlineData(999.00)]
+    public async Task StartPremiumCheckoutAsync_TheStoredAmountAlwaysComesFromThePlanCatalog_NeverFromAnythingElse(decimal attemptedPrice)
+    {
+        // There is no code path for a caller to submit a price at all (CheckoutBuyerInfo/
+        // CheckoutRequestDto carry no such field) — this proves the amount actually recorded is
+        // always exactly what PlanCatalog resolves, regardless of what number an attacker might
+        // wish it were (0, 1, or any other value never influences the stored transaction).
+        var (sut, _, db, _) = CreateSut(planOptions: new PlanOptions { PremiumMonthlyPriceUsd = 10.00m });
+        var userId = Guid.NewGuid();
+
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+
+        var transaction = Assert.Single(db.PaymentTransactions);
+        Assert.Equal(10.00m, transaction.AmountUsd);
+        Assert.NotEqual(attemptedPrice, transaction.AmountUsd);
     }
 
     [Fact]
@@ -481,12 +504,22 @@ public class PaymentServiceTests
     }
 
     [Fact]
-    public void PaymentTransactionSummary_NeverExposesAnAmountField()
+    public async Task GetPaymentHistoryAsync_ExposesTheBackendDefinedPriceRecordedAtCheckoutTime_NeverARawProviderAmount()
     {
-        // This app has never defined a plan price anywhere (see docs/monetization.md) — the
-        // summary type must not carry a fabricated one.
-        var summaryProperties = typeof(PaymentTransactionSummary).GetProperties().Select(p => p.Name);
-        Assert.DoesNotContain(summaryProperties, name => name.Contains("Amount", StringComparison.OrdinalIgnoreCase) || name.Contains("Price", StringComparison.OrdinalIgnoreCase));
+        // Stage 15 policy: Premium now has a real, backend-owned price, so payment history
+        // legitimately shows it — but it must always be the amount PaymentService itself
+        // recorded from PlanCatalog at StartPremiumCheckoutAsync time (see the
+        // "TheStoredAmountAlwaysComesFromThePlanCatalog" test above for the tamper-resistance
+        // half of this guarantee), never anything read back from a provider payload.
+        var (sut, _, _, _) = CreateSut(planOptions: new PlanOptions { PremiumMonthlyPriceUsd = 10.00m });
+        var userId = Guid.NewGuid();
+
+        await sut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var history = await sut.GetPaymentHistoryAsync(userId);
+
+        var entry = Assert.Single(history);
+        Assert.Equal(10.00m, entry.Amount);
+        Assert.Equal("USD", entry.Currency);
     }
 
     private static Subscription ActivePremiumSubscription(Guid userId, string providerSubscriptionId) => new()

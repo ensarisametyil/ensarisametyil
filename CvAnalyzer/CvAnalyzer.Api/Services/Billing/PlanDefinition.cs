@@ -13,6 +13,9 @@ public sealed class PlanDefinition
     /// <summary>Analyses allowed per calendar month. Null means unlimited.</summary>
     public required int? MonthlyAnalysisLimit { get; init; }
 
+    /// <summary>Monthly price in USD — null for Free (nothing to charge). Resolved once, here, from PlanOptions; never from a request.</summary>
+    public required decimal? MonthlyPriceUsd { get; init; }
+
     public required IReadOnlySet<PlanFeature> Features { get; init; }
 
     public bool HasFeature(PlanFeature feature) => Features.Contains(feature);

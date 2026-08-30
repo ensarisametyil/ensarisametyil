@@ -1,11 +1,12 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { startCheckout } from '../api/billingService'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { getPlans, startCheckout } from '../api/billingService'
 import { useTranslation } from '../hooks/useTranslation'
 import { getErrorMessage } from '../utils/errorMessages'
+import { formatCurrency } from '../i18n/format'
 import CheckoutFormRenderer from '../components/CheckoutFormRenderer'
 import ErrorBanner from '../components/ErrorBanner'
 import Spinner from '../components/Spinner'
-import type { CheckoutBuyerInfo, CheckoutResponse } from '../types/billing'
+import type { CheckoutBuyerInfo, CheckoutResponse, PlanPricing } from '../types/billing'
 import styles from './AuthPage.module.css'
 
 const EMPTY_BUYER: CheckoutBuyerInfo = {
@@ -24,11 +25,32 @@ const EMPTY_BUYER: CheckoutBuyerInfo = {
  * payment (see docs/iyzico-integration.md).
  */
 function PremiumCheckoutPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [buyer, setBuyer] = useState<CheckoutBuyerInfo>(EMPTY_BUYER)
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // The price shown here is never invented client-side — it comes from the backend's own plan
+  // catalog. If the fetch hasn't resolved yet (or fails), the summary block simply doesn't show a
+  // figure rather than guessing one; the actual charge is always resolved server-side regardless
+  // of what this page displays (see PaymentService.StartPremiumCheckoutAsync).
+  const [premiumPricing, setPremiumPricing] = useState<PlanPricing | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    getPlans()
+      .then((result) => {
+        if (!cancelled) {
+          setPremiumPricing(result.premium)
+        }
+      })
+      .catch(() => {
+        // Non-critical — the order summary just omits the price line.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleChange = (field: keyof CheckoutBuyerInfo) => (event: ChangeEvent<HTMLInputElement>) => {
     setBuyer((current) => ({ ...current, [field]: event.target.value }))
@@ -60,6 +82,21 @@ function PremiumCheckoutPage() {
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
         <h1>{t('checkout.title')}</h1>
+
+        <div className={styles.orderSummary}>
+          <div className={styles.orderSummaryRow}>
+            <span>{t('checkout.orderSummaryPlan')}</span>
+            {premiumPricing?.monthlyPriceUsd != null && (
+              <span className={styles.orderSummaryPrice}>
+                {formatCurrency(premiumPricing.monthlyPriceUsd, premiumPricing.currency ?? 'USD', locale)}
+                <span className={styles.orderSummaryPeriod}>{t('checkout.perMonth')}</span>
+              </span>
+            )}
+          </div>
+          <p className={styles.trustNote}>{t('checkout.trustNote')}</p>
+          <p className={styles.trustNote}>{t('checkout.cancelAnytimeNote')}</p>
+        </div>
+
         <p className={styles.hint}>{t('checkout.hint')}</p>
 
         {error && <ErrorBanner message={error} />}

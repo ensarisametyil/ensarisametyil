@@ -54,6 +54,43 @@
   color: var(--text-muted);
 }
 
+.orderSummary {
+  padding: 12px 14px;
+  background: var(--surface-muted);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderSummaryRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.orderSummaryPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.orderSummaryPeriod {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.trustNote {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .submitButton {
   display: flex;
   align-items: center;

@@ -23,13 +23,15 @@ public class BillingControllerTests
     private static AppDbContext CreateDbContext() =>
         new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
-    private static BillingController CreateController(AppDbContext db, Guid userId, int freeLimit = 2, IPaymentService? paymentService = null)
+    private static BillingController CreateController(
+        AppDbContext db, Guid userId, int freeLimit = 2, IPaymentService? paymentService = null, PlanOptions? planOptions = null)
     {
         var subscriptionService = new SubscriptionService(db, new FakeTimeProvider(Now));
+        var planCatalog = new PlanCatalog(Options.Create(planOptions ?? new PlanOptions { FreeMonthlyAnalysisLimit = freeLimit }));
         var quotaService = new AnalysisQuotaService(
             db,
             subscriptionService,
-            new PlanCatalog(Options.Create(new PlanOptions { FreeMonthlyAnalysisLimit = freeLimit })),
+            planCatalog,
             new UserOperationLock(),
             new FakeTimeProvider(Now));
 
@@ -37,6 +39,7 @@ public class BillingControllerTests
             quotaService,
             paymentService ?? new FakePaymentService(),
             subscriptionService,
+            planCatalog,
             Options.Create(new IyzicoOptions { FrontendResultUrl = "http://localhost:5173/premium/result" }),
             NullLogger<BillingController>.Instance);
 
@@ -127,7 +130,10 @@ public class BillingControllerTests
         // build immediately. (IyzicoWebhookRequestDto is intentionally excluded: it is Iyzico's
         // own server-to-server payload, verified by signature + an authoritative re-confirmation
         // before ever being trusted — see PaymentService — not a claim a browser/user submits.)
-        var forbiddenSubstrings = new[] { "plan", "premium", "paymentsuccess", "success", "status", "subscriptionstatus", "isactive" };
+        // Also covers Stage 15's price/amount/currency concern: the real Premium price is
+        // resolved entirely from PlanCatalog (server-side config), never from anything a client
+        // could submit here — there is simply no field for it to land in.
+        var forbiddenSubstrings = new[] { "plan", "premium", "paymentsuccess", "success", "status", "subscriptionstatus", "isactive", "price", "amount", "currency" };
 
         foreach (var property in typeof(CheckoutRequestDto).GetProperties())
         {
@@ -225,7 +231,7 @@ public class BillingControllerTests
         {
             PaymentHistory = new List<PaymentTransactionSummary>
             {
-                new(CurrentPeriodStart, "Succeeded", "Iyzico", "sub-ref-1"),
+                new(CurrentPeriodStart, "Succeeded", "Iyzico", "sub-ref-1", 10.00m, "USD"),
             },
         };
         var controller = CreateController(db, Guid.NewGuid(), paymentService: paymentService);
@@ -237,5 +243,32 @@ public class BillingControllerTests
         Assert.Single(items);
         Assert.Equal("Succeeded", items[0].Status);
         Assert.Equal("sub-ref-1", items[0].SubscriptionReference);
+        Assert.Equal(10.00m, items[0].Amount);
+        Assert.Equal("USD", items[0].Currency);
+    }
+
+    [Fact]
+    public void GetPlans_ReturnsFreeAndPremiumFromThePlanCatalog_NeverFromAnyClientInput()
+    {
+        using var db = CreateDbContext();
+        var planOptions = new PlanOptions { FreeMonthlyAnalysisLimit = 2, PremiumMonthlyAnalysisLimit = null, PremiumMonthlyPriceUsd = 10.00m };
+        var controller = CreateController(db, Guid.NewGuid(), planOptions: planOptions);
+
+        var response = controller.GetPlans();
+
+        var ok = Assert.IsType<OkObjectResult>(response);
+        var dto = Assert.IsType<PlanCatalogDto>(ok.Value);
+        Assert.Equal(2, dto.Free.MonthlyAnalysisLimit);
+        Assert.Null(dto.Free.MonthlyPriceUsd);
+        Assert.Null(dto.Premium.MonthlyAnalysisLimit);
+        Assert.Equal(10.00m, dto.Premium.MonthlyPriceUsd);
+        Assert.Equal("USD", dto.Premium.Currency);
+    }
+
+    [Fact]
+    public void GetPlans_IsAllowAnonymous_ThePublicLandingPageMustBeAbleToReadItBeforeSignIn()
+    {
+        var method = typeof(BillingController).GetMethod(nameof(BillingController.GetPlans))!;
+        Assert.NotEmpty(method.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute), inherit: true));
     }
 }

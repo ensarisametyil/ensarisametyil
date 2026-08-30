@@ -1,6 +1,11 @@
 import { API_BASE_URL } from './config'
 import { requestJson } from './httpClient'
-import type { CheckoutBuyerInfo, CheckoutResponse, PaymentHistoryItem, SubscriptionDetails, Usage } from '../types/billing'
+import type { CheckoutBuyerInfo, CheckoutResponse, PaymentHistoryItem, PlanCatalogResponse, SubscriptionDetails, Usage } from '../types/billing'
+
+/** Fetches the public plan catalog (limits + Premium's price). No auth required — the public Landing page needs this before anyone signs in. */
+export function getPlans(): Promise<PlanCatalogResponse> {
+  return requestJson<PlanCatalogResponse>(`${API_BASE_URL}/api/billing/plans`, { skipAuth: true })
+}
 
 /** Fetches the authenticated user's current plan and this period's analysis usage. */
 export function getUsage(): Promise<Usage> {

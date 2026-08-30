@@ -1,10 +1,14 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getPlans } from '../api/billingService'
 import { useAuth } from '../hooks/useAuth'
 import { useBilling } from '../hooks/useBilling'
 import { useTranslation } from '../hooks/useTranslation'
+import { formatCurrency } from '../i18n/format'
 import Footer from '../components/Footer'
 import PublicHeader from '../components/PublicHeader'
 import { withLink } from '../utils/withLink'
+import type { PlanPricing } from '../types/billing'
 import styles from './LandingPage.module.css'
 
 const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
@@ -12,13 +16,34 @@ const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
 function LandingPage() {
   const { isAuthenticated } = useAuth()
   const { usage } = useBilling()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const primaryCtaTarget = isAuthenticated ? '/app' : '/register'
   const primaryCtaLabel = isAuthenticated ? t('landing.hero.ctaAuthenticated') : t('landing.hero.ctaAnonymous')
   // An authenticated Free user's "Premium'a Geç" click should go straight to checkout, not just
   // to the app shell where they'd have to go find the upgrade CTA a second time. An authenticated
   // Premium user (or before usage has loaded) falls back to /app — there's nothing to check out.
   const premiumCtaTarget = !isAuthenticated ? '/register' : usage?.plan === 'FREE' ? '/premium/checkout' : '/app'
+
+  // Premium's price is never invented on the frontend — it comes from the backend's own plan
+  // catalog (GET /api/billing/plans, public/unauthenticated). If the fetch hasn't resolved yet or
+  // fails, the card falls back to the existing feature-style note rather than showing a guessed
+  // figure.
+  const [premiumPricing, setPremiumPricing] = useState<PlanPricing | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    getPlans()
+      .then((result) => {
+        if (!cancelled) {
+          setPremiumPricing(result.premium)
+        }
+      })
+      .catch(() => {
+        // Non-critical — the plan card just falls back to its static feature-note text.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className={styles.page}>
@@ -101,8 +126,18 @@ function LandingPage() {
               </Link>
             </div>
             <div className={`${styles.planCard} ${styles.planCardHighlight}`}>
+              <span className={styles.planBadge}>{t('landing.plans.premium.badge')}</span>
               <h3>{t('landing.plans.premium.title')}</h3>
-              <p className={styles.planPriceNote}>{t('landing.plans.premium.priceNote')}</p>
+              {premiumPricing?.monthlyPriceUsd != null ? (
+                <p className={styles.planPrice}>
+                  <span className={styles.planPriceAmount}>
+                    {formatCurrency(premiumPricing.monthlyPriceUsd, premiumPricing.currency ?? 'USD', locale)}
+                  </span>
+                  <span className={styles.planPricePeriod}>{t('landing.plans.premium.perMonth')}</span>
+                </p>
+              ) : (
+                <p className={styles.planPriceNote}>{t('landing.plans.premium.priceNote')}</p>
+              )}
               <ul>
                 <li>{t('landing.plans.premium.feature1')}</li>
                 <li>{t('landing.plans.premium.feature2')}</li>

@@ -110,6 +110,17 @@ ile) **önceden** oluşturulur ve bir `pricingPlanReferenceCode` üretir. Bu de�
 ortam-özeldir (sandbox ve production panelinde farklı plan kodları olacaktır) — bu yüzden
 configuration'da tutulur, kodda hard-code edilmez.
 
+**Fiyat senkronizasyonu (Aşama 15 — önemli, elle yapılması gereken bir adım):** Bu uygulama
+artık kendi `Plans:PremiumMonthlyPriceUsd` (varsayılan `10.00`) değerine sahip — bkz.
+`docs/monetization.md` §1. Bu, **görüntülenen/kaydedilen** fiyattır (Landing Page, checkout
+özeti, ödeme geçmişi); İyzico'ya giden `InitializeCheckoutFormRequest`'e hiçbir zaman bir tutar
+gönderilmez, yalnızca `PremiumPricingPlanReferenceCode` referans edilir — gerçek tahsilat tutarı
+%100 İyzico panelinde o plana bağlı olarak tanımlıdır. **Bu iki değer birbirinden bağımsızdır ve
+otomatik senkronize değildir** — İyzico merchant panelinde oluşturulacak gerçek "Premium" pricing
+plan'ının tutarının da `Plans:PremiumMonthlyPriceUsd` ile aynı ($10.00) olması, entegrasyonu
+production'a alacak kişinin elle doğrulaması gereken bir adımdır. Aksi halde kullanıcıya
+gösterilen fiyat ile İyzico'nun gerçekten tahsil ettiği tutar birbirini tutmaz.
+
 ## 4. Ödeme Modeli
 
 Free (2 analiz/ay) ve Premium (sınırsız) sabit kalıyor — Aşama 8'in kendisi. Premium, İyzico'nun

@@ -97,7 +97,9 @@
         "feature2": "Punktzahl, Stärken/Schwächen, Vorschläge",
         "feature3": "Analyseverlauf",
         "feature4": "Bevorzugter Support",
-        "cta": "Auf Premium upgraden"
+        "cta": "Auf Premium upgraden",
+        "badge": "Beliebteste",
+        "perMonth": "/Monat"
       }
     },
     "security": {
@@ -260,6 +262,7 @@
       "date": "Datum",
       "status": "Status",
       "provider": "Anbieter",
+      "amount": "Betrag",
       "statusSucceeded": "Erfolgreich",
       "statusFailed": "Fehlgeschlagen",
       "statusInitiated": "Gestartet"
@@ -293,7 +296,11 @@
     "city": "Stadt",
     "addressLine": "Adresse",
     "submit": "Weiter zur Zahlung",
-    "submitting": "Zahlung wird gestartet..."
+    "submitting": "Zahlung wird gestartet...",
+    "orderSummaryPlan": "Premium-Plan",
+    "perMonth": "/Monat",
+    "trustNote": "Ihre Kartendaten werden über die sichere Zahlungsinfrastruktur von Iyzico verarbeitet und erreichen diese App nie.",
+    "cancelAnytimeNote": "Jederzeit kündbar."
   },
   "paymentResult": {
     "successTitle": "Sie sind jetzt Premium!",

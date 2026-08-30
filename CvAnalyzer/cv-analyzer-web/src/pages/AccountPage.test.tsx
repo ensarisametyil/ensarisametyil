@@ -93,7 +93,10 @@ describe('AccountPage', () => {
       '/api/auth/me': () => jsonResponse(200, ME_RESPONSE),
       '/api/billing/usage': () => jsonResponse(200, { ...FREE_USAGE, plan: 'PREMIUM', limit: null, remaining: null }),
       '/api/billing/subscription': () => jsonResponse(200, PREMIUM_SUBSCRIPTION),
-      '/api/billing/payments': () => jsonResponse(200, [{ date: '2026-08-01T00:00:00Z', status: 'Succeeded', provider: 'Iyzico', subscriptionReference: 'sub-1' }]),
+      '/api/billing/payments': () =>
+        jsonResponse(200, [
+          { date: '2026-08-01T00:00:00Z', status: 'Succeeded', provider: 'Iyzico', subscriptionReference: 'sub-1', amount: 10, currency: 'USD' },
+        ]),
       '/api/billing/subscription/cancel': () => jsonResponse(200, { message: 'ok' }),
     })
 
@@ -102,6 +105,7 @@ describe('AccountPage', () => {
 
     expect(await screen.findByRole('button', { name: 'Aboneliği İptal Et' })).toBeInTheDocument()
     expect(screen.getAllByText('Iyzico').length).toBeGreaterThanOrEqual(2) // subscription detail + payment history row
+    expect(screen.getByText('$10,00')).toBeInTheDocument() // payment history amount column, backend-defined price
 
     await user.click(screen.getByRole('button', { name: 'Aboneliği İptal Et' }))
     await user.click(screen.getByRole('button', { name: 'Evet, İptal Et' }))
