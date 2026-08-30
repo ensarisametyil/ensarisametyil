@@ -62,3 +62,32 @@ export async function requestJson<T>(input: string, init: RequestOptions = {}): 
 
   return (await response.json()) as T;
 }
+
+/**
+ * Same request/auth/error handling as requestJson, for endpoints that respond 204 No Content
+ * (e.g. DELETE) — calling response.json() on an empty body would throw, so this variant never
+ * attempts to parse one.
+ */
+export async function requestVoid(input: string, init: RequestOptions = {}): Promise<void> {
+  const { skipAuth, headers, ...rest } = init;
+
+  const finalHeaders = new Headers(headers);
+  const token = skipAuth ? null : getToken();
+  if (token) {
+    finalHeaders.set('Authorization', `Bearer ${token}`);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(input, { ...rest, headers: finalHeaders });
+  } catch {
+    throw new ApiError(0, 'Could not connect to the server.');
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 && token) {
+      emitUnauthorized();
+    }
+    throw await parseErrorResponse(response);
+  }
+}

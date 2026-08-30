@@ -103,7 +103,7 @@ public class AuthControllerTests
     [Fact]
     public async Task Me_AuthenticatedUser_ReturnsUserDto()
     {
-        var (controller, db) = CreateController();
+        var (controller, _) = CreateController();
         var registerResponse = await controller.Register(new RegisterRequestDto("me@example.com", "Password123"), CancellationToken.None);
         var userId = ((AuthResponseDto)((OkObjectResult)registerResponse).Value!).User.Id;
 

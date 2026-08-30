@@ -218,7 +218,14 @@
     "previous": "Önceki",
     "next": "Sonraki",
     "backToHistory": "← Analiz Geçmişime Dön",
-    "paginationLabel": "Sayfalar"
+    "paginationLabel": "Sayfalar",
+    "delete": "Sil",
+    "deleteAriaLabel": "{fileName} analizini sil",
+    "deleteConfirmQuestion": "Bu CV'yi ve analiz sonucunu kalıcı olarak silmek istediğinize emin misiniz?",
+    "deleteConfirmYes": "Evet, Sil",
+    "deleteConfirmNo": "Vazgeç",
+    "deleting": "Siliniyor...",
+    "deleteError": "CV silinemedi."
   },
   "account": {
     "title": "Hesabım",

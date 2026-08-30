@@ -58,6 +58,12 @@ describe('HistoryDetailPage', () => {
     expect(screen.getByText('82')).toBeInTheDocument()
     expect(screen.getByText('Clear structure')).toBeInTheDocument()
     expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/analyses/analysis-42`)
+
+    // The page must expose exactly one <h1> (the CV's file name) so screen-reader users
+    // navigating by heading land somewhere meaningful — it previously had none at all.
+    expect(screen.getByRole('heading', { level: 1, name: 'my-cv.pdf' })).toBeInTheDocument()
+    // Every card title sits directly under that <h1> with no level skipped.
+    expect(screen.getByRole('heading', { level: 2, name: 'Güçlü Yönler' })).toBeInTheDocument()
   })
 
   it('shows an error message when the analysis cannot be found', async () => {

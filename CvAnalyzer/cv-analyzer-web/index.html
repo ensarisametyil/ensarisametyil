@@ -4,7 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- The active locale (default: tr) overrides both of these on mount — see I18nProvider. -->
+    <!-- Static baseline for pre-render/no-JS crawlers and social link previews. The active
+         locale (default: tr) overrides <html lang>, <title> and this description on mount —
+         see I18nProvider — and ProtectedRoute adds a noindex tag for authenticated pages. -->
+    <meta name="description" content="Yapay zekâ destekli CV analiz platformu" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CVora AI" />
+    <meta property="og:title" content="CVora AI" />
+    <meta property="og:description" content="Yapay zekâ destekli CV analiz platformu" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="de_DE" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="CVora AI" />
+    <meta name="twitter:description" content="Yapay zekâ destekli CV analiz platformu" />
+    <!-- href is set on mount/route change by useCanonicalUrl() — no production domain is
+         hardcoded here since it isn't known at build time. -->
+    <link rel="canonical" />
     <title>CVora AI</title>
   </head>
   <body>

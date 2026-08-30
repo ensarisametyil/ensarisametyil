@@ -35,7 +35,7 @@ function AnalysisDashboard({ result }: AnalysisDashboardProps) {
   return (
     <div className={styles.grid}>
       <section className={`${cardStyles.card} ${styles.scoreCard}`}>
-        <h3 className={cardStyles.title}>{t('analysis.cvScore')}</h3>
+        <h2 className={cardStyles.title}>{t('analysis.cvScore')}</h2>
         <ScoreRing score={result.overallScore} />
         <p className={styles.scoreTierLabel} data-tier={tier}>
           {t(TIER_KEY[tier])}

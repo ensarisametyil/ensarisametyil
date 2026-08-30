@@ -218,7 +218,14 @@
     "previous": "Zurück",
     "next": "Weiter",
     "backToHistory": "← Zurück zum Analyseverlauf",
-    "paginationLabel": "Seiten"
+    "paginationLabel": "Seiten",
+    "delete": "Löschen",
+    "deleteAriaLabel": "Analyse für {fileName} löschen",
+    "deleteConfirmQuestion": "Möchten Sie diesen Lebenslauf und das Analyseergebnis dauerhaft löschen?",
+    "deleteConfirmYes": "Ja, löschen",
+    "deleteConfirmNo": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "deleteError": "Der Lebenslauf konnte nicht gelöscht werden."
   },
   "account": {
     "title": "Konto",

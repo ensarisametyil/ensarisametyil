@@ -1,32 +1,58 @@
-# React + TypeScript + Vite
+# CVora AI — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Vite single-page app for CVora AI, an AI-powered CV analysis product.
+Upload a CV (PDF/DOCX), get an AI-generated score, strengths/weaknesses, missing keywords and
+recommendations, track your analysis history, and manage a Free/Premium subscription via Iyzico.
 
-Currently, two official plugins are available:
+This is the `cv-analyzer-web` half of the repository; the backend is `CvAnalyzer.Api` (ASP.NET
+Core 8) one directory up.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requirements
 
-## React Compiler
+- Node.js 20+
+- The backend running locally (see `../CvAnalyzer.Api`) — the app has nothing useful to do
+  without it.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
+# http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+By default the app talks to the backend at `http://localhost:5285`. Override this by copying
+`.env.example` to `.env.local` (gitignored) and setting `VITE_API_BASE_URL`. The backend's CORS
+allowlist (`Cors:AllowedOrigins` in `CvAnalyzer.Api/appsettings.json`) must include whatever
+origin the frontend actually runs on.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the Vite dev server with HMR |
+| `npm test` | Run the Vitest suite once (`npx vitest` for watch mode) |
+| `npm run lint` | Run oxlint |
+| `npx tsc -b` | Type-check the whole project |
+| `npm run build` | Type-check, then produce a production build in `dist/` |
+| `npm run preview` | Serve the production build locally |
+
+## Where things live
+
+- `src/api/` — every backend call goes through here (`httpClient.ts` is the single fetch
+  wrapper; one `*Service.ts` file per backend resource).
+- `src/context/` + `src/hooks/` — `AuthContext`/`BillingContext`/`I18nContext`, each with a
+  matching `use*` hook.
+- `src/i18n/` — the Turkish/English/German translation system; see `docs/i18n.md`.
+- `src/pages/` — one component per route; `src/components/` — everything reused across pages.
+- `src/utils/` — pure helpers (error-message mapping, score tiers, password policy, etc).
+
+## Further reading
+
+Project-wide documentation lives in `../docs/`:
+
+- `frontend.md` — original frontend architecture writeup
+- `frontend-authentication.md` / `authentication.md` — auth flow, token storage
+- `monetization.md` / `iyzico-integration.md` — Free/Premium plans and the payment integration
+- `i18n.md` — the multi-language architecture (supported locales, adding a new one/a new key)
+- `production.md` — environment variables and deployment checklist

@@ -23,6 +23,19 @@ function renderHistoryPage() {
   )
 }
 
+function mockFetchRoutes(routes: Record<string, () => Response>) {
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    const match = Object.entries(routes).find(([pattern]) => url.includes(pattern))
+    if (!match) {
+      throw new Error(`No mocked route for ${url}`)
+    }
+    return Promise.resolve(match[1]())
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
 describe('HistoryPage', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -162,5 +175,84 @@ describe('HistoryPage', () => {
       }),
     )
     await screen.findByText('page-two.pdf')
+  })
+
+  it('asks for confirmation before deleting, and does nothing if the user backs out', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchRoutes({
+      '/api/analyses':
+        () =>
+          jsonResponse(200, {
+            items: [{ id: 'a1', cvId: 'cv-1', cvFileName: 'my-cv.pdf', overallScore: 50, summary: 's', createdAt: '2026-01-01T00:00:00Z' }],
+            page: 1,
+            pageSize: 20,
+            totalCount: 1,
+          }),
+    })
+
+    renderHistoryPage()
+    await screen.findByText('my-cv.pdf')
+
+    await user.click(screen.getByRole('button', { name: 'my-cv.pdf analizini sil' }))
+    expect(await screen.findByText('Bu CV\'yi ve analiz sonucunu kalıcı olarak silmek istediğinize emin misiniz?')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Vazgeç' }))
+
+    expect(screen.queryByText('Bu CV\'yi ve analiz sonucunu kalıcı olarak silmek istediğinize emin misiniz?')).not.toBeInTheDocument()
+    expect(screen.getByText('my-cv.pdf')).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([input]) => input.toString().includes('/api/cv/'))).toBe(false)
+  })
+
+  it('deletes the CV via DELETE /api/cv/{cvId} on confirmation and removes it from the list', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchRoutes({
+      '/api/analyses':
+        () =>
+          jsonResponse(200, {
+            items: [{ id: 'a1', cvId: 'cv-1', cvFileName: 'my-cv.pdf', overallScore: 50, summary: 's', createdAt: '2026-01-01T00:00:00Z' }],
+            page: 1,
+            pageSize: 20,
+            totalCount: 1,
+          }),
+      '/api/cv/cv-1': () => new Response(null, { status: 204 }),
+    })
+
+    renderHistoryPage()
+    await screen.findByText('my-cv.pdf')
+
+    await user.click(screen.getByRole('button', { name: 'my-cv.pdf analizini sil' }))
+    await user.click(screen.getByRole('button', { name: 'Evet, Sil' }))
+
+    await waitFor(() => expect(screen.queryByText('my-cv.pdf')).not.toBeInTheDocument())
+    expect(screen.getByText('Henüz bir analiz yapmadınız.')).toBeInTheDocument()
+
+    const deleteCall = fetchMock.mock.calls.find(([input]) => input.toString().includes('/api/cv/cv-1'))
+    expect(deleteCall).toBeDefined()
+    expect(deleteCall?.[1]?.method).toBe('DELETE')
+  })
+
+  it('shows a localized error and keeps the row when deletion fails', async () => {
+    const user = userEvent.setup()
+    mockFetchRoutes({
+      '/api/analyses':
+        () =>
+          jsonResponse(200, {
+            items: [{ id: 'a1', cvId: 'cv-1', cvFileName: 'my-cv.pdf', overallScore: 50, summary: 's', createdAt: '2026-01-01T00:00:00Z' }],
+            page: 1,
+            pageSize: 20,
+            totalCount: 1,
+          }),
+      '/api/cv/cv-1': () => jsonResponse(404, { code: 'CV_NOT_FOUND', message: 'irrelevant backend text' }),
+    })
+
+    renderHistoryPage()
+    await screen.findByText('my-cv.pdf')
+
+    await user.click(screen.getByRole('button', { name: 'my-cv.pdf analizini sil' }))
+    await user.click(screen.getByRole('button', { name: 'Evet, Sil' }))
+
+    expect(await screen.findByText('Belirtilen CV bulunamadı.')).toBeInTheDocument()
+    expect(screen.getByText('my-cv.pdf')).toBeInTheDocument()
+    expect(screen.queryByText('irrelevant backend text')).not.toBeInTheDocument()
   })
 })

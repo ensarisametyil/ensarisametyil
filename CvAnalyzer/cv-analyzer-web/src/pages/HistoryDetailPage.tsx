@@ -59,7 +59,7 @@ function HistoryDetailPage() {
         <>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
-              <p className={styles.cvName}>{detail.cvFileName}</p>
+              <h1 className={styles.cvName}>{detail.cvFileName}</h1>
               <p className={styles.date}>{formatDate(detail.createdAt, locale)}</p>
             </div>
           </div>

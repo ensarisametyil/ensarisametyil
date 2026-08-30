@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { useCanonicalUrl } from './hooks/useCanonicalUrl'
 import { I18nProvider } from './context/I18nContext'
 import { AuthProvider } from './context/AuthContext'
 import { BillingProvider } from './context/BillingContext'
@@ -21,6 +22,8 @@ import CookiesPage from './pages/CookiesPage'
 import ContactPage from './pages/ContactPage'
 
 function App() {
+  useCanonicalUrl()
+
   return (
     <I18nProvider>
       <AuthProvider>

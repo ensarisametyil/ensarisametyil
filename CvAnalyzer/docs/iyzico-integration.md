@@ -104,7 +104,7 @@ export Iyzico__FrontendResultUrl="https://<gerçek-domain>/premium/result"
 
 ### `PremiumPricingPlanReferenceCode` Nedir?
 
-İyzico'nun Subscription ürünü, bir "Product" (ör. "CV Analyzer Premium") ve ona bağlı bir
+İyzico'nun Subscription ürünü, bir "Product" (ör. "CVora AI Premium") ve ona bağlı bir
 "Payment Plan" (ör. "Aylık ₺X") gerektirir — bunlar İyzico merchant panelinde (veya panel API'si
 ile) **önceden** oluşturulur ve bir `pricingPlanReferenceCode` üretir. Bu değer sır değildir ama
 ortam-özeldir (sandbox ve production panelinde farklı plan kodları olacaktır) — bu yüzden

@@ -22,7 +22,7 @@ function ListCard({ title, items, tone = 'neutral', className }: ListCardProps) 
 
   return (
     <section className={`${cardStyles.card} ${className ?? ''}`}>
-      <h3 className={cardStyles.title}>{title}</h3>
+      <h2 className={cardStyles.title}>{title}</h2>
       <ul className={styles.list}>
         {items.map((item, index) => (
           <li key={index} className={`${styles.item} ${styles[tone]}`}>

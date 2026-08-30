@@ -16,7 +16,8 @@ src/
   hooks/
     useCvAnalysis.ts     → upload/analyze state machine (idle/uploading/uploaded/analyzing/analyzed)
   utils/
-    errorMessages.ts     → HTTP status → kullanıcıya gösterilecek Türkçe mesaj
+    errorMessages.ts     → backend hata kodu → kullanıcıya gösterilecek yerelleştirilmiş mesaj
+                            (Aşama 13'ten itibaren TR/EN/DE — bkz. docs/i18n.md §8)
     scoreTier.ts          → skor → renk/etiket eşlemesi
   components/
     UploadBox, AnalyzeButton, Spinner, ErrorBanner

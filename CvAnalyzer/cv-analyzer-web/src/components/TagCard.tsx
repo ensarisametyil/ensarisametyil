@@ -17,7 +17,7 @@ function TagCard({ title, items, tone = 'neutral', note, className }: TagCardPro
 
   return (
     <section className={`${cardStyles.card} ${className ?? ''}`}>
-      <h3 className={cardStyles.title}>{title}</h3>
+      <h2 className={cardStyles.title}>{title}</h2>
       <div className={styles.tags}>
         {items.map((item, index) => (
           <span key={index} className={`${styles.tag} ${tone === 'suggestion' ? styles.suggestion : ''}`}>

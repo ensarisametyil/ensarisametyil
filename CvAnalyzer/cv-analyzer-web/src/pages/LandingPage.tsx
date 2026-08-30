@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useBilling } from '../hooks/useBilling'
 import { useTranslation } from '../hooks/useTranslation'
 import Footer from '../components/Footer'
 import PublicHeader from '../components/PublicHeader'
@@ -10,9 +11,14 @@ const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
 
 function LandingPage() {
   const { isAuthenticated } = useAuth()
+  const { usage } = useBilling()
   const { t } = useTranslation()
   const primaryCtaTarget = isAuthenticated ? '/app' : '/register'
   const primaryCtaLabel = isAuthenticated ? t('landing.hero.ctaAuthenticated') : t('landing.hero.ctaAnonymous')
+  // An authenticated Free user's "Premium'a Geç" click should go straight to checkout, not just
+  // to the app shell where they'd have to go find the upgrade CTA a second time. An authenticated
+  // Premium user (or before usage has loaded) falls back to /app — there's nothing to check out.
+  const premiumCtaTarget = !isAuthenticated ? '/register' : usage?.plan === 'FREE' ? '/premium/checkout' : '/app'
 
   return (
     <div className={styles.page}>
@@ -103,7 +109,7 @@ function LandingPage() {
                 <li>{t('landing.plans.premium.feature3')}</li>
                 <li>{t('landing.plans.premium.feature4')}</li>
               </ul>
-              <Link to={isAuthenticated ? '/app' : '/register'} className={styles.planCta}>
+              <Link to={premiumCtaTarget} className={styles.planCta}>
                 {t('landing.plans.premium.cta')}
               </Link>
             </div>

@@ -4,6 +4,13 @@ import { I18nContext, type I18nContextValue } from './i18nContextObject'
 
 const STORAGE_KEY = 'cvorai.locale'
 
+/** og:locale uses underscore-joined language_TERRITORY tags, distinct from format.ts's BCP-47 (hyphenated) tags. */
+const OG_LOCALE: Record<Locale, string> = {
+  tr: 'tr_TR',
+  en: 'en_US',
+  de: 'de_DE',
+}
+
 function isSupportedLocale(value: string | null | undefined): value is Locale {
   return value != null && (SUPPORTED_LOCALES as readonly string[]).includes(value)
 }
@@ -78,6 +85,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = locale
     document.title = `${t('app.name')} — ${t('app.tagline')}`
+
+    const description = t('app.description')
+    for (const selector of [
+      'meta[name="description"]',
+      'meta[property="og:description"]',
+      'meta[name="twitter:description"]',
+    ]) {
+      document.querySelector(selector)?.setAttribute('content', description)
+    }
+    document.querySelector('meta[property="og:locale"]')?.setAttribute('content', OG_LOCALE[locale])
+
     try {
       localStorage.setItem(STORAGE_KEY, locale)
     } catch {

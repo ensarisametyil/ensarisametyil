@@ -15,7 +15,7 @@ function TextCard({ title, text, className }: TextCardProps) {
 
   return (
     <section className={`${cardStyles.card} ${className ?? ''}`}>
-      <h3 className={cardStyles.title}>{title}</h3>
+      <h2 className={cardStyles.title}>{title}</h2>
       <p className={styles.text}>{text}</p>
     </section>
   )

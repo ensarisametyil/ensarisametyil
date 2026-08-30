@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../hooks/useTranslation'
+import { useNoIndex } from '../hooks/useNoIndex'
 import Spinner from './Spinner'
 import styles from './ProtectedRoute.module.css'
 
@@ -10,6 +11,7 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
   const { t } = useTranslation()
   const location = useLocation()
+  useNoIndex()
 
   if (isLoading) {
     return (

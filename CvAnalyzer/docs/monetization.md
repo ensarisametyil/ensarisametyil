@@ -207,9 +207,10 @@ if (!await _entitlements.HasFeatureAsync(userId, PlanFeature.AtsAnalysis, cancel
   nedenini gösterir — backend zaten bunu reddedecek olsa da, kullanıcıya boşuna bir istek
   attırmamak için frontend'de de engellenir (gerçek yetkilendirme her zaman backend'dedir, bu
   sadece UX).
-- Backend'in `402 QUOTA_EXCEEDED` yanıtındaki mesaj, `ErrorBanner` ile doğrudan gösterilir
-  (backend mesajı zaten güvenli/sanitize edilmiş Türkçe metindir — mevcut `errorMessages.ts`
-  deseniyle tutarlı).
+- Backend'in `402 QUOTA_EXCEEDED` yanıtı `ErrorBanner` ile gösterilir — ancak **(Aşama 13 ile
+  güncellendi)** artık backend'in ham `message` alanı değil, `code: "QUOTA_EXCEEDED"` üzerinden
+  çözülen, o an aktif dildeki (TR/EN/DE) yerelleştirilmiş metin gösterilir. Ayrıntılar için
+  `docs/i18n.md` §8.
 
 ## 8. Güvenlik
 

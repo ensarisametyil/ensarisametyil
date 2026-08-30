@@ -20,6 +20,7 @@
 }
 
 .cvName {
+  margin: 0;
   font-weight: 600;
   color: var(--text-heading);
   font-size: 1.15rem;

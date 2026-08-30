@@ -218,7 +218,14 @@
     "previous": "Previous",
     "next": "Next",
     "backToHistory": "← Back to Analysis History",
-    "paginationLabel": "Pages"
+    "paginationLabel": "Pages",
+    "delete": "Delete",
+    "deleteAriaLabel": "Delete the analysis for {fileName}",
+    "deleteConfirmQuestion": "Are you sure you want to permanently delete this CV and its analysis result?",
+    "deleteConfirmYes": "Yes, Delete",
+    "deleteConfirmNo": "Cancel",
+    "deleting": "Deleting...",
+    "deleteError": "The CV could not be deleted."
   },
   "account": {
     "title": "Account",

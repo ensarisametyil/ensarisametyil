@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { requestJson } from './httpClient'
+import { requestJson, requestVoid } from './httpClient'
 import { onUnauthorized } from './authEvents'
 import { clearToken, setToken } from './tokenStorage'
 
@@ -64,5 +64,21 @@ describe('httpClient', () => {
     expect(listener).not.toHaveBeenCalled()
 
     unsubscribe()
+  })
+
+  it('requestVoid resolves without attempting to parse a 204 No Content body', async () => {
+    setToken('abc123')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(null, { status: 204 })))
+
+    await expect(requestVoid('https://api.test/x', { method: 'DELETE' })).resolves.toBeUndefined()
+  })
+
+  it('requestVoid rejects with a parsed ApiError for a non-2xx response', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(404, { code: 'CV_NOT_FOUND', message: 'irrelevant' })))
+
+    await expect(requestVoid('https://api.test/x', { method: 'DELETE' })).rejects.toMatchObject({
+      status: 404,
+      code: 'CV_NOT_FOUND',
+    })
   })
 })
