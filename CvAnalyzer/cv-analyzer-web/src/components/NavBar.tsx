@@ -32,6 +32,11 @@ function NavBar() {
 
       <div className={styles.right}>
         <PlanBadge />
+        {user?.role === 'Admin' && (
+          <NavLink to="/admin" className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
+            {t('nav.admin')}
+          </NavLink>
+        )}
         <NavLink to="/account" className={({ isActive }) => (isActive ? styles.linkActive : styles.link)}>
           {t('nav.account')}
         </NavLink>

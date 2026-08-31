@@ -27,6 +27,8 @@ public class AppDbContext : DbContext
 
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
 
+    public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var stringListComparer = new ValueComparer<List<string>>(
@@ -42,6 +44,7 @@ public class AppDbContext : DbContext
             entity.Property(u => u.PasswordHash).IsRequired();
             entity.Property(u => u.FullName).HasMaxLength(255);
             entity.Property(u => u.IsActive).HasDefaultValue(true);
+            entity.Property(u => u.Role).HasConversion<string>().HasMaxLength(20).HasDefaultValue(UserRole.User).IsRequired();
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
             entity.Property(u => u.UpdatedAt).HasDefaultValueSql("now()");
         });
@@ -220,6 +223,28 @@ public class AppDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(m => m.UserId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<AdminAuditLog>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Action).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(l => l.Details).HasMaxLength(500);
+            entity.Property(l => l.CreatedAt).HasDefaultValueSql("now()");
+
+            // The admin who performed the action must always be resolvable, but a log row must
+            // survive that admin account later being deleted (unlikely, but the audit trail is
+            // the one thing that must never silently disappear) — so Restrict, not Cascade.
+            entity.HasOne(l => l.AdminUser)
+                  .WithMany()
+                  .HasForeignKey(l => l.AdminUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // No FK/navigation to the target user on purpose: the audit row must remain a
+            // complete historical record even after the target user is deleted, and nothing here
+            // needs to navigate from User -> AdminAuditLog.
+            entity.HasIndex(l => l.TargetUserId);
+            entity.HasIndex(l => l.CreatedAt);
         });
     }
 }

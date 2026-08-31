@@ -4,6 +4,8 @@ export interface User {
   email: string;
   createdAt: string;
   emailVerifiedAt: string | null;
+  /** "User" or "Admin" (Stage 16) — only used to show/hide the Admin nav link; the actual authorization decision is always re-checked server-side per-request. */
+  role: string;
 }
 
 /** Response of POST /api/auth/register and POST /api/auth/login (AuthResponseDto). */

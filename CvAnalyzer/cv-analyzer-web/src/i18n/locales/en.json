@@ -36,7 +36,8 @@
     "home": "Home",
     "history": "Analysis History",
     "account": "Account",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "admin": "Admin Panel"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -416,6 +417,111 @@
     "WEAK_PASSWORD": "Password must be at least 8 characters and contain at least one letter and one digit.",
     "NETWORK_ERROR": "Could not connect to the server.",
     "NOT_FOUND": "CV not found.",
-    "GENERIC": "An unexpected error occurred. Please try again."
+    "GENERIC": "An unexpected error occurred. Please try again.",
+    "ACTION_FAILED": "The action failed.",
+    "INVALID_ROLE": "Invalid role.",
+    "INVALID_STATUS": "Invalid payment status.",
+    "USER_NOT_FOUND": "User not found."
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin navigation",
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "payments": "Payments",
+      "auditLogs": "Audit Logs"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "newUsers7d": "New Users (7d)",
+      "freeUsers": "Free Users",
+      "premiumUsers": "Premium Users",
+      "activeSubscriptions": "Active Subscriptions",
+      "succeededPayments": "Succeeded Payments",
+      "failedPayments": "Failed Payments",
+      "pendingPayments": "Pending Payments",
+      "totalRevenue": "Total Revenue",
+      "totalAnalyses": "Total Analyses",
+      "analyses30d": "Analyses (30d)",
+      "recentPayments": "Recent Payments"
+    },
+    "users": {
+      "title": "Users",
+      "searchPlaceholder": "Search by email",
+      "search": "Search",
+      "empty": "No users found.",
+      "email": "Email",
+      "role": "Role",
+      "plan": "Plan",
+      "status": "Status",
+      "registered": "Registered",
+      "statusActive": "Active",
+      "statusInactive": "Inactive"
+    },
+    "userDetail": {
+      "backToUsers": "← Back to users",
+      "account": "Account",
+      "userId": "User ID",
+      "email": "Email",
+      "registered": "Registered",
+      "role": "Role",
+      "status": "Status",
+      "emailVerified": "Email Verified",
+      "notVerified": "Not verified",
+      "activate": "Activate Account",
+      "deactivate": "Deactivate Account",
+      "promoteToAdmin": "Make Admin",
+      "demoteToUser": "Remove Admin",
+      "subscription": "Subscription",
+      "plan": "Plan",
+      "subscriptionStatus": "Subscription Status",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "cancelSubscription": "Cancel Subscription",
+      "usage": "Usage",
+      "used": "Used",
+      "limit": "Limit",
+      "remaining": "Remaining",
+      "unlimited": "Unlimited",
+      "payments": "Payment History"
+    },
+    "payments": {
+      "title": "Payments",
+      "searchPlaceholder": "Search by user email",
+      "filterStatus": "Filter by status",
+      "allStatuses": "All Statuses",
+      "statusSucceeded": "Succeeded",
+      "statusFailed": "Failed",
+      "statusInitiated": "Initiated",
+      "fromDate": "From date",
+      "toDate": "To date",
+      "empty": "No payments found.",
+      "user": "User",
+      "status": "Status",
+      "amount": "Amount",
+      "provider": "Provider",
+      "reference": "Reference",
+      "date": "Date"
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "empty": "No actions recorded yet.",
+      "admin": "Admin",
+      "action": "Action",
+      "target": "Target User",
+      "details": "Details",
+      "result": "Result",
+      "resultSuccess": "Success",
+      "resultFailed": "Failed",
+      "date": "Date"
+    },
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "pageIndicator": "Page {page} of {totalPages}"
+    }
   }
 }

@@ -258,5 +258,5 @@ public class AuthController : ControllerBase
         return new AuthResponseDto(token.AccessToken, "Bearer", expiresInSeconds, ToUserDto(user));
     }
 
-    private static UserDto ToUserDto(User user) => new(user.Id, user.Email, user.CreatedAt, user.EmailVerifiedAt);
+    private static UserDto ToUserDto(User user) => new(user.Id, user.Email, user.CreatedAt, user.EmailVerifiedAt, user.Role.ToString());
 }

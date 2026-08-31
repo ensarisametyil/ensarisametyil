@@ -13,6 +13,9 @@ public class User
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Minimal role model (Stage 16) — see UserRole. Defaults to User; promoted to Admin only via the Admin:BootstrapEmail startup seed or an existing Admin's role-change action, never via any public/self-service endpoint.</summary>
+    public UserRole Role { get; set; } = UserRole.User;
+
     /// <summary>Null until the user completes email verification (see UserToken/AuthService) — not enforced anywhere yet (login/upload/analyze all still work unverified); this is state only, ready for a future stage to gate on.</summary>
     public DateTime? EmailVerifiedAt { get; set; }
 

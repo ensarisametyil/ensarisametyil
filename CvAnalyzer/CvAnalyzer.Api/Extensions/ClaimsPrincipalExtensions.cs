@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using CvAnalyzer.Api.Models.Entities;
 
 namespace CvAnalyzer.Api.Extensions;
 
@@ -30,5 +31,17 @@ public static class ClaimsPrincipalExtensions
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Reads the authenticated caller's role from the "role" claim (see JwtTokenService /
+    /// Program.cs's RoleClaimType binding). Endpoint-level authorization should always go through
+    /// [Authorize(Roles = "Admin")] rather than this — this exists for the handful of places
+    /// (e.g. audit log "who did this") that need the value itself, not just a yes/no gate.
+    /// </summary>
+    public static UserRole GetRole(this ClaimsPrincipal principal)
+    {
+        var value = principal.FindFirstValue("role");
+        return Enum.TryParse<UserRole>(value, out var role) ? role : UserRole.User;
     }
 }

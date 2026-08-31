@@ -85,6 +85,14 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddScoped<CvAnalyzer.Api.Services.Contact.IContactService, CvAnalyzer.Api.Services.Contact.ContactService>();
 
+// --- Admin panel (Stage 16) ---
+
+builder.Services.Configure<CvAnalyzer.Api.Services.Admin.AdminOptions>(builder.Configuration.GetSection(CvAnalyzer.Api.Services.Admin.AdminOptions.SectionName));
+builder.Services.AddScoped<CvAnalyzer.Api.Services.Admin.IAdminUserService, CvAnalyzer.Api.Services.Admin.AdminUserService>();
+builder.Services.AddScoped<CvAnalyzer.Api.Services.Admin.IAdminPaymentService, CvAnalyzer.Api.Services.Admin.AdminPaymentService>();
+builder.Services.AddScoped<CvAnalyzer.Api.Services.Admin.IAdminDashboardService, CvAnalyzer.Api.Services.Admin.AdminDashboardService>();
+builder.Services.AddScoped<CvAnalyzer.Api.Services.Admin.IAdminAuditLogService, CvAnalyzer.Api.Services.Admin.AdminAuditLogService>();
+
 // --- Authentication (JWT) ---
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
@@ -151,6 +159,12 @@ builder.Services
             // rejected regardless of any future default change upstream.
             RequireSignedTokens = true,
             ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+
+            // Claim types are kept as issued (see MapInboundClaims = false above), so the plain
+            // "role" claim JwtTokenService writes must be pointed to explicitly — this is what
+            // lets [Authorize(Roles = "Admin")] work as ASP.NET Core's built-in role check rather
+            // than a bespoke policy any admin action would otherwise have to remember to apply.
+            RoleClaimType = "role",
         };
     });
 
@@ -301,6 +315,10 @@ app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellati
 });
 
 app.MapControllers();
+
+// Idempotent — promotes Admin:BootstrapEmail's account to Admin if configured and not already.
+// The only way an Admin account is ever created; see AdminBootstrap's doc comment.
+await CvAnalyzer.Api.Services.Admin.AdminBootstrap.SeedAsync(app.Services);
 
 app.Run();
 

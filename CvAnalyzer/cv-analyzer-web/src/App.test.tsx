@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import type { AuthResponse } from './types/auth'
+import { setToken } from './api/tokenStorage'
+import type { AuthResponse, User } from './types/auth'
 import type { Usage } from './types/billing'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -17,7 +18,30 @@ const AUTH_RESPONSE: AuthResponse = {
   accessToken: 'test-access-token',
   tokenType: 'Bearer',
   expiresInSeconds: 3600,
-  user: { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null },
+  user: { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null, role: 'User' },
+}
+
+const ADMIN_AUTH_RESPONSE: AuthResponse = {
+  accessToken: 'test-admin-access-token',
+  tokenType: 'Bearer',
+  expiresInSeconds: 3600,
+  user: { id: 'admin-1', email: 'admin@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null, role: 'Admin' },
+}
+
+const EMPTY_DASHBOARD_STATS = {
+  totalUsers: 1,
+  activeUsers: 1,
+  newUsersLast7Days: 0,
+  freeUsers: 1,
+  premiumUsers: 0,
+  activeSubscriptions: 0,
+  succeededPayments: 0,
+  failedPayments: 0,
+  pendingPayments: 0,
+  totalRevenueUsd: 0,
+  totalAnalyses: 0,
+  analysesLast30Days: 0,
+  recentPayments: [],
 }
 
 const DEFAULT_USAGE: Usage = {
@@ -69,6 +93,13 @@ async function loginAs(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Parola'), 'Password123')
   await user.click(screen.getByRole('button', { name: 'Giriş Yap' }))
   await screen.findByText('user@example.com')
+}
+
+async function loginAsAdmin(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText('E-posta'), 'admin@example.com')
+  await user.type(screen.getByLabelText('Parola'), 'Password123')
+  await user.click(screen.getByRole('button', { name: 'Giriş Yap' }))
+  await screen.findByText('admin@example.com')
 }
 
 describe('Authentication flow', () => {
@@ -204,5 +235,56 @@ describe('Authentication flow', () => {
 
     await screen.findByRole('heading', { name: 'Giriş Yap' })
     expect(screen.queryByText('FREE PLAN')).not.toBeInTheDocument()
+  })
+})
+
+describe('Admin panel access control', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('never shows the Admin nav link to a normal user', async () => {
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+    })
+    const user = userEvent.setup()
+
+    renderApp('/login')
+    await loginAs(user)
+
+    expect(screen.queryByRole('link', { name: 'Admin Paneli' })).not.toBeInTheDocument()
+  })
+
+  it('redirects an authenticated normal user away from /admin to /app, never rendering the admin dashboard', async () => {
+    const normalUser: User = { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null, role: 'User' }
+    setToken('existing-token')
+    mockFetchRoutes({
+      '/api/auth/me': () => jsonResponse(200, normalUser),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+    })
+
+    renderApp('/admin')
+
+    expect(await screen.findByRole('heading', { name: 'CVora AI' })).toBeInTheDocument()
+    expect(screen.queryByText('Yönetim Paneli')).not.toBeInTheDocument()
+  })
+
+  it('shows the Admin nav link for an admin user and lets them reach the dashboard', async () => {
+    mockFetchRoutes({
+      '/api/auth/login': () => jsonResponse(200, ADMIN_AUTH_RESPONSE),
+      '/api/billing/usage': () => jsonResponse(200, DEFAULT_USAGE),
+      '/api/admin/dashboard': () => jsonResponse(200, EMPTY_DASHBOARD_STATS),
+    })
+    const user = userEvent.setup()
+
+    renderApp('/login')
+    await loginAsAdmin(user)
+
+    const adminLink = await screen.findByRole('link', { name: 'Admin Paneli' })
+    await user.click(adminLink)
+
+    expect(await screen.findByRole('heading', { name: 'Yönetim Paneli' })).toBeInTheDocument()
   })
 })

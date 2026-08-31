@@ -26,7 +26,7 @@ function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-const ME_RESPONSE: User = { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null }
+const ME_RESPONSE: User = { id: 'user-1', email: 'user@example.com', createdAt: '2026-01-01T00:00:00Z', emailVerifiedAt: null, role: 'User' }
 
 /** Simulates an already-authenticated visit by pre-seeding a token and mocking /me + /usage. */
 function renderLandingAsAuthenticated(plan: 'FREE' | 'PREMIUM') {

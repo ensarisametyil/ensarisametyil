@@ -4,7 +4,9 @@ import { I18nProvider } from './context/I18nContext'
 import { AuthProvider } from './context/AuthContext'
 import { BillingProvider } from './context/BillingContext'
 import AppLayout from './components/AppLayout'
+import AdminLayout from './components/AdminLayout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -20,6 +22,11 @@ import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import CookiesPage from './pages/CookiesPage'
 import ContactPage from './pages/ContactPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminUsersPage from './pages/AdminUsersPage'
+import AdminUserDetailPage from './pages/AdminUserDetailPage'
+import AdminPaymentsPage from './pages/AdminPaymentsPage'
+import AdminAuditLogsPage from './pages/AdminAuditLogsPage'
 
 function App() {
   useCanonicalUrl()
@@ -52,6 +59,20 @@ function App() {
               <Route path="/premium/checkout" element={<PremiumCheckoutPage />} />
               <Route path="/premium/result" element={<PremiumResultPage />} />
               <Route path="/account" element={<AccountPage />} />
+            </Route>
+
+            <Route
+              element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }
+            >
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+              <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+              <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

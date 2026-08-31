@@ -36,7 +36,8 @@
     "home": "Startseite",
     "history": "Analyseverlauf",
     "account": "Konto",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "admin": "Admin-Bereich"
   },
   "billing": {
     "freePlan": "FREE-PLAN",
@@ -416,6 +417,111 @@
     "WEAK_PASSWORD": "Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Buchstaben und eine Ziffer enthalten.",
     "NETWORK_ERROR": "Verbindung zum Server konnte nicht hergestellt werden.",
     "NOT_FOUND": "Lebenslauf nicht gefunden.",
-    "GENERIC": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    "GENERIC": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "ACTION_FAILED": "Die Aktion ist fehlgeschlagen.",
+    "INVALID_ROLE": "Ungültige Rolle.",
+    "INVALID_STATUS": "Ungültiger Zahlungsstatus.",
+    "USER_NOT_FOUND": "Benutzer nicht gefunden."
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin-Navigation",
+      "dashboard": "Übersicht",
+      "users": "Benutzer",
+      "payments": "Zahlungen",
+      "auditLogs": "Protokolle"
+    },
+    "dashboard": {
+      "title": "Admin-Übersicht",
+      "totalUsers": "Benutzer gesamt",
+      "activeUsers": "Aktive Benutzer",
+      "newUsers7d": "Neue Benutzer (7 Tage)",
+      "freeUsers": "Free-Benutzer",
+      "premiumUsers": "Premium-Benutzer",
+      "activeSubscriptions": "Aktive Abonnements",
+      "succeededPayments": "Erfolgreiche Zahlungen",
+      "failedPayments": "Fehlgeschlagene Zahlungen",
+      "pendingPayments": "Ausstehende Zahlungen",
+      "totalRevenue": "Gesamtumsatz",
+      "totalAnalyses": "Analysen gesamt",
+      "analyses30d": "Analysen (30 Tage)",
+      "recentPayments": "Letzte Zahlungen"
+    },
+    "users": {
+      "title": "Benutzer",
+      "searchPlaceholder": "Nach E-Mail suchen",
+      "search": "Suchen",
+      "empty": "Keine Benutzer gefunden.",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "plan": "Plan",
+      "status": "Status",
+      "registered": "Registriert",
+      "statusActive": "Aktiv",
+      "statusInactive": "Inaktiv"
+    },
+    "userDetail": {
+      "backToUsers": "← Zurück zu Benutzern",
+      "account": "Konto",
+      "userId": "Benutzer-ID",
+      "email": "E-Mail",
+      "registered": "Registriert",
+      "role": "Rolle",
+      "status": "Status",
+      "emailVerified": "E-Mail bestätigt",
+      "notVerified": "Nicht bestätigt",
+      "activate": "Konto aktivieren",
+      "deactivate": "Konto deaktivieren",
+      "promoteToAdmin": "Zum Admin machen",
+      "demoteToUser": "Admin-Rechte entziehen",
+      "subscription": "Abonnement",
+      "plan": "Plan",
+      "subscriptionStatus": "Abonnementstatus",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "cancelSubscription": "Abonnement kündigen",
+      "usage": "Nutzung",
+      "used": "Verwendet",
+      "limit": "Limit",
+      "remaining": "Verbleibend",
+      "unlimited": "Unbegrenzt",
+      "payments": "Zahlungsverlauf"
+    },
+    "payments": {
+      "title": "Zahlungen",
+      "searchPlaceholder": "Nach Benutzer-E-Mail suchen",
+      "filterStatus": "Nach Status filtern",
+      "allStatuses": "Alle Status",
+      "statusSucceeded": "Erfolgreich",
+      "statusFailed": "Fehlgeschlagen",
+      "statusInitiated": "Gestartet",
+      "fromDate": "Von Datum",
+      "toDate": "Bis Datum",
+      "empty": "Keine Zahlungen gefunden.",
+      "user": "Benutzer",
+      "status": "Status",
+      "amount": "Betrag",
+      "provider": "Anbieter",
+      "reference": "Referenz",
+      "date": "Datum"
+    },
+    "auditLogs": {
+      "title": "Protokolle",
+      "empty": "Noch keine Aktionen protokolliert.",
+      "admin": "Admin",
+      "action": "Aktion",
+      "target": "Zielbenutzer",
+      "details": "Details",
+      "result": "Ergebnis",
+      "resultSuccess": "Erfolg",
+      "resultFailed": "Fehlgeschlagen",
+      "date": "Datum"
+    },
+    "pagination": {
+      "label": "Seitennummerierung",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "pageIndicator": "Seite {page} von {totalPages}"
+    }
   }
 }

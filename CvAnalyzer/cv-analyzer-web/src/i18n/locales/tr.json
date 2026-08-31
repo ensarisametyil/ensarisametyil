@@ -36,7 +36,8 @@
     "home": "Ana Sayfa",
     "history": "Analiz Geçmişim",
     "account": "Hesabım",
-    "logout": "Çıkış Yap"
+    "logout": "Çıkış Yap",
+    "admin": "Admin Paneli"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -416,6 +417,111 @@
     "WEAK_PASSWORD": "Parola en az 8 karakter olmalı, en az bir harf ve bir rakam içermelidir.",
     "NETWORK_ERROR": "Sunucuya bağlanılamadı.",
     "NOT_FOUND": "CV bulunamadı.",
-    "GENERIC": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+    "GENERIC": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+    "ACTION_FAILED": "İşlem başarısız oldu.",
+    "INVALID_ROLE": "Geçersiz rol.",
+    "INVALID_STATUS": "Geçersiz ödeme durumu.",
+    "USER_NOT_FOUND": "Kullanıcı bulunamadı."
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin navigasyonu",
+      "dashboard": "Panel",
+      "users": "Kullanıcılar",
+      "payments": "Ödemeler",
+      "auditLogs": "İşlem Kayıtları"
+    },
+    "dashboard": {
+      "title": "Yönetim Paneli",
+      "totalUsers": "Toplam Kullanıcı",
+      "activeUsers": "Aktif Kullanıcı",
+      "newUsers7d": "Son 7 Günde Yeni Kullanıcı",
+      "freeUsers": "Free Kullanıcı",
+      "premiumUsers": "Premium Kullanıcı",
+      "activeSubscriptions": "Aktif Abonelik",
+      "succeededPayments": "Başarılı Ödeme",
+      "failedPayments": "Başarısız Ödeme",
+      "pendingPayments": "Bekleyen Ödeme",
+      "totalRevenue": "Toplam Gelir",
+      "totalAnalyses": "Toplam Analiz",
+      "analyses30d": "Son 30 Günde Analiz",
+      "recentPayments": "Son Ödemeler"
+    },
+    "users": {
+      "title": "Kullanıcılar",
+      "searchPlaceholder": "E-posta ile ara",
+      "search": "Ara",
+      "empty": "Kullanıcı bulunamadı.",
+      "email": "E-posta",
+      "role": "Rol",
+      "plan": "Plan",
+      "status": "Durum",
+      "registered": "Kayıt Tarihi",
+      "statusActive": "Aktif",
+      "statusInactive": "Pasif"
+    },
+    "userDetail": {
+      "backToUsers": "← Kullanıcılara dön",
+      "account": "Hesap",
+      "userId": "Kullanıcı ID",
+      "email": "E-posta",
+      "registered": "Kayıt Tarihi",
+      "role": "Rol",
+      "status": "Durum",
+      "emailVerified": "E-posta Doğrulandı",
+      "notVerified": "Doğrulanmadı",
+      "activate": "Hesabı Aktifleştir",
+      "deactivate": "Hesabı Pasifleştir",
+      "promoteToAdmin": "Admin Yap",
+      "demoteToUser": "Admin Yetkisini Kaldır",
+      "subscription": "Abonelik",
+      "plan": "Plan",
+      "subscriptionStatus": "Abonelik Durumu",
+      "startDate": "Başlangıç Tarihi",
+      "endDate": "Bitiş Tarihi",
+      "cancelSubscription": "Aboneliği İptal Et",
+      "usage": "Kullanım",
+      "used": "Kullanılan",
+      "limit": "Limit",
+      "remaining": "Kalan",
+      "unlimited": "Sınırsız",
+      "payments": "Ödeme Geçmişi"
+    },
+    "payments": {
+      "title": "Ödemeler",
+      "searchPlaceholder": "Kullanıcı e-postası ile ara",
+      "filterStatus": "Duruma göre filtrele",
+      "allStatuses": "Tüm Durumlar",
+      "statusSucceeded": "Başarılı",
+      "statusFailed": "Başarısız",
+      "statusInitiated": "Başlatıldı",
+      "fromDate": "Başlangıç tarihi",
+      "toDate": "Bitiş tarihi",
+      "empty": "Ödeme kaydı bulunamadı.",
+      "user": "Kullanıcı",
+      "status": "Durum",
+      "amount": "Tutar",
+      "provider": "Sağlayıcı",
+      "reference": "Referans",
+      "date": "Tarih"
+    },
+    "auditLogs": {
+      "title": "İşlem Kayıtları",
+      "empty": "Henüz bir işlem kaydı yok.",
+      "admin": "Admin",
+      "action": "İşlem",
+      "target": "Hedef Kullanıcı",
+      "details": "Detay",
+      "result": "Sonuç",
+      "resultSuccess": "Başarılı",
+      "resultFailed": "Başarısız",
+      "date": "Tarih"
+    },
+    "pagination": {
+      "label": "Sayfalama",
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "pageIndicator": "Sayfa {page} / {totalPages}"
+    }
   }
 }

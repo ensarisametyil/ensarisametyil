@@ -48,6 +48,7 @@ hepsi boş string/placeholder).
 | `Iyzico__FrontendResultUrl` | Evet | Frontend'in `/premium/result` sayfasının gerçek URL'i. |
 | `Cors__AllowedOrigins__0` (ve gerekirse `__1`, `__2`, ...) | **Evet** | Frontend'in gerçek production domain'i (ör. `https://app.cvorai.com`). Boş bırakılırsa hiçbir origin CORS ile izin almaz — sessizce kırık bir frontend'e yol açar, wildcard KULLANMAYIN. |
 | `FileStorage__RootPath` | Önerilir | CV dosyalarının kalıcı olarak saklanacağı, container/deploy yeniden başlatıldığında kaybolmayacak bir disk yolu (bkz. §9). |
+| `Admin__BootstrapEmail` | İlk admin için gerekli (bkz. `docs/admin-panel.md`) | İlk admin olarak atanacak, zaten kayıtlı bir hesabın e-postası — bir sır değil, ama yine de sadece environment variable ile ayarlanır. Boş bırakılırsa hiçbir kullanıcı otomatik admin yapılmaz. |
 
 Rate limiting (`RateLimiting__Auth__PermitLimit` vb.) ve `Plans__*` (Free/Premium analiz limiti)
 production'da genelde `appsettings.json`'daki varsayılanlarla bırakılır — bunlar secret değil,
