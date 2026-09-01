@@ -3,9 +3,11 @@ using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Dtos.Admin;
 using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.Services.Admin;
+using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.Billing.Payments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CvAnalyzer.Api.Controllers;
 
@@ -18,6 +20,7 @@ namespace CvAnalyzer.Api.Controllers;
 /// </summary>
 [ApiController]
 [Authorize(Roles = "Admin")]
+[EnableRateLimiting(RateLimitPolicies.Admin)]
 [Route("api/admin/users")]
 public class AdminUsersController : ControllerBase
 {

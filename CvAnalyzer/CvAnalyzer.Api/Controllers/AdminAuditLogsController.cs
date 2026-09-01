@@ -1,14 +1,17 @@
 using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Dtos.Admin;
+using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CvAnalyzer.Api.Controllers;
 
 /// <summary>Admin-only, read-only audit trail of privileged admin actions. See AdminDashboardController's doc comment for the authorization model.</summary>
 [ApiController]
 [Authorize(Roles = "Admin")]
+[EnableRateLimiting(RateLimitPolicies.Admin)]
 [Route("api/admin/audit-logs")]
 public class AdminAuditLogsController : ControllerBase
 {

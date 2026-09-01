@@ -13,6 +13,7 @@ ayarlanması gerektiğini, nereden okunduğunu ve ne olacağını (yanlış/eksi
 |---|---|---|
 | Swagger UI (`/swagger`) | Açık | **Kapalı** (`Program.cs`, `app.Environment.IsDevelopment()` ile korunuyor) |
 | `Content-Security-Policy` header'ı | Yok (Swagger UI çalışabilsin diye) | Var (`default-src 'none'; frame-ancestors 'none'`) |
+| `Strict-Transport-Security` (HSTS) | Yok (dev sunucusu genelde HTTPS üzerinden çalışmaz) | Var (`app.UseHsts()`, Aşama 17 güvenlik denetiminde eklendi) |
 | Parola sıfırlama/e-posta doğrulama token'ının loglanması | Var (`LoggingEmailService`, sadece bu ortamda) | **Yok** (gerçek e-posta sağlayıcısı bağlanana kadar tamamen sessiz — bkz. §6) |
 | DB | Genelde yerel Postgres / user-secrets ile connection string | Gerçek connection string, ortam değişkeninden |
 
@@ -129,12 +130,24 @@ kombinasyon CORS'un en tehlikeli hatası olan "wildcard + credentials"i yapısal
 kılıyor). Production'a alırken tek yapmanız gereken `Cors__AllowedOrigins__0`'ı gerçek frontend
 domain'inize ayarlamak.
 
-## 8. Security Headers (Aşama 11'de eklendi, bu aşamada dokunulmadı)
+## 8. Security Headers (Aşama 11'de eklendi; HSTS + Admin rate limiti Aşama 17'de eklendi)
 
 `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` her zaman;
 `Content-Security-Policy` sadece Production'da (bkz. §1) — `Middleware/SecurityHeaders.cs` +
 `Program.cs`'teki `OnStarting` hook'u ile hata response'ları dahil HER response'ta garanti
-ediliyor. Bu aşamada test edilip doğrulandı, değiştirilmedi.
+ediliyor.
+
+`Strict-Transport-Security` — `app.UseHsts()`, yine yalnızca Production'da (`Program.cs`,
+`UseHttpsRedirection()`'dan hemen önce) — tam kapsamlı Aşama 17 security audit'inde eklendi:
+tarayıcıya bu host'a bundan sonra yalnızca HTTPS üzerinden konuşmasını söyleyerek, ilk düz-HTTP
+istek/redirect'te oluşabilecek bir saldırı penceresini kapatır.
+
+Tüm `/api/admin/*` controller'ları artık ayrı bir `Admin` rate-limit policy'si taşıyor
+(`[EnableRateLimiting(RateLimitPolicies.Admin)]`, varsayılan 60/60s, kullanıcı-partition'lı —
+bkz. `RateLimiting__Admin__PermitLimit`/`WindowSeconds`, §2) — Aşama 16'da bilinçli olarak
+ertelenmiş, Aşama 17'de kapatılan bir boşluktu: rol kontrolü zaten girişi engelliyordu, ama
+sızmış/kötüye kullanılan bir admin token'ının panele scriptli/sınırsız istek atmasına karşı
+diğer her authenticated yüzeyle aynı hız sınırlaması artık admin panelinde de var.
 
 ## 9. Dosya Depolama (CV Upload)
 

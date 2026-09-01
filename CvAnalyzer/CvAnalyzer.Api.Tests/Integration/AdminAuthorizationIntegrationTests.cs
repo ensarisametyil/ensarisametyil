@@ -315,4 +315,49 @@ public class AdminAuthorizationIntegrationTests : IClassFixture<CustomWebApplica
         Assert.DoesNotContain("passwordHash", usersBody, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(CustomWebApplicationFactory.TestIyzicoSecretKey, usersBody);
     }
+
+    /// <summary>
+    /// The exact attack the Stage 17 security audit calls out by name: take a normal user's own,
+    /// genuinely-issued token and forge its "role" claim from "User" to "Admin" — the most direct
+    /// possible privilege-escalation attempt against the admin panel's authorization model — then
+    /// present it to a real admin endpoint. Rewriting the payload (even a single claim) changes the
+    /// bytes the HMAC signature was computed over, so the forged token must fail signature
+    /// validation and never reach the [Authorize(Roles = "Admin")] check at all — proving the
+    /// client-supplied role claim is never the trust source, the signature is.
+    /// </summary>
+    [Fact]
+    public async Task AdminEndpoint_WithNormalUsersTokenForgedToRoleAdmin_IsRejected()
+    {
+        var (token, _, _) = await RegisterAndGetTokenAsync();
+        var forgedToken = ForgeRoleClaimToAdmin(token);
+        AuthorizeAs(forgedToken);
+
+        var response = await _client.GetAsync("/api/admin/dashboard");
+
+        // Signature validation fails before role/authorization is ever evaluated — the forged
+        // token is indistinguishable from any other tampered token, so this is 401, not 403.
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    /// <summary>Decodes a real JWT's payload, rewrites/adds a "role":"Admin" claim, and re-encodes it — deliberately leaving the original signature segment untouched, so the result is exactly what an attacker with only the ability to edit the token text (not the signing key) could produce.</summary>
+    private static string ForgeRoleClaimToAdmin(string token)
+    {
+        var parts = token.Split('.');
+        var payloadJson = System.Text.Json.JsonDocument.Parse(Base64UrlDecode(parts[1]));
+        var claims = payloadJson.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => (object)p.Value.Clone());
+        claims["role"] = "Admin";
+        var forgedPayload = System.Text.Json.JsonSerializer.Serialize(claims);
+
+        return $"{parts[0]}.{Base64UrlEncode(forgedPayload)}.{parts[2]}";
+    }
+
+    private static byte[] Base64UrlDecode(string value)
+    {
+        var padded = value.Replace('-', '+').Replace('_', '/');
+        padded += new string('=', (4 - padded.Length % 4) % 4);
+        return Convert.FromBase64String(padded);
+    }
+
+    private static string Base64UrlEncode(string value) =>
+        Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(value)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

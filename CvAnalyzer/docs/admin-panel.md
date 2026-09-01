@@ -112,7 +112,7 @@ Sayfalar: `AdminDashboardPage`, `AdminUsersPage` (arama + sayfalama), `AdminUser
 filtreleri + sayfalama), `AdminAuditLogsPage`. Tüm listeler backend-taraflı sayfalanır — hiçbir
 sayfa binlerce kaydı tek seferde çekmez.
 
-## 6. Güvenlik Kapsamı (Aşama 16)
+## 6. Güvenlik Kapsamı (Aşama 16; Aşama 17'de tam denetlendi)
 
 Bu aşamada uygulanan temel kontroller: authentication, role-based authorization (middleware
 katmanında), server-side pagination/arama (client'a güvenilmiyor), IDOR koruması (bir normal
@@ -123,9 +123,12 @@ response'unda yer almaz).
 **Kapsam dışı bırakılanlar (bilinçli):** Şifre görüntüleme, API key görüntüleme, Iyzico secret
 görüntüleme, ham ödeme/kart verisi görüntüleme — bunlar admin paneline kesinlikle eklenmedi.
 
-Kapsamlı bir Security Audit bu aşamada **yapılmadı** — kullanıcının belirttiği gibi, Admin Paneli
-tamamlandıktan sonra bir sonraki aşama, CVora AI + Iyzico + Admin Panel'in tamamını kapsayan
-kapsamlı bir Security Audit olacaktır.
+Aşama 16'nın kendi raporunda self-flagged bırakılan tek boşluk — admin controller'larında rate
+limiting yoktu — Aşama 17'nin tam kapsamlı Security Audit'inde kapatıldı: her 4 admin controller'ı
+artık `[EnableRateLimiting(RateLimitPolicies.Admin)]` taşıyor (bkz. `docs/production.md` §8).
+Aynı denetimde, normal bir kullanıcının token'ının `role` claim'i "Admin" olarak forge edilip bir
+admin endpoint'ine sunulmasının (imza artık uyuşmadığı için) reddedildiği ayrıca ayrı bir
+integration testle kanıtlandı (`AdminEndpoint_WithNormalUsersTokenForgedToRoleAdmin_IsRejected`).
 
 ## 7. Ortam Değişkenleri
 

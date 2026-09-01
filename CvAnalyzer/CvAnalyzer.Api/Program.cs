@@ -211,6 +211,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(RateLimitPolicies.Contact, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.Contact));
     options.AddPolicy(RateLimitPolicies.PasswordReset, httpContext => FixedWindow(IpPartitionKey(httpContext), rateLimitOptions.PasswordReset));
     options.AddPolicy(RateLimitPolicies.Account, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Account));
+    options.AddPolicy(RateLimitPolicies.Admin, httpContext => FixedWindow(UserPartitionKey(httpContext), rateLimitOptions.Admin));
 });
 
 var app = builder.Build();
@@ -290,6 +291,15 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
+// Strict-Transport-Security — tells the browser to only ever speak HTTPS to this host from now
+// on, closing the window an attacker gets on a user's first plain-HTTP request/redirect. Skipped
+// in Development, where the dev server usually isn't served over HTTPS at all (see
+// SecurityHeaders.Build's same Development-only gating for Content-Security-Policy).
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 

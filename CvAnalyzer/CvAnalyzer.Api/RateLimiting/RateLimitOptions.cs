@@ -28,6 +28,9 @@ public class RateLimitOptions
 
     /// <summary>change-password / deactivate / send-verification — authenticated, user-partitioned sensitive account actions.</summary>
     public RateLimitPolicyOptions Account { get; set; } = new() { PermitLimit = 20, WindowSeconds = 60 };
+
+    /// <summary>Every admin controller (dashboard/users/payments/audit-logs) — authenticated, user-partitioned. Generous limit befitting normal admin-console usage (page loads, searches, pagination); this is a speed bump against a scripted/compromised admin token, not a throttle on legitimate admin work.</summary>
+    public RateLimitPolicyOptions Admin { get; set; } = new() { PermitLimit = 60, WindowSeconds = 60 };
 }
 
 public class RateLimitPolicyOptions

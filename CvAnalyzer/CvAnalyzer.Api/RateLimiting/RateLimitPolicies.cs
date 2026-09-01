@@ -9,4 +9,7 @@ public static class RateLimitPolicies
     public const string Contact = "contact";
     public const string PasswordReset = "password-reset";
     public const string Account = "account";
+
+    /// <summary>Every /api/admin/* endpoint — role-gated already, but still automatable by a compromised/misused admin credential, so it gets the same speed-bump every other authenticated surface gets (Stage 17 security audit).</summary>
+    public const string Admin = "admin";
 }

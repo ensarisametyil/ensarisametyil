@@ -18,8 +18,8 @@ public class PaymentServiceTests
 
     private static readonly CheckoutBuyerInfo Buyer = new("Ada", "Lovelace", "11111111111", "5551234567", "Istanbul", "Test Sk. No:1");
 
-    private static AppDbContext CreateDbContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+    private static AppDbContext CreateDbContext(string? dbName = null) =>
+        new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName ?? Guid.NewGuid().ToString()).Options);
 
     private static IyzicoOptions CreateOptions() => new()
     {
@@ -31,9 +31,9 @@ public class PaymentServiceTests
     };
 
     private static (PaymentService Sut, FakePaymentProvider Provider, AppDbContext Db, FakeTimeProvider Clock) CreateSut(
-        IyzicoOptions? options = null, IUserOperationLock? userLock = null, PlanOptions? planOptions = null)
+        IyzicoOptions? options = null, IUserOperationLock? userLock = null, PlanOptions? planOptions = null, string? dbName = null)
     {
-        var db = CreateDbContext();
+        var db = CreateDbContext(dbName);
         var provider = new FakePaymentProvider();
         var opts = options ?? CreateOptions();
         var clock = new FakeTimeProvider(Now);
@@ -249,6 +249,44 @@ public class PaymentServiceTests
         Assert.True(third.Success);
         Assert.Single(db.Subscriptions); // never a second Subscription row
         Assert.Equal(1, provider.RetrieveCallCount); // second/third call never re-verified — short-circuited by the already-Succeeded transaction
+    }
+
+    [Fact]
+    public async Task ProcessCheckoutCallbackAsync_TwoSimultaneousCallbacksForSameToken_OnlyOneSubscriptionCreated()
+    {
+        // Unlike the sequential "called three times" test above, this proves the concurrent case:
+        // two genuinely simultaneous callbacks/webhook deliveries for the same checkout token (a
+        // realistic double-delivery from a payment provider, or a replayed request) racing each
+        // other through IUserOperationLock's critical section. Two separate DbContext instances
+        // sharing one in-memory database name + one shared lock instance mirrors real ASP.NET Core
+        // request handling, where each request gets its own scoped DbContext — see
+        // AnalysisQuotaServiceTests' RecordAnalysisUsageAsync_ConcurrentCallsWithOneCreditRemaining_OnlyOneSucceeds
+        // for the same pattern applied to quota.
+        var dbName = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid();
+        var sharedLock = new UserOperationLock();
+
+        var (seedSut, _, seedDb, _) = CreateSut(dbName: dbName, userLock: sharedLock);
+        await seedSut.StartPremiumCheckoutAsync(userId, "ada@example.com", Buyer);
+        var token = seedDb.PaymentTransactions.Single().CheckoutToken!;
+
+        var (sut1, provider1, _, _) = CreateSut(dbName: dbName, userLock: sharedLock);
+        var (sut2, provider2, _, _) = CreateSut(dbName: dbName, userLock: sharedLock);
+
+        var results = await Task.WhenAll(
+            sut1.ProcessCheckoutCallbackAsync(token),
+            sut2.ProcessCheckoutCallbackAsync(token));
+
+        // Both racers pass provider verification independently (the pre-lock short-circuit only
+        // helps a call that arrives *after* the first has already fully committed — true
+        // simultaneity means both read the still-Initiated transaction and both call the provider);
+        // what must hold is the outcome inside the lock, not the provider call count.
+        Assert.All(results, outcome => Assert.True(outcome.Success)); // both report success — the loser finds its own subscription already created, never a failure
+        Assert.True(provider1.RetrieveCallCount + provider2.RetrieveCallCount >= 1);
+
+        using var verifyDb = CreateDbContext(dbName);
+        Assert.Single(verifyDb.Subscriptions); // never two Subscription rows for the same token/user
+        Assert.Single(verifyDb.PaymentTransactions.Where(t => t.Status == PaymentTransactionStatus.Succeeded));
     }
 
     [Fact]

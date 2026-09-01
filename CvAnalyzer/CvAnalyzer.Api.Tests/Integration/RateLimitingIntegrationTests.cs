@@ -1,5 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
+using CvAnalyzer.Api.Data;
+using CvAnalyzer.Api.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CvAnalyzer.Api.Tests.Integration;
 
@@ -104,6 +108,56 @@ public class AccountRateLimitingIntegrationTests : IClassFixture<CustomWebApplic
         Assert.NotEqual(HttpStatusCode.TooManyRequests, lastAllowedResponse!.StatusCode);
 
         var rejectedResponse = await _client.PostAsJsonAsync("/api/auth/change-password", new { currentPassword = "WrongPassword9", newPassword = "NewPassword2" });
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
+    }
+}
+
+/// <summary>
+/// Proves the Admin rate-limit policy added by the Stage 17 security audit is actually wired up —
+/// every /api/admin/* controller carries [EnableRateLimiting(RateLimitPolicies.Admin)], so a
+/// scripted/compromised admin token can't hammer the panel without limit. Its own IClassFixture
+/// instance for the same reason as the other classes in this file: isolated rate-limiter state.
+/// </summary>
+public class AdminRateLimitingIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+{
+    private readonly CustomWebApplicationFactory _factory;
+    private readonly HttpClient _client;
+
+    public AdminRateLimitingIntegrationTests(CustomWebApplicationFactory factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task AdminDashboard_ExceedingThePermitLimit_ReturnsTooManyRequests()
+    {
+        var email = $"ratelimit-admin-{Guid.NewGuid():N}@example.com";
+        var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", new { email, password = "Password123" });
+        var registerBody = await registerResponse.Content.ReadFromJsonAsync<CvAnalyzer.Api.Models.Dtos.Auth.AuthResponseDto>();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var user = await db.Users.SingleAsync(u => u.Id == registerBody!.User.Id);
+            user.Role = UserRole.Admin;
+            await db.SaveChangesAsync();
+        }
+
+        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new { email, password = "Password123" });
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<CvAnalyzer.Api.Models.Dtos.Auth.AuthResponseDto>();
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
+
+        // The Admin policy default (appsettings.json) permits 60/minute.
+        HttpResponseMessage? lastAllowedResponse = null;
+        for (var i = 0; i < 60; i++)
+        {
+            lastAllowedResponse = await _client.GetAsync("/api/admin/dashboard");
+        }
+        Assert.NotEqual(HttpStatusCode.TooManyRequests, lastAllowedResponse!.StatusCode);
+
+        var rejectedResponse = await _client.GetAsync("/api/admin/dashboard");
 
         Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
     }
