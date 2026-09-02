@@ -1,10 +1,13 @@
 namespace CvAnalyzer.Api.Services.Billing;
 
 /// <summary>
-/// Premium-gated capabilities. None of these have an endpoint yet — this enum exists purely so
-/// the entitlement check ("can this user use feature X") is centralized from day one, instead of
-/// being invented ad hoc when ATS analysis / job-description matching / CV rewrite are actually
-/// built. See <see cref="IFeatureEntitlementService"/>.
+/// Premium-gated capabilities, enforced centrally via <see cref="IFeatureEntitlementService"/>
+/// rather than an ad hoc check per endpoint. The first four were reserved (with no endpoint yet)
+/// before the Career Assistant feature set existed and are now wired up by
+/// CareerAssistantController exactly as originally anticipated: AtsAnalysis -> POST
+/// ats-analysis, JobDescriptionAnalysis -> POST job-match, CvRewrite -> POST rewrite,
+/// AdvancedRecommendations -> POST career-recommendations. CoverLetterGeneration and
+/// CvComparison are new, added for that same controller's cover-letter and compare endpoints.
 /// </summary>
 public enum PlanFeature
 {
@@ -12,4 +15,6 @@ public enum PlanFeature
     JobDescriptionAnalysis,
     CvRewrite,
     AdvancedRecommendations,
+    CoverLetterGeneration,
+    CvComparison,
 }

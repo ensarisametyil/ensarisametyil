@@ -29,6 +29,8 @@ public class AppDbContext : DbContext
 
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
 
+    public DbSet<CareerAssistantResult> CareerAssistantResults => Set<CareerAssistantResult>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var stringListComparer = new ValueComparer<List<string>>(
@@ -245,6 +247,29 @@ public class AppDbContext : DbContext
             // needs to navigate from User -> AdminAuditLog.
             entity.HasIndex(l => l.TargetUserId);
             entity.HasIndex(l => l.CreatedAt);
+        });
+
+        modelBuilder.Entity<CareerAssistantResult>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Type).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(r => r.ResultJson).IsRequired().HasColumnType("jsonb");
+            entity.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
+
+            // Same cascade shape as Analysis: deleting a Cv (or its owning User) must not leave
+            // orphaned career-assistant results behind.
+            entity.HasOne(r => r.Cv)
+                  .WithMany()
+                  .HasForeignKey(r => r.CvId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.User)
+                  .WithMany()
+                  .HasForeignKey(r => r.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // The exact lookup a "history for this CV/feature" query performs.
+            entity.HasIndex(r => new { r.UserId, r.CvId, r.Type, r.CreatedAt });
         });
     }
 }

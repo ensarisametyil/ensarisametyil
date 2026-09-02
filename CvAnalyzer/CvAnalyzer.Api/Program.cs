@@ -6,6 +6,7 @@ using CvAnalyzer.Api.Models.Dtos;
 using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.AI;
+using CvAnalyzer.Api.Services.AI.CareerAssistant;
 using CvAnalyzer.Api.Services.Auth;
 using CvAnalyzer.Api.Services.Billing;
 using CvAnalyzer.Api.Services.Billing.Payments;
@@ -69,6 +70,12 @@ builder.Services.AddSingleton<ICvTextNormalizer, CvTextNormalizer>();
 builder.Services.AddSingleton<IAnthropicMessagesGateway, AnthropicMessagesGateway>();
 builder.Services.AddSingleton<ICvAnalysisResponseParser, CvAnalysisResponseParser>();
 builder.Services.AddSingleton<IAiCvAnalysisService, AnthropicCvAnalysisService>();
+
+// --- Career Assistant (Job Match / ATS / Rewrite / Career Recommendations / Cover Letter) ---
+// Reuses the SAME IAnthropicMessagesGateway registered above — no second gateway, no second AI
+// provider configuration. See docs/career-assistant.md.
+builder.Services.AddSingleton<ICareerAssistantResponseParser, CareerAssistantResponseParser>();
+builder.Services.AddSingleton<ICareerAssistantService, AnthropicCareerAssistantService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.Configure<PlanOptions>(builder.Configuration.GetSection(PlanOptions.SectionName));

@@ -7,15 +7,16 @@ public class PlanCatalog : IPlanCatalog
 {
     private static readonly IReadOnlySet<PlanFeature> FreeFeatures = new HashSet<PlanFeature>();
 
-    // Infrastructure-ready set for Premium — none of these features have an endpoint yet (see
-    // PlanFeature), but the entitlement already exists so building one later never touches this
-    // catalog again.
+    // Every Career Assistant AI feature (CareerAssistantController) is Premium-only — see
+    // PlanFeature's doc comment for which endpoint each one gates.
     private static readonly IReadOnlySet<PlanFeature> PremiumFeatures = new HashSet<PlanFeature>
     {
         PlanFeature.AtsAnalysis,
         PlanFeature.JobDescriptionAnalysis,
         PlanFeature.CvRewrite,
         PlanFeature.AdvancedRecommendations,
+        PlanFeature.CoverLetterGeneration,
+        PlanFeature.CvComparison,
     };
 
     private readonly PlanOptions _options;
