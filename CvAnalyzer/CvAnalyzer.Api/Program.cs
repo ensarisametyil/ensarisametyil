@@ -98,7 +98,24 @@ builder.Services.AddScoped<CvAnalyzer.Api.Services.Admin.IAdminAuditLogService, 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton<IPasswordPolicy, PasswordPolicy>();
-builder.Services.AddSingleton<CvAnalyzer.Api.Services.Email.IEmailService, CvAnalyzer.Api.Services.Email.LoggingEmailService>();
+
+// --- Email (Stage: transactional email) ---
+// Read once, eagerly, at startup (same style as the Jwt/rate-limit checks elsewhere in this file)
+// to decide which IEmailService implementation to register — SmtpEmailService (real Gmail SMTP
+// send) once Smtp:Host/User/Password/FromAddress are all configured, otherwise the Development-
+// only LoggingEmailService fallback. See SmtpOptions' and IEmailService's doc comments.
+builder.Services.Configure<CvAnalyzer.Api.Services.Email.SmtpOptions>(builder.Configuration.GetSection(CvAnalyzer.Api.Services.Email.SmtpOptions.SectionName));
+var smtpOptions = builder.Configuration.GetSection(CvAnalyzer.Api.Services.Email.SmtpOptions.SectionName).Get<CvAnalyzer.Api.Services.Email.SmtpOptions>() ?? new CvAnalyzer.Api.Services.Email.SmtpOptions();
+if (smtpOptions.IsConfigured)
+{
+    builder.Services.AddSingleton<CvAnalyzer.Api.Services.Email.ISmtpTransport, CvAnalyzer.Api.Services.Email.RealSmtpTransport>();
+    builder.Services.AddSingleton<CvAnalyzer.Api.Services.Email.IEmailService, CvAnalyzer.Api.Services.Email.SmtpEmailService>();
+}
+else
+{
+    builder.Services.AddSingleton<CvAnalyzer.Api.Services.Email.IEmailService, CvAnalyzer.Api.Services.Email.LoggingEmailService>();
+}
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 

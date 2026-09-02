@@ -4,9 +4,11 @@ using CvAnalyzer.Api.Models.Dtos.Auth;
 using CvAnalyzer.Api.Models.Entities;
 using CvAnalyzer.Api.RateLimiting;
 using CvAnalyzer.Api.Services.Auth;
+using CvAnalyzer.Api.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace CvAnalyzer.Api.Controllers;
 
@@ -22,13 +24,41 @@ public class AuthController : ControllerBase
     /// </summary>
     private const long MaxSmallJsonBodyBytes = 8 * 1024;
 
+    private static readonly string[] SupportedLocales = ["tr", "en", "de"];
+
     private readonly IAuthService _authService;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly SmtpOptions _smtpOptions;
 
-    public AuthController(IAuthService authService, IJwtTokenService jwtTokenService)
+    public AuthController(IAuthService authService, IJwtTokenService jwtTokenService, IOptions<SmtpOptions> smtpOptions)
     {
         _authService = authService;
         _jwtTokenService = jwtTokenService;
+        _smtpOptions = smtpOptions.Value;
+    }
+
+    /// <summary>
+    /// Reads the caller's Accept-Language header to pick which of CVora AI's three supported
+    /// languages (see cv-analyzer-web/src/i18n/locales) an email should be sent in — the frontend
+    /// sends its active UI locale this way (see httpClient.ts) rather than as a request-body
+    /// field, so this never changes any DTO/contract. Unrecognized/missing header falls back to
+    /// Turkish, exactly like DEFAULT_LOCALE on the frontend.
+    /// </summary>
+    private string ResolveLocale()
+    {
+        // HttpContext is null in controller-unit-tests that never set ControllerContext (e.g. an
+        // [AllowAnonymous] action test that doesn't need a simulated request) — real ASP.NET Core
+        // requests always have one, so this null-check only ever matters in that test scenario.
+        var header = HttpContext?.Request.Headers.AcceptLanguage.ToString();
+        if (string.IsNullOrWhiteSpace(header))
+        {
+            return EmailCopyCatalog.DefaultLocale;
+        }
+
+        // Accept-Language can be a q-weighted list ("en-US,en;q=0.9,tr;q=0.8") — only the first
+        // segment's primary language subtag is used.
+        var primary = header.Split(',')[0].Split(';')[0].Split('-')[0].Trim().ToLowerInvariant();
+        return Array.IndexOf(SupportedLocales, primary) >= 0 ? primary : EmailCopyCatalog.DefaultLocale;
     }
 
     [HttpPost("register")]
@@ -46,7 +76,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var user = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
+            var user = await _authService.RegisterAsync(request.Email, request.Password, ResolveLocale(), cancellationToken);
             return Ok(BuildAuthResponse(user));
         }
         catch (WeakPasswordException ex)
@@ -134,9 +164,11 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Always returns the exact same response whether or not the email is registered — an
     /// attacker must never be able to use this endpoint to learn which emails have accounts.
-    /// The returned message is deliberately honest about this environment not having a real email
-    /// provider wired up yet (see docs/authentication.md) rather than falsely claiming an email
-    /// was sent.
+    /// The message is deliberately honest either way: when a real email provider is configured
+    /// (see docs/email.md), it truthfully says a reset link was sent if the account exists; when
+    /// it isn't yet, it says so plainly instead of falsely claiming an email went out. Never based
+    /// on whether THIS particular request's account existed — only on whether the environment is
+    /// capable of sending at all — so no enumeration signal ever leaks through the message choice.
     /// </summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]
@@ -147,12 +179,15 @@ public class AuthController : ControllerBase
     {
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
-            await _authService.RequestPasswordResetAsync(request.Email, cancellationToken);
+            await _authService.RequestPasswordResetAsync(request.Email, ResolveLocale(), cancellationToken);
         }
 
-        return Ok(new MessageResponseDto(
-            "İsteğiniz alındı. Bu ortamda e-posta gönderim altyapısı henüz aktif değildir; " +
-            "şifre sıfırlama bağlantıları production ortamında e-posta ile iletilecektir."));
+        var message = _smtpOptions.IsConfigured
+            ? "Bu e-posta adresi sistemde kayıtlıysa, şifre sıfırlama bağlantısı içeren bir e-posta gönderildi. Gelen kutunuzu (ve spam/gereksiz klasörünü) kontrol edin."
+            : "İsteğiniz alındı. Bu ortamda e-posta gönderim altyapısı henüz aktif değildir; " +
+              "şifre sıfırlama bağlantıları production ortamında e-posta ile iletilecektir.";
+
+        return Ok(new MessageResponseDto(message));
     }
 
     [HttpPost("reset-password")]
@@ -191,10 +226,14 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(MessageResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendVerification(CancellationToken cancellationToken)
     {
-        await _authService.RequestEmailVerificationAsync(User.GetUserId(), cancellationToken);
-        return Ok(new MessageResponseDto(
-            "Doğrulama bağlantısı oluşturuldu. Bu ortamda e-posta gönderim altyapısı henüz aktif değildir; " +
-            "e-posta doğrulama production ortamında tamamlanacaktır."));
+        await _authService.RequestEmailVerificationAsync(User.GetUserId(), ResolveLocale(), cancellationToken);
+
+        var message = _smtpOptions.IsConfigured
+            ? "Doğrulama bağlantısı içeren bir e-posta gönderildi. Gelen kutunuzu kontrol edin."
+            : "Doğrulama bağlantısı oluşturuldu. Bu ortamda e-posta gönderim altyapısı henüz aktif değildir; " +
+              "e-posta doğrulama production ortamında tamamlanacaktır.";
+
+        return Ok(new MessageResponseDto(message));
     }
 
     [HttpPost("verify-email")]

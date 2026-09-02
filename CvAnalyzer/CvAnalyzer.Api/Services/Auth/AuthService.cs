@@ -33,7 +33,7 @@ public class AuthService : IAuthService
         _emailService = emailService;
     }
 
-    public async Task<User> RegisterAsync(string email, string password, CancellationToken cancellationToken = default)
+    public async Task<User> RegisterAsync(string email, string password, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default)
     {
         var normalizedEmail = NormalizeEmail(email);
 
@@ -63,6 +63,11 @@ public class AuthService : IAuthService
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync(cancellationToken);
+
+        // The account already exists at this point regardless of what happens next — a welcome
+        // email failing to send (or the provider not being configured yet) must never turn a
+        // successful registration into a failed one. See IEmailService's never-throw contract.
+        await _emailService.SendWelcomeEmailAsync(user.Email, locale, cancellationToken);
 
         return user;
     }
@@ -121,7 +126,7 @@ public class AuthService : IAuthService
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<string?> RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<string?> RequestPasswordResetAsync(string email, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default)
     {
         var normalizedEmail = NormalizeEmail(email);
         var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
@@ -134,7 +139,7 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return await IssueTokenAsync(user, UserTokenPurpose.PasswordReset, PasswordResetTokenLifetime, cancellationToken);
+        return await IssueTokenAsync(user, UserTokenPurpose.PasswordReset, PasswordResetTokenLifetime, locale, cancellationToken);
     }
 
     public async Task ResetPasswordAsync(string token, string newPassword, CancellationToken cancellationToken = default)
@@ -161,7 +166,7 @@ public class AuthService : IAuthService
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<string?> RequestEmailVerificationAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<string?> RequestEmailVerificationAsync(Guid userId, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default)
     {
         var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (user is null || user.EmailVerifiedAt is not null)
@@ -169,7 +174,7 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return await IssueTokenAsync(user, UserTokenPurpose.EmailVerification, EmailVerificationTokenLifetime, cancellationToken);
+        return await IssueTokenAsync(user, UserTokenPurpose.EmailVerification, EmailVerificationTokenLifetime, locale, cancellationToken);
     }
 
     public async Task VerifyEmailAsync(string token, CancellationToken cancellationToken = default)
@@ -210,12 +215,11 @@ public class AuthService : IAuthService
 
     /// <summary>
     /// Generates a cryptographically random token, persists only its SHA-256 hash (never the
-    /// plaintext), hands the plaintext to <see cref="IEmailService"/> for delivery (see
-    /// <see cref="LoggingEmailService"/> for what actually happens with it in this environment),
-    /// and also returns the plaintext to the caller — never persisted anywhere else and never
-    /// returned by any HTTP response.
+    /// plaintext), hands the plaintext to <see cref="IEmailService"/> for delivery, and also
+    /// returns the plaintext to the caller — never persisted anywhere else and never returned by
+    /// any HTTP response.
     /// </summary>
-    private async Task<string> IssueTokenAsync(User user, UserTokenPurpose purpose, TimeSpan validFor, CancellationToken cancellationToken)
+    private async Task<string> IssueTokenAsync(User user, UserTokenPurpose purpose, TimeSpan validFor, string locale, CancellationToken cancellationToken)
     {
         var rawToken = GenerateRawToken();
         var now = _timeProvider.GetUtcNow().UtcDateTime;
@@ -234,11 +238,11 @@ public class AuthService : IAuthService
 
         if (purpose == UserTokenPurpose.PasswordReset)
         {
-            await _emailService.SendPasswordResetEmailAsync(user.Email, rawToken, expiresAt, cancellationToken);
+            await _emailService.SendPasswordResetEmailAsync(user.Email, rawToken, expiresAt, locale, cancellationToken);
         }
         else
         {
-            await _emailService.SendEmailVerificationEmailAsync(user.Email, rawToken, expiresAt, cancellationToken);
+            await _emailService.SendEmailVerificationEmailAsync(user.Email, rawToken, expiresAt, locale, cancellationToken);
         }
 
         return rawToken;

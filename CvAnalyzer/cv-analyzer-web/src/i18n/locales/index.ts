@@ -9,6 +9,9 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number]
 /** Turkish is the product default — first-time visitors and any unrecognized browser language land here. */
 export const DEFAULT_LOCALE: Locale = 'tr'
 
+/** localStorage key the active locale is persisted under (see I18nContext) — also read directly by httpClient.ts to send it as an Accept-Language header, since that module has no access to the I18n React context. */
+export const LOCALE_STORAGE_KEY = 'cvorai.locale'
+
 export type Translations = typeof tr
 
 /**

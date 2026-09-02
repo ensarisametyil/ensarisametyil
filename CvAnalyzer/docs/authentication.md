@@ -226,14 +226,19 @@ korumalıdır**: email kayıtlı olsun ya da olmasın, **tam olarak aynı** yan�
 ve `AuthControllerTests.ForgotPassword_KnownAndUnknownEmail_ReturnSameResponse` ile
 doğrulanmıştır).
 
-**Bu ortamda gerçek bir e-posta sağlayıcısı yoktur.** `forgot-password` yanıtı bu yüzden
-**"e-posta gönderildi" demez** — bunun yerine dürüstçe "bu ortamda e-posta gönderim
-altyapısı henüz aktif değil, production'da e-posta ile iletilecek" mesajını döner. Token'ın
-kendisi hiçbir zaman bir API yanıtında görünmez. Sadece **Development ortamında**,
-`AuthService.IssueTokenAsync` üretilen token'ı `ILogger` ile (`[DEV ONLY]` etiketiyle) loglar
-— bu, gerçek bir e-posta sağlayıcısı olmadan akışı uçtan uca elle test edebilmek için
-bilinçli bir geliştirici kolaylığıdır; **Production'da asla çalışmaz** (`IHostEnvironment.IsDevelopment()`
-kontrolü).
+**E-posta gönderimi artık gerçek — bkz. `docs/email.md`.** `IEmailService` (Aşama 10'dan beri
+var olan seam) şimdi `SmtpEmailService` (gerçek Gmail SMTP gönderimi, `Smtp:*` yapılandırıldığında)
+veya `LoggingEmailService`'e (yapılandırılmamışsa, yalnızca Development'ta loglayan güvenli no-op)
+bağlanıyor — hangisinin kullanılacağına `Program.cs` başlangıçta karar veriyor;
+`AuthService`/`AuthController` hangi implementasyonun aktif olduğunu hiç bilmiyor. `forgot-password`
+yanıtı buna göre **dürüst kalıyor**: Smtp yapılandırılmışsa "bağlantı gönderildi" der, değilse hâlâ
+eski "bu ortamda e-posta gönderim altyapısı henüz aktif değil" mesajını döner — hiçbir durumda
+gerçekleşmeyen bir şeyi iddia etmez (`AuthController.ForgotPassword`, `SmtpOptions.IsConfigured`
+kontrolü). Token'ın kendisi hiçbir zaman bir API yanıtında görünmez. Sadece **Development
+ortamında ve Smtp yapılandırılmamışken**, `AuthService.IssueTokenAsync` üretilen token'ı `ILogger`
+ile (`[DEV ONLY]` etiketiyle) loglar — bu, gerçek bir e-posta sağlayıcısı olmadan akışı uçtan uca
+elle test edebilmek için bilinçli bir geliştirici kolaylığıdır; **Production'da asla çalışmaz**
+(`IHostEnvironment.IsDevelopment()` kontrolü).
 
 `POST /api/auth/reset-password` — `{ token, newPassword }`. Token hash'lenip DB'de aranır;
 bulunamazsa/süresi dolmuşsa/kullanılmışsa `400 INVALID_OR_EXPIRED_TOKEN` (üç durum da aynı
@@ -244,12 +249,15 @@ hata — bir saldırgan "süresi dolmuş" ile "hiç var olmamış" arasında ayr
 `User.EmailVerifiedAt` (nullable) — `POST /api/auth/send-verification` (`[Authorize]`) yeni
 bir doğrulama token'ı üretir, `POST /api/auth/verify-email` (`[AllowAnonymous]`) onu tüketip
 alanı doldurur. **Login veya başka hiçbir akış bu alana bakarak engellenmez** — bu
-bilinçli bir kapsam kararı: gerçek bir e-posta sağlayıcısı olmadan doğrulama linkinin asla
-kullanıcıya ulaşamayacağı bir ortamda, girişi doğrulanmamış e-postaya bağlamak kullanıcıları
-kalıcı olarak kilitlerdi. Bu yüzden Aşama 10'da frontend'de bu akış için bir "gönder" butonu
-**yok** — Hesap sayfası sadece durumu bilgi amaçlı gösterir. Backend altyapısı (token
-modeli, endpoint'ler, testler) production'da gerçek bir e-posta sağlayıcısı bağlandığında
-hiçbir controller/route değişikliği gerektirmeden kullanılabilir durumda.
+bilinçli bir kapsam kararı, e-posta sisteminin gerçek hale gelmesinden sonra da değişmedi.
+
+E-posta sisteminin eklenmesiyle `SmtpEmailService` bu doğrulama e-postasını da (interface
+tamlığı için) gerçekten oluşturup gönderebiliyor — ama frontend'de hâlâ bu akış için ne bir
+"gönder" butonu ne de linkin işaret ettiği `/verify-email` sayfası var (bilinçli olarak
+eklenmedi, bkz. `docs/email.md`); Hesap sayfası sadece durumu bilgi amaçlı gösteriyor. Yani bu
+uç nokta bugün hiçbir gerçek kullanıcı akışından tetiklenmiyor — backend altyapısı (token
+modeli, endpoint'ler, testler, artık gerçek e-posta gönderimi) production'da bu akış frontend'e
+eklendiğinde hiçbir controller/route değişikliği gerektirmeden kullanılabilir durumda.
 
 ### 9.4 Hesap Kapatma (Soft-Delete)
 

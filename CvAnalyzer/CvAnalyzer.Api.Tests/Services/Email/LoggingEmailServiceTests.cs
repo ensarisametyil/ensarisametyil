@@ -27,6 +27,30 @@ public class LoggingEmailServiceTests
     }
 
     [Fact]
+    public async Task SendWelcomeEmailAsync_Development_Logs()
+    {
+        var logger = new RecordingLogger<LoggingEmailService>();
+        var sut = new LoggingEmailService(new FakeHostEnvironment { EnvironmentName = "Development" }, logger);
+
+        await sut.SendWelcomeEmailAsync("user@example.com");
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Contains("user@example.com", entry);
+        Assert.Contains("welcome", entry);
+    }
+
+    [Fact]
+    public async Task SendWelcomeEmailAsync_NonDevelopment_NeverLogs()
+    {
+        var logger = new RecordingLogger<LoggingEmailService>();
+        var sut = new LoggingEmailService(new FakeHostEnvironment { EnvironmentName = "Production" }, logger);
+
+        await sut.SendWelcomeEmailAsync("user@example.com");
+
+        Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
     public async Task SendEmailVerificationEmailAsync_Development_LogsTheToken()
     {
         var logger = new RecordingLogger<LoggingEmailService>();

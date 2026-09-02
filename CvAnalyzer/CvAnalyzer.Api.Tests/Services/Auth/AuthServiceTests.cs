@@ -381,4 +381,69 @@ public class AuthServiceTests
         Assert.Equal(token, sent.Token);
         Assert.Empty(emailService.PasswordResetEmails);
     }
+
+    [Fact]
+    public async Task RegisterAsync_ValidInput_DispatchesWelcomeEmail()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+
+        await sut.RegisterAsync("welcome-dispatch@example.com", "Password123");
+
+        var sent = Assert.Single(emailService.WelcomeEmails);
+        Assert.Equal("welcome-dispatch@example.com", sent.ToEmail);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateEmail_NeverDispatchesAWelcomeEmail()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+        await sut.RegisterAsync("dup-welcome@example.com", "Password123");
+
+        await Assert.ThrowsAsync<EmailAlreadyRegisteredException>(
+            () => sut.RegisterAsync("dup-welcome@example.com", "AnotherPass1"));
+
+        Assert.Single(emailService.WelcomeEmails); // exactly the one from the successful registration, not two
+    }
+
+    [Fact]
+    public async Task RegisterAsync_WithLocale_PassesItThroughToTheWelcomeEmail()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+
+        await sut.RegisterAsync("locale@example.com", "Password123", locale: "de");
+
+        Assert.Equal("de", Assert.Single(emailService.WelcomeEmails).Locale);
+    }
+
+    [Fact]
+    public async Task RequestPasswordResetAsync_WithLocale_PassesItThroughToTheEmail()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+        await sut.RegisterAsync("locale-reset@example.com", "Password123");
+
+        await sut.RequestPasswordResetAsync("locale-reset@example.com", locale: "en");
+
+        Assert.Equal("en", Assert.Single(emailService.PasswordResetEmails).Locale);
+    }
+
+    [Fact]
+    public async Task RequestEmailVerificationAsync_WithLocale_PassesItThroughToTheEmail()
+    {
+        using var db = CreateDbContext();
+        var emailService = new FakeEmailService();
+        var sut = CreateSut(db, emailService: emailService);
+        var user = await sut.RegisterAsync("locale-verify@example.com", "Password123");
+
+        await sut.RequestEmailVerificationAsync(user.Id, locale: "en");
+
+        Assert.Equal("en", Assert.Single(emailService.VerificationEmails).Locale);
+    }
 }

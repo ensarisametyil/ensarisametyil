@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { requestJson, requestVoid } from './httpClient'
 import { onUnauthorized } from './authEvents'
 import { clearToken, setToken } from './tokenStorage'
+import { LOCALE_STORAGE_KEY } from '../i18n/locales'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -80,5 +81,30 @@ describe('httpClient', () => {
       status: 404,
       code: 'CV_NOT_FOUND',
     })
+  })
+
+  it('attaches an Accept-Language header matching the persisted UI locale', async () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'de')
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(200, {}))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await requestJson('https://api.test/x')
+
+    const [, init] = fetchMock.mock.calls[0]
+    const headers = new Headers(init.headers)
+    expect(headers.get('Accept-Language')).toBe('de')
+    localStorage.removeItem(LOCALE_STORAGE_KEY)
+  })
+
+  it('sends no Accept-Language header when no locale has been persisted yet', async () => {
+    localStorage.removeItem(LOCALE_STORAGE_KEY)
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(200, {}))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await requestVoid('https://api.test/x')
+
+    const [, init] = fetchMock.mock.calls[0]
+    const headers = new Headers(init.headers)
+    expect(headers.get('Accept-Language')).toBeNull()
   })
 })

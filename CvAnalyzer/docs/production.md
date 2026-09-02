@@ -103,23 +103,24 @@ kaydı tamamen başarılı olduktan sonra düşülüyor (bkz. `CvController.Anal
 
 ## 6. E-posta Sağlayıcısı
 
-`IEmailService` (yeni, Aşama 12) — `AuthService`, parola sıfırlama/e-posta doğrulama token'ı
-üretildiğinde doğrudan loglamak yerine bu arayüze delege ediyor. Şu an tek implementasyon
-`LoggingEmailService`: Development'ta token'ı loglar (gerçek bir sağlayıcı olmadan akışı test
-edebilmek için), Production'da tamamen sessiz no-op'tur — hiçbir şey göndermiyormuş gibi
-davranmaz, gerçekten hiçbir şey yapmaz (AuthController'ın "bu ortamda e-posta altyapısı henüz
-aktif değil" mesajıyla tutarlı).
+`IEmailService` (Aşama 12'de eklendi, transactional email aşamasında gerçek bir gönderim
+implementasyonu kazandı — ayrıntılı doküman: **`docs/email.md`**). `AuthService`, kayıt/parola
+sıfırlama/e-posta doğrulama e-postası göndermek istediğinde bu arayüze delege ediyor;
+`Program.cs` başlangıçta `Smtp:*` (bkz. §2'deki tablo) yapılandırılmış mı diye bakıp iki
+implementasyondan birini seçiyor:
 
-**Gerçek bir sağlayıcı bağlamak için**: `IEmailService`'i implemente eden yeni bir sınıf yazın
-(SendGrid/SES/SMTP), `Program.cs`'teki tek satırı değiştirin:
+- **Yapılandırılmışsa** → `SmtpEmailService` — gerçek Gmail SMTP gönderimi (interim; domain/
+  hosting alındığında `@cvorai...` adresine geçiş yalnızca bu env variable'ların değerlerini
+  değiştirmeyi gerektirir, kod değişmez).
+- **Yapılandırılmamışsa** → `LoggingEmailService` — Development'ta token'ı loglar (gerçek bir
+  sağlayıcı olmadan akışı test edebilmek için), Production'da tamamen sessiz no-op'tur.
 
-```csharp
-builder.Services.AddSingleton<IEmailService, LoggingEmailService>(); // → gerçek implementasyon
-```
-
-`AuthService`, token'ın nasıl gönderildiğine dair hiçbir varsayımda bulunmaz — hiçbir başka yer
-değişmez. Gerçek sağlayıcının API key/SMTP credential'ı yine bu dokümanın §2'sindeki desenle
-(environment variable, asla appsettings.json'a yazılmadan) eklenmelidir.
+**Başka bir SMTP sağlayıcısına veya bir transactional-email API'sine (SendGrid/SES/Postmark)
+geçmek için**: `IEmailService`'i implemente eden yeni bir sınıf yazın, `Program.cs`'teki
+seçim mantığındaki ilgili satırı değiştirin — `AuthService`, token'ın/e-postanın nasıl
+gönderildiğine dair hiçbir varsayımda bulunmaz, hiçbir başka yer değişmez. Gerçek sağlayıcının
+API key/SMTP credential'ı yine bu dokümanın §2'sindeki desenle (environment variable, asla
+appsettings.json'a yazılmadan) eklenmelidir.
 
 ## 7. CORS
 
@@ -224,8 +225,10 @@ kapsamı dışında) — ama production'a almadan önce değerlendirilmesi gerek
   bir dağıtımda tam olarak çalışır; çoklu instance'a geçerken bir dağıtık rate-limiter (ör.
   Redis-backed) değerlendirilmelidir — bu proje kapsamında eklenmedi (gereksiz bağımlılık
   eklememe talimatı gereği).
-- Gerçek bir e-posta sağlayıcısı bağlı değil (bkz. §6) — parola sıfırlama/e-posta doğrulama
-  şu an yalnızca Development'ta (loglama yoluyla) test edilebilir.
+- E-posta gönderimi artık gerçek (bkz. §6, `docs/email.md`) — ama interim bir Gmail SMTP
+  hesabı üzerinden; `Smtp:*` yapılandırılmamış bir ortamda (ör. taze bir clone) hâlâ eski
+  Development-only-loglama davranışına düşer. Domain/hosting alınana kadar gönderim hacmi
+  Gmail'in kendi günlük limitleriyle sınırlı (bkz. `docs/email.md` §12).
 - localStorage'da JWT saklama (frontend) bilinçli, belgelenmiş bir trade-off
   (`docs/frontend-authentication.md`) — XSS senaryosunda token çalınabilir riski kabul edilmiş
   durumda.

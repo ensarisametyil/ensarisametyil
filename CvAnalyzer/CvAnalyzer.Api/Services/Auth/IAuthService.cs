@@ -1,11 +1,12 @@
 using CvAnalyzer.Api.Models.Entities;
+using CvAnalyzer.Api.Services.Email;
 
 namespace CvAnalyzer.Api.Services.Auth;
 
 public interface IAuthService
 {
-    /// <summary>Throws <see cref="WeakPasswordException"/> or <see cref="EmailAlreadyRegisteredException"/>.</summary>
-    Task<User> RegisterAsync(string email, string password, CancellationToken cancellationToken = default);
+    /// <summary>Throws <see cref="WeakPasswordException"/> or <see cref="EmailAlreadyRegisteredException"/>. Dispatches a welcome email (see IEmailService) once the account is created — a delivery failure never fails registration itself.</summary>
+    Task<User> RegisterAsync(string email, string password, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default);
 
     /// <summary>Throws <see cref="InvalidCredentialsException"/> for any failure (unknown email, wrong password, inactive account) — never distinguishes which.</summary>
     Task<User> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
@@ -21,13 +22,13 @@ public interface IAuthService
     /// was found — for internal/test use and Development-only logging only; a controller must
     /// never put this value in an HTTP response.
     /// </summary>
-    Task<string?> RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default);
+    Task<string?> RequestPasswordResetAsync(string email, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default);
 
     /// <summary>Throws <see cref="InvalidOrExpiredTokenException"/> or <see cref="WeakPasswordException"/>.</summary>
     Task ResetPasswordAsync(string token, string newPassword, CancellationToken cancellationToken = default);
 
     /// <summary>No-op (returns null) if the user is unknown or already verified. Same raw-token caveat as <see cref="RequestPasswordResetAsync"/>.</summary>
-    Task<string?> RequestEmailVerificationAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<string?> RequestEmailVerificationAsync(Guid userId, string locale = EmailCopyCatalog.DefaultLocale, CancellationToken cancellationToken = default);
 
     /// <summary>Throws <see cref="InvalidOrExpiredTokenException"/>.</summary>
     Task VerifyEmailAsync(string token, CancellationToken cancellationToken = default);

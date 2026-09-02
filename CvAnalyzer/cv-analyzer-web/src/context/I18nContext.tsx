@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { DEFAULT_LOCALE, messages, SUPPORTED_LOCALES, type Locale } from '../i18n/locales'
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, messages, SUPPORTED_LOCALES, type Locale } from '../i18n/locales'
 import { I18nContext, type I18nContextValue } from './i18nContextObject'
-
-const STORAGE_KEY = 'cvorai.locale'
 
 /** og:locale uses underscore-joined language_TERRITORY tags, distinct from format.ts's BCP-47 (hyphenated) tags. */
 const OG_LOCALE: Record<Locale, string> = {
@@ -27,7 +25,7 @@ function isSupportedLocale(value: string | null | undefined): value is Locale {
  */
 function detectInitialLocale(): Locale {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(LOCALE_STORAGE_KEY)
     if (isSupportedLocale(stored)) {
       return stored
     }
@@ -97,7 +95,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     document.querySelector('meta[property="og:locale"]')?.setAttribute('content', OG_LOCALE[locale])
 
     try {
-      localStorage.setItem(STORAGE_KEY, locale)
+      localStorage.setItem(LOCALE_STORAGE_KEY, locale)
     } catch {
       // Best-effort persistence only — a private/disabled localStorage must never crash the app.
     }

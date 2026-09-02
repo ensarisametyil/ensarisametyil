@@ -1,7 +1,22 @@
 import { ApiError } from './ApiError';
 import { emitUnauthorized } from './authEvents';
 import { getToken } from './tokenStorage';
+import { LOCALE_STORAGE_KEY } from '../i18n/locales';
 import type { ApiErrorResponse } from '../types/cv';
+
+// Read directly from localStorage (not the I18n React context — this is a plain fetch wrapper,
+// not a component/hook, see the module comment below) so the backend can render any email it
+// sends (welcome, password-reset — see docs/email.md) in the same language the user has the UI
+// set to. Best-effort only: a missing/unreadable value just means no header is sent, and the
+// backend already defaults to Turkish in that case (see AuthController.ResolveLocale) — this can
+// never break a request.
+function currentLocaleHeader(): string | null {
+  try {
+    return localStorage.getItem(LOCALE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 // The strings below are internal fallback Error.message text, not user-facing copy — every call
 // site displays an error via utils/errorMessages.getErrorMessage(error, t), which keys off
@@ -37,6 +52,10 @@ export async function requestJson<T>(input: string, init: RequestOptions = {}): 
   const token = skipAuth ? null : getToken();
   if (token) {
     finalHeaders.set('Authorization', `Bearer ${token}`);
+  }
+  const locale = currentLocaleHeader();
+  if (locale) {
+    finalHeaders.set('Accept-Language', locale);
   }
 
   let response: Response;
@@ -75,6 +94,10 @@ export async function requestVoid(input: string, init: RequestOptions = {}): Pro
   const token = skipAuth ? null : getToken();
   if (token) {
     finalHeaders.set('Authorization', `Bearer ${token}`);
+  }
+  const locale = currentLocaleHeader();
+  if (locale) {
+    finalHeaders.set('Accept-Language', locale);
   }
 
   let response: Response;
