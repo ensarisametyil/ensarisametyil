@@ -146,7 +146,12 @@ function HistoryPage() {
 
   return (
     <main className={styles.page}>
-      <h1>{t('history.title')}</h1>
+      <div className={styles.titleRow}>
+        <h1>{t('history.title')}</h1>
+        <Link to="/compare" className={styles.compareLink}>
+          {t('compare.compareLink')}
+        </Link>
+      </div>
 
       {error && <ErrorBanner message={error} />}
 

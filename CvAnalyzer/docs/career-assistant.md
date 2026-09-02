@@ -127,8 +127,8 @@ Mevcut AI istisna hiyerarşisi (`AiConfigurationException`, `AiProviderUnavailab
 | HTTP | `code` | Sebep |
 |---|---|---|
 | 400 | `INVALID_REQUEST` / `JOB_DESCRIPTION_TOO_LONG` | Job description eksik veya çok uzun |
-| 403 | `PREMIUM_REQUIRED` | Kullanıcının planı bu özelliğe sahip değil |
-| 404 | `CV_NOT_FOUND` / `ANALYSIS_NOT_FOUND` / `RESULT_NOT_FOUND` | Kayıt bulunamadı veya kullanıcıya ait değil |
+| 403 | `PREMIUM_FEATURE_REQUIRED` | Kullanıcının planı bu özelliğe sahip değil |
+| 404 | `CV_NOT_FOUND` / `ANALYSIS_NOT_FOUND` / `CAREER_ASSISTANT_RESULT_NOT_FOUND` | Kayıt bulunamadı veya kullanıcıya ait değil |
 | 429 | `AI_RATE_LIMITED` | AI sağlayıcısı rate limit döndürdü |
 | 502 | `AI_INVALID_RESPONSE` | AI geçerli şemada JSON döndürmedi |
 | 503 | `AI_UNAVAILABLE` | AI yapılandırılmamış veya sağlayıcıya ulaşılamıyor |

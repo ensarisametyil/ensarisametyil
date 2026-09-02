@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useCvAnalysis } from '../hooks/useCvAnalysis'
 import { useBilling } from '../hooks/useBilling'
 import { useTranslation } from '../hooks/useTranslation'
@@ -79,6 +80,11 @@ function HomePage() {
               <button type="button" className={styles.resetButton} onClick={reset}>
                 {t('home.uploadAnotherCv')}
               </button>
+              {cv && (
+                <Link to={`/assistant/${cv.cvId}`} className={styles.careerAssistantLink}>
+                  {t('careerAssistant.cta')}
+                </Link>
+              )}
             </div>
           </div>
 

@@ -27,3 +27,12 @@ export interface ApiErrorResponse {
   code: string;
   message: string;
 }
+
+/** Response of GET /api/cv/{id} (CvDetailDto). */
+export interface CvDetail {
+  id: string;
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  uploadedAt: string;
+}

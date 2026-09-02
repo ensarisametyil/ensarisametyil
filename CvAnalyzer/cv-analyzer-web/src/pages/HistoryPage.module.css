@@ -13,6 +13,25 @@
   color: var(--text-heading);
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.compareLink {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.compareLink:hover {
+  text-decoration: underline;
+}
+
 .loading {
   display: flex;
   justify-content: center;

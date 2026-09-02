@@ -62,6 +62,9 @@ function HistoryDetailPage() {
               <h1 className={styles.cvName}>{detail.cvFileName}</h1>
               <p className={styles.date}>{formatDate(detail.createdAt, locale)}</p>
             </div>
+            <Link to={`/assistant/${detail.cvId}`} className={styles.careerAssistantLink}>
+              {t('careerAssistant.cta')}
+            </Link>
           </div>
 
           <AnalysisDashboard result={detail.result} />

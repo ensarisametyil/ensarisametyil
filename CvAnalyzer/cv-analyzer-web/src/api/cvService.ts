@@ -1,6 +1,11 @@
 import { API_BASE_URL } from './config'
 import { requestJson, requestVoid } from './httpClient'
-import type { CvAnalysisResult, CvUploadResponse } from '../types/cv'
+import type { CvAnalysisResult, CvDetail, CvUploadResponse } from '../types/cv'
+
+/** Fetches one of the authenticated user's own CVs by id (ownership-scoped, same 404 for someone else's CV as for a nonexistent one). */
+export function getCv(cvId: string): Promise<CvDetail> {
+  return requestJson<CvDetail>(`${API_BASE_URL}/api/cv/${cvId}`)
+}
 
 /** Uploads a CV file and returns its assigned id + stored file name. */
 export function uploadCv(file: File): Promise<CvUploadResponse> {

@@ -1,0 +1,134 @@
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.backLink {
+  display: inline-flex;
+  margin-bottom: 16px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.page h1 {
+  margin: 0 0 6px;
+}
+
+.description {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.hint {
+  color: var(--text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.field select {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.submitButton {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.resultGrid {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scoreDifference {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sideFileName {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sideScore {
+  margin: 0 0 12px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.sideListTitle {
+  margin: 12px 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.sideList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 16px 48px;
+  }
+
+  .sides {
+    grid-template-columns: 1fr;
+  }
+}

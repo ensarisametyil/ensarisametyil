@@ -230,6 +230,144 @@
     "deleting": "Deleting...",
     "deleteError": "The CV could not be deleted."
   },
+  "careerAssistant": {
+    "title": "Career Assistant",
+    "subtitle": "AI-powered job matching, ATS analysis, rewrite suggestions, career recommendations, and cover letter generation for your CV.",
+    "backToHome": "← Back to Home",
+    "cta": "Career Assistant",
+    "cvLabel": "CV",
+    "tabs": {
+      "overview": "Overview",
+      "jobMatch": "Job Match",
+      "ats": "ATS Analysis",
+      "rewrite": "CV Rewrite",
+      "recommendations": "Career Recommendations",
+      "coverLetter": "Cover Letter",
+      "history": "History"
+    },
+    "premiumRequired": {
+      "title": "Premium Feature",
+      "description": "This feature is only available to Premium members."
+    },
+    "cvoraScore": {
+      "title": "CVora Score",
+      "description": "CVora AI's own composite score summarizing your CV's overall quality — calculated transparently and testably on the backend.",
+      "needsAnalysisTitle": "Analyze your CV first",
+      "needsAnalysisDescription": "You need to run an analysis for this CV before a CVora Score can be calculated.",
+      "goToAnalyze": "Analyze CV",
+      "components": {
+        "contentQuality": "Content Quality",
+        "skills": "Skills",
+        "experience": "Experience",
+        "structure": "Structure",
+        "readability": "Readability",
+        "atsCompatibility": "ATS Compatibility"
+      },
+      "atsNotRun": "Run the ATS Analyzer to include ATS compatibility in your score."
+    },
+    "jobMatch": {
+      "title": "Job Description Matching",
+      "description": "Paste a job description to see how well your CV matches this position.",
+      "jobDescriptionLabel": "Job Description",
+      "jobDescriptionPlaceholder": "Paste the full job description here...",
+      "submit": "Analyze Match",
+      "submitting": "Analyzing...",
+      "overallScore": "Overall Match",
+      "skillsScore": "Skills Match",
+      "experienceScore": "Experience Match",
+      "keywordsScore": "Keyword Match",
+      "educationScore": "Education Match",
+      "summary": "Summary",
+      "requiredSkills": "Required Skills",
+      "preferredSkills": "Preferred Skills",
+      "matchedSkills": "Skills You Have",
+      "missingSkills": "Missing Skills",
+      "strengths": "Your Strengths For This Role",
+      "gaps": "Your Gaps For This Role",
+      "suggestedCvChanges": "Suggested CV Changes"
+    },
+    "ats": {
+      "title": "ATS Compatibility Analysis",
+      "description": "An estimate of how easily your CV can be processed by Applicant Tracking System (ATS) software.",
+      "estimateDisclaimer": "This result does not guarantee how any real ATS system will behave — it is CVora AI's own estimated compatibility assessment.",
+      "submit": "Run ATS Analysis",
+      "submitting": "Analyzing...",
+      "atsScore": "ATS Compatibility Estimate",
+      "structureScore": "Structure",
+      "keywordUsageScore": "Keyword Usage",
+      "formattingScore": "Formatting",
+      "readabilityScore": "Readability",
+      "summary": "Summary",
+      "strengths": "Strengths",
+      "risks": "Risks",
+      "recommendations": "Recommendations"
+    },
+    "rewrite": {
+      "title": "AI CV Rewriter",
+      "description": "Suggestions to make your existing CV wording more professional and effective. The AI never adds experience or skills you don't have — it only improves how you've already stated them.",
+      "submit": "Get Rewrite Suggestions",
+      "submitting": "Preparing suggestions...",
+      "summary": "Summary",
+      "original": "Original",
+      "improved": "Improved",
+      "reason": "Reason"
+    },
+    "recommendations": {
+      "title": "Career Recommendations",
+      "description": "Suggested roles based purely on the skills and experience your CV actually demonstrates.",
+      "submit": "Get Career Recommendations",
+      "submitting": "Preparing recommendations...",
+      "summary": "Summary",
+      "matchLabel": "{percent}% match",
+      "reasoning": "Reasoning"
+    },
+    "coverLetter": {
+      "title": "Cover Letter Generator",
+      "description": "Paste a job description and we'll generate a position-specific cover letter based on your actual CV.",
+      "jobDescriptionLabel": "Job Description",
+      "jobDescriptionPlaceholder": "Paste the full job description here...",
+      "languageLabel": "Language",
+      "languageTr": "Turkish",
+      "languageEn": "English",
+      "languageDe": "German",
+      "submit": "Generate Cover Letter",
+      "submitting": "Generating...",
+      "resultTitle": "Your Cover Letter",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "history": {
+      "title": "Career Assistant History",
+      "empty": "No Career Assistant results yet for this CV.",
+      "view": "View",
+      "types": {
+        "JobMatch": "Job Match",
+        "AtsAnalysis": "ATS Analysis",
+        "CvRewrite": "CV Rewrite",
+        "CareerRecommendations": "Career Recommendations",
+        "CoverLetter": "Cover Letter"
+      }
+    },
+    "historyDetail": {
+      "backToHistory": "← Back to Career Assistant History"
+    }
+  },
+  "compare": {
+    "title": "CV Comparison",
+    "description": "Compare two of your past analyses to see the differences between them.",
+    "selectA": "Analysis A",
+    "selectB": "Analysis B",
+    "selectPlaceholder": "Select an analysis",
+    "submit": "Compare",
+    "submitting": "Comparing...",
+    "scoreDifference": "Score Difference",
+    "uniqueStrengths": "Strengths Unique To This Analysis",
+    "uniqueWeaknesses": "Weaknesses Unique To This Analysis",
+    "sameAnalysisError": "Choose two different analyses to compare.",
+    "needAtLeastTwo": "You need at least two analyses to make a comparison.",
+    "backToHistory": "← Back to Analysis History",
+    "compareLink": "Compare Two Analyses"
+  },
   "account": {
     "title": "Account",
     "profile": {
@@ -421,7 +559,10 @@
     "ACTION_FAILED": "The action failed.",
     "INVALID_ROLE": "Invalid role.",
     "INVALID_STATUS": "Invalid payment status.",
-    "USER_NOT_FOUND": "User not found."
+    "USER_NOT_FOUND": "User not found.",
+    "JOB_DESCRIPTION_TOO_LONG": "The job description text is too long.",
+    "PREMIUM_FEATURE_REQUIRED": "This feature is only available to Premium members.",
+    "CAREER_ASSISTANT_RESULT_NOT_FOUND": "The requested result could not be found."
   },
   "admin": {
     "nav": {

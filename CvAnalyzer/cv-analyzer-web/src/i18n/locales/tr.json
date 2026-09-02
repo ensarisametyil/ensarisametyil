@@ -230,6 +230,144 @@
     "deleting": "Siliniyor...",
     "deleteError": "CV silinemedi."
   },
+  "careerAssistant": {
+    "title": "Kariyer Asistanı",
+    "subtitle": "CV'niz için AI destekli iş eşleştirme, ATS analizi, yeniden yazım önerileri, kariyer önerileri ve ön yazı üretimi.",
+    "backToHome": "← Ana Sayfaya Dön",
+    "cta": "Kariyer Asistanı",
+    "cvLabel": "CV",
+    "tabs": {
+      "overview": "Genel Bakış",
+      "jobMatch": "İş Eşleştirme",
+      "ats": "ATS Analizi",
+      "rewrite": "CV Yeniden Yazım",
+      "recommendations": "Kariyer Önerileri",
+      "coverLetter": "Ön Yazı",
+      "history": "Geçmiş"
+    },
+    "premiumRequired": {
+      "title": "Premium Özellik",
+      "description": "Bu özellik yalnızca Premium üyeler için kullanılabilir."
+    },
+    "cvoraScore": {
+      "title": "CVora Score",
+      "description": "CV'nizin genel kalitesini özetleyen, backend tarafında şeffaf ve test edilebilir şekilde hesaplanan CVora AI puanı.",
+      "needsAnalysisTitle": "Önce CV'nizi analiz edin",
+      "needsAnalysisDescription": "CVora Score hesaplanabilmesi için önce bu CV için bir analiz çalıştırmalısınız.",
+      "goToAnalyze": "CV'yi Analiz Et",
+      "components": {
+        "contentQuality": "İçerik Kalitesi",
+        "skills": "Beceriler",
+        "experience": "Deneyim",
+        "structure": "Yapı",
+        "readability": "Okunabilirlik",
+        "atsCompatibility": "ATS Uyumluluğu"
+      },
+      "atsNotRun": "ATS uyumluluğunu skora dahil etmek için ATS Analizi'ni çalıştırın."
+    },
+    "jobMatch": {
+      "title": "İş İlanı Eşleştirme",
+      "description": "İş ilanı metnini yapıştırın; CV'nizin bu pozisyonla ne kadar örtüştüğünü görün.",
+      "jobDescriptionLabel": "İş İlanı Metni",
+      "jobDescriptionPlaceholder": "İş ilanının tam metnini buraya yapıştırın...",
+      "submit": "Eşleştirmeyi Analiz Et",
+      "submitting": "Analiz ediliyor...",
+      "overallScore": "Genel Uyum",
+      "skillsScore": "Beceri Uyumu",
+      "experienceScore": "Deneyim Uyumu",
+      "keywordsScore": "Anahtar Kelime Uyumu",
+      "educationScore": "Eğitim Uyumu",
+      "summary": "Özet",
+      "requiredSkills": "Gerekli Beceriler",
+      "preferredSkills": "Tercih Edilen Beceriler",
+      "matchedSkills": "Sahip Olduğunuz Beceriler",
+      "missingSkills": "Eksik Beceriler",
+      "strengths": "Bu Pozisyon İçin Güçlü Yönleriniz",
+      "gaps": "Bu Pozisyon İçin Eksikleriniz",
+      "suggestedCvChanges": "Önerilen CV Değişiklikleri"
+    },
+    "ats": {
+      "title": "ATS Uyumluluk Analizi",
+      "description": "CV'nizin Applicant Tracking System (ATS) yazılımları tarafından ne kadar kolay işlenebileceğine dair bir analiz.",
+      "estimateDisclaimer": "Bu sonuç, gerçek bir ATS sisteminin davranışını garanti etmez; CVora AI'ın kendi tahmini uyumluluk değerlendirmesidir.",
+      "submit": "ATS Analizini Başlat",
+      "submitting": "Analiz ediliyor...",
+      "atsScore": "ATS Uyum Tahmini",
+      "structureScore": "Yapı",
+      "keywordUsageScore": "Anahtar Kelime Kullanımı",
+      "formattingScore": "Biçimlendirme",
+      "readabilityScore": "Okunabilirlik",
+      "summary": "Özet",
+      "strengths": "Güçlü Yönler",
+      "risks": "Riskler",
+      "recommendations": "Öneriler"
+    },
+    "rewrite": {
+      "title": "AI CV Yeniden Yazım",
+      "description": "CV'nizdeki mevcut ifadeleri daha profesyonel ve etkili hale getirmek için öneriler. AI, sahip olmadığınız hiçbir deneyim veya beceriyi eklemez — yalnızca mevcut ifadeleri iyileştirir.",
+      "submit": "Yeniden Yazım Önerileri Al",
+      "submitting": "Öneriler hazırlanıyor...",
+      "summary": "Özet",
+      "original": "Mevcut",
+      "improved": "İyileştirilmiş",
+      "reason": "Neden"
+    },
+    "recommendations": {
+      "title": "Kariyer Önerileri",
+      "description": "CV'nizde gösterdiğiniz beceri ve deneyimlere dayanarak size uygun olabilecek pozisyon önerileri.",
+      "submit": "Kariyer Önerileri Al",
+      "submitting": "Öneriler hazırlanıyor...",
+      "summary": "Özet",
+      "matchLabel": "%{percent} uyum",
+      "reasoning": "Gerekçe"
+    },
+    "coverLetter": {
+      "title": "Ön Yazı Oluşturucu",
+      "description": "İş ilanı metnini yapıştırın; CV'nizdeki bilgilere dayanan, pozisyona özel bir ön yazı oluşturalım.",
+      "jobDescriptionLabel": "İş İlanı Metni",
+      "jobDescriptionPlaceholder": "İş ilanının tam metnini buraya yapıştırın...",
+      "languageLabel": "Dil",
+      "languageTr": "Türkçe",
+      "languageEn": "İngilizce",
+      "languageDe": "Almanca",
+      "submit": "Ön Yazı Oluştur",
+      "submitting": "Oluşturuluyor...",
+      "resultTitle": "Ön Yazınız",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı"
+    },
+    "history": {
+      "title": "Kariyer Asistanı Geçmişi",
+      "empty": "Bu CV için henüz kariyer asistanı sonucu yok.",
+      "view": "Görüntüle",
+      "types": {
+        "JobMatch": "İş Eşleştirme",
+        "AtsAnalysis": "ATS Analizi",
+        "CvRewrite": "CV Yeniden Yazım",
+        "CareerRecommendations": "Kariyer Önerileri",
+        "CoverLetter": "Ön Yazı"
+      }
+    },
+    "historyDetail": {
+      "backToHistory": "← Kariyer Asistanı Geçmişine Dön"
+    }
+  },
+  "compare": {
+    "title": "CV Karşılaştırma",
+    "description": "İki geçmiş analizinizi karşılaştırarak aralarındaki farkları görün.",
+    "selectA": "Analiz A",
+    "selectB": "Analiz B",
+    "selectPlaceholder": "Bir analiz seçin",
+    "submit": "Karşılaştır",
+    "submitting": "Karşılaştırılıyor...",
+    "scoreDifference": "Puan Farkı",
+    "uniqueStrengths": "Yalnızca Bu Analizde Olan Güçlü Yönler",
+    "uniqueWeaknesses": "Yalnızca Bu Analizde Olan Zayıf Yönler",
+    "sameAnalysisError": "Karşılaştırmak için iki farklı analiz seçmelisiniz.",
+    "needAtLeastTwo": "Karşılaştırma yapabilmek için en az iki analiziniz olmalı.",
+    "backToHistory": "← Analiz Geçmişime Dön",
+    "compareLink": "İki Analizi Karşılaştır"
+  },
   "account": {
     "title": "Hesabım",
     "profile": {
@@ -421,7 +559,10 @@
     "ACTION_FAILED": "İşlem başarısız oldu.",
     "INVALID_ROLE": "Geçersiz rol.",
     "INVALID_STATUS": "Geçersiz ödeme durumu.",
-    "USER_NOT_FOUND": "Kullanıcı bulunamadı."
+    "USER_NOT_FOUND": "Kullanıcı bulunamadı.",
+    "JOB_DESCRIPTION_TOO_LONG": "İş ilanı metni çok uzun.",
+    "PREMIUM_FEATURE_REQUIRED": "Bu özellik yalnızca Premium üyeler için kullanılabilir.",
+    "CAREER_ASSISTANT_RESULT_NOT_FOUND": "Belirtilen sonuç bulunamadı."
   },
   "admin": {
     "nav": {

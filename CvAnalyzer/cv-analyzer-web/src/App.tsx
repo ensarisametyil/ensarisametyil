@@ -15,6 +15,9 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import HomePage from './pages/HomePage'
 import HistoryPage from './pages/HistoryPage'
 import HistoryDetailPage from './pages/HistoryDetailPage'
+import CareerAssistantPage from './pages/CareerAssistantPage'
+import CareerAssistantHistoryDetailPage from './pages/CareerAssistantHistoryDetailPage'
+import ComparePage from './pages/ComparePage'
 import PremiumCheckoutPage from './pages/PremiumCheckoutPage'
 import PremiumResultPage from './pages/PremiumResultPage'
 import AccountPage from './pages/AccountPage'
@@ -56,6 +59,9 @@ function App() {
               <Route path="/app" element={<HomePage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/history/:id" element={<HistoryDetailPage />} />
+              <Route path="/assistant/:cvId" element={<CareerAssistantPage />} />
+              <Route path="/assistant/history/:id" element={<CareerAssistantHistoryDetailPage />} />
+              <Route path="/compare" element={<ComparePage />} />
               <Route path="/premium/checkout" element={<PremiumCheckoutPage />} />
               <Route path="/premium/result" element={<PremiumResultPage />} />
               <Route path="/account" element={<AccountPage />} />

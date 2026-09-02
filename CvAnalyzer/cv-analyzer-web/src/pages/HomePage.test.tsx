@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import HomePage from './HomePage'
 import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
@@ -18,13 +19,15 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderHomePage() {
   return render(
-    <I18nProvider>
-      <AuthProvider>
-        <BillingProvider>
-          <HomePage />
-        </BillingProvider>
-      </AuthProvider>
-    </I18nProvider>,
+    <MemoryRouter>
+      <I18nProvider>
+        <AuthProvider>
+          <BillingProvider>
+            <HomePage />
+          </BillingProvider>
+        </AuthProvider>
+      </I18nProvider>
+    </MemoryRouter>,
   )
 }
 

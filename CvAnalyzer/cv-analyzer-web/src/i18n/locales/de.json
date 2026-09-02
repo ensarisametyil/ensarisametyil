@@ -230,6 +230,144 @@
     "deleting": "Wird gelöscht...",
     "deleteError": "Der Lebenslauf konnte nicht gelöscht werden."
   },
+  "careerAssistant": {
+    "title": "Karriereassistent",
+    "subtitle": "KI-gestützter Stellenabgleich, ATS-Analyse, Umformulierungsvorschläge, Karriereempfehlungen und Anschreibenerstellung für Ihren Lebenslauf.",
+    "backToHome": "← Zurück zur Startseite",
+    "cta": "Karriereassistent",
+    "cvLabel": "Lebenslauf",
+    "tabs": {
+      "overview": "Übersicht",
+      "jobMatch": "Stellenabgleich",
+      "ats": "ATS-Analyse",
+      "rewrite": "Lebenslauf umschreiben",
+      "recommendations": "Karriereempfehlungen",
+      "coverLetter": "Anschreiben",
+      "history": "Verlauf"
+    },
+    "premiumRequired": {
+      "title": "Premium-Funktion",
+      "description": "Diese Funktion ist nur für Premium-Mitglieder verfügbar."
+    },
+    "cvoraScore": {
+      "title": "CVora Score",
+      "description": "Der eigene Gesamtscore von CVora AI, der die Gesamtqualität Ihres Lebenslaufs zusammenfasst — transparent und nachvollziehbar im Backend berechnet.",
+      "needsAnalysisTitle": "Analysieren Sie zuerst Ihren Lebenslauf",
+      "needsAnalysisDescription": "Sie müssen zuerst eine Analyse für diesen Lebenslauf durchführen, bevor ein CVora Score berechnet werden kann.",
+      "goToAnalyze": "Lebenslauf analysieren",
+      "components": {
+        "contentQuality": "Inhaltliche Qualität",
+        "skills": "Fähigkeiten",
+        "experience": "Erfahrung",
+        "structure": "Struktur",
+        "readability": "Lesbarkeit",
+        "atsCompatibility": "ATS-Kompatibilität"
+      },
+      "atsNotRun": "Führen Sie die ATS-Analyse aus, um die ATS-Kompatibilität in Ihren Score einzubeziehen."
+    },
+    "jobMatch": {
+      "title": "Stellenbeschreibungsabgleich",
+      "description": "Fügen Sie eine Stellenbeschreibung ein, um zu sehen, wie gut Ihr Lebenslauf zu dieser Position passt.",
+      "jobDescriptionLabel": "Stellenbeschreibung",
+      "jobDescriptionPlaceholder": "Fügen Sie hier den vollständigen Text der Stellenbeschreibung ein...",
+      "submit": "Abgleich analysieren",
+      "submitting": "Wird analysiert...",
+      "overallScore": "Gesamtübereinstimmung",
+      "skillsScore": "Fähigkeiten-Übereinstimmung",
+      "experienceScore": "Erfahrungs-Übereinstimmung",
+      "keywordsScore": "Schlüsselwort-Übereinstimmung",
+      "educationScore": "Ausbildungs-Übereinstimmung",
+      "summary": "Zusammenfassung",
+      "requiredSkills": "Erforderliche Fähigkeiten",
+      "preferredSkills": "Bevorzugte Fähigkeiten",
+      "matchedSkills": "Ihre vorhandenen Fähigkeiten",
+      "missingSkills": "Fehlende Fähigkeiten",
+      "strengths": "Ihre Stärken für diese Position",
+      "gaps": "Ihre Lücken für diese Position",
+      "suggestedCvChanges": "Empfohlene Lebenslauf-Änderungen"
+    },
+    "ats": {
+      "title": "ATS-Kompatibilitätsanalyse",
+      "description": "Eine Schätzung, wie leicht Ihr Lebenslauf von Bewerbermanagementsystemen (ATS) verarbeitet werden kann.",
+      "estimateDisclaimer": "Dieses Ergebnis garantiert nicht das Verhalten eines echten ATS-Systems — es ist die eigene geschätzte Kompatibilitätsbewertung von CVora AI.",
+      "submit": "ATS-Analyse starten",
+      "submitting": "Wird analysiert...",
+      "atsScore": "Geschätzte ATS-Kompatibilität",
+      "structureScore": "Struktur",
+      "keywordUsageScore": "Schlüsselwortnutzung",
+      "formattingScore": "Formatierung",
+      "readabilityScore": "Lesbarkeit",
+      "summary": "Zusammenfassung",
+      "strengths": "Stärken",
+      "risks": "Risiken",
+      "recommendations": "Empfehlungen"
+    },
+    "rewrite": {
+      "title": "KI-Lebenslauf-Umschreiber",
+      "description": "Vorschläge, um die vorhandenen Formulierungen in Ihrem Lebenslauf professioneller und wirkungsvoller zu gestalten. Die KI fügt niemals Erfahrungen oder Fähigkeiten hinzu, die Sie nicht haben — sie verbessert nur, wie Sie sie bereits formuliert haben.",
+      "submit": "Umschreibungsvorschläge erhalten",
+      "submitting": "Vorschläge werden erstellt...",
+      "summary": "Zusammenfassung",
+      "original": "Original",
+      "improved": "Verbessert",
+      "reason": "Begründung"
+    },
+    "recommendations": {
+      "title": "Karriereempfehlungen",
+      "description": "Vorgeschlagene Rollen, die ausschließlich auf den in Ihrem Lebenslauf tatsächlich nachgewiesenen Fähigkeiten und Erfahrungen basieren.",
+      "submit": "Karriereempfehlungen erhalten",
+      "submitting": "Empfehlungen werden erstellt...",
+      "summary": "Zusammenfassung",
+      "matchLabel": "{percent}% Übereinstimmung",
+      "reasoning": "Begründung"
+    },
+    "coverLetter": {
+      "title": "Anschreiben-Generator",
+      "description": "Fügen Sie eine Stellenbeschreibung ein, und wir erstellen ein positionsspezifisches Anschreiben basierend auf Ihrem tatsächlichen Lebenslauf.",
+      "jobDescriptionLabel": "Stellenbeschreibung",
+      "jobDescriptionPlaceholder": "Fügen Sie hier den vollständigen Text der Stellenbeschreibung ein...",
+      "languageLabel": "Sprache",
+      "languageTr": "Türkisch",
+      "languageEn": "Englisch",
+      "languageDe": "Deutsch",
+      "submit": "Anschreiben erstellen",
+      "submitting": "Wird erstellt...",
+      "resultTitle": "Ihr Anschreiben",
+      "copy": "Kopieren",
+      "copied": "Kopiert"
+    },
+    "history": {
+      "title": "Karriereassistent-Verlauf",
+      "empty": "Für diesen Lebenslauf gibt es noch keine Karriereassistent-Ergebnisse.",
+      "view": "Anzeigen",
+      "types": {
+        "JobMatch": "Stellenabgleich",
+        "AtsAnalysis": "ATS-Analyse",
+        "CvRewrite": "Lebenslauf umschreiben",
+        "CareerRecommendations": "Karriereempfehlungen",
+        "CoverLetter": "Anschreiben"
+      }
+    },
+    "historyDetail": {
+      "backToHistory": "← Zurück zum Karriereassistent-Verlauf"
+    }
+  },
+  "compare": {
+    "title": "Lebenslauf-Vergleich",
+    "description": "Vergleichen Sie zwei Ihrer vergangenen Analysen, um die Unterschiede zwischen ihnen zu sehen.",
+    "selectA": "Analyse A",
+    "selectB": "Analyse B",
+    "selectPlaceholder": "Eine Analyse auswählen",
+    "submit": "Vergleichen",
+    "submitting": "Wird verglichen...",
+    "scoreDifference": "Punktedifferenz",
+    "uniqueStrengths": "Nur in dieser Analyse vorhandene Stärken",
+    "uniqueWeaknesses": "Nur in dieser Analyse vorhandene Schwächen",
+    "sameAnalysisError": "Wählen Sie zwei unterschiedliche Analysen zum Vergleichen aus.",
+    "needAtLeastTwo": "Sie benötigen mindestens zwei Analysen, um einen Vergleich durchzuführen.",
+    "backToHistory": "← Zurück zum Analyseverlauf",
+    "compareLink": "Zwei Analysen vergleichen"
+  },
   "account": {
     "title": "Konto",
     "profile": {
@@ -421,7 +559,10 @@
     "ACTION_FAILED": "Die Aktion ist fehlgeschlagen.",
     "INVALID_ROLE": "Ungültige Rolle.",
     "INVALID_STATUS": "Ungültiger Zahlungsstatus.",
-    "USER_NOT_FOUND": "Benutzer nicht gefunden."
+    "USER_NOT_FOUND": "Benutzer nicht gefunden.",
+    "JOB_DESCRIPTION_TOO_LONG": "Der Stellenbeschreibungstext ist zu lang.",
+    "PREMIUM_FEATURE_REQUIRED": "Diese Funktion ist nur für Premium-Mitglieder verfügbar.",
+    "CAREER_ASSISTANT_RESULT_NOT_FOUND": "Das angeforderte Ergebnis wurde nicht gefunden."
   },
   "admin": {
     "nav": {
