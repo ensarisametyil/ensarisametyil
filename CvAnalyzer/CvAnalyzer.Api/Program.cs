@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using CvAnalyzer.Api.Data;
 using CvAnalyzer.Api.Extensions;
 using CvAnalyzer.Api.Models.Dtos;
@@ -241,6 +242,30 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// Reverse-proxy support — OFF by default (see appsettings.json's "ReverseProxy" section). A
+// container almost always sits behind a TLS-terminating reverse proxy/load balancer in
+// production (nginx, Caddy, or a hosting platform's own ingress), which means Kestrel only ever
+// sees plain HTTP internally — without this, UseHttpsRedirection()/UseHsts() below would redirect
+// loop, and the IP-partitioned rate limit policies (Auth/Contact/PasswordReset — see
+// RateLimitPolicies) would bucket every request under the proxy's own IP instead of the real
+// client's. Turning this on trusts X-Forwarded-For/X-Forwarded-Proto from ANY upstream, which is
+// only safe when this container is never directly reachable from the public internet — only
+// through your trusted proxy. Never enable this if the container's port is exposed directly to
+// untrusted traffic (see docs/deployment.md).
+if (builder.Configuration.GetValue<bool>("ReverseProxy:TrustForwardedHeaders"))
+{
+    var forwardedHeadersOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    };
+    // Cleared, not left at their loopback-only defaults — this app is meant to run behind an
+    // arbitrary hosting platform's proxy (not always on loopback), and this whole branch is
+    // opt-in specifically for that case (see the comment above).
+    forwardedHeadersOptions.KnownNetworks.Clear();
+    forwardedHeadersOptions.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwardedHeadersOptions);
+}
 
 // Security response headers — registered first and via OnStarting (not a plain header
 // assignment) so they are guaranteed present on EVERY response this app ever sends, including

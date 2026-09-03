@@ -1,0 +1,70 @@
+# Production-shaped compose file — builds and runs the backend and frontend as two independent
+# containers. Every secret-bearing value below is read from your shell environment (or a
+# gitignored .env.prod file next to this one — see docs/deployment.md) at "docker compose up"
+# time; NONE of them have a default here, on purpose, so a missing one fails loudly instead of
+# silently deploying with an empty/placeholder secret.
+#
+# This file does NOT run PostgreSQL — production data belongs in a real managed database (with
+# backups, point-in-time recovery, etc.), not a container tied to this compose file's lifecycle.
+# Point CONNECTION_STRING at that database. (For local-only exploration, see docker-compose.yml
+# instead — that one *does* run a throwaway Postgres container.)
+#
+# Usage:
+#   cp .env.prod.example .env.prod   # fill in real values, never commit this file
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: CvAnalyzer.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:?set CONNECTION_STRING in .env.prod}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?set JWT_SIGNING_KEY in .env.prod (32+ random chars)}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN:?set FRONTEND_ORIGIN in .env.prod, e.g. https://app.yourdomain.com}
+      ReverseProxy__TrustForwardedHeaders: ${TRUST_FORWARDED_HEADERS:-false}
+      AI__ApiKey: ${AI_API_KEY:-}
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__User: ${SMTP_USER:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-}
+      Smtp__FrontendBaseUrl: ${FRONTEND_ORIGIN:?set FRONTEND_ORIGIN in .env.prod}
+      Iyzico__ApiKey: ${IYZICO_API_KEY:-}
+      Iyzico__SecretKey: ${IYZICO_SECRET_KEY:-}
+      Iyzico__BaseUrl: ${IYZICO_BASE_URL:-https://sandbox-api.iyzipay.com}
+      Iyzico__PremiumPricingPlanReferenceCode: ${IYZICO_PRICING_PLAN_REFERENCE_CODE:-}
+      Iyzico__CallbackUrl: ${IYZICO_CALLBACK_URL:-}
+      Iyzico__FrontendResultUrl: ${IYZICO_FRONTEND_RESULT_URL:-}
+      Admin__BootstrapEmail: ${ADMIN_BOOTSTRAP_EMAIL:-}
+      # LocalFileStorageService resolves FileStorage:RootPath relative to the app's content root
+      # (/app in this image) — appsettings.json's dev-only default ("../storage/cv-uploads") makes
+      # sense for a local checkout but not inside a container, so this pins an absolute path that
+      # matches the volume mount below.
+      FileStorage__RootPath: /data/cv-uploads
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      # Uploaded CVs must survive container restarts/redeploys — see docs/production.md §9.
+      - cvora-file-storage:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: cv-analyzer-web/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${BACKEND_ORIGIN:?set BACKEND_ORIGIN in .env.prod, e.g. https://api.yourdomain.com}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8081}:8080"
+    depends_on:
+      - backend
+
+volumes:
+  cvora-file-storage:

@@ -145,6 +145,12 @@ npm run lint
 Hiçbir test gerçek Anthropic/İyzico/SMTP servislerine bağlanmaz — hepsi fake/mock implementasyonlar
 üzerinden çalışır, bu yüzden internet bağlantısı veya gerçek credential gerektirmez.
 
+## Hosting'e Çıkarma
+
+Bu projeyi gerçek bir sunucuya/hosting ortamına çıkarmak için `CvAnalyzer.Api/Dockerfile`,
+`cv-analyzer-web/Dockerfile` ve `docker-compose.prod.yml` hazır — adım adım rehber:
+**`docs/deployment.md`**.
+
 ## Daha Fazla Bilgi
 
 Ayrıntılı mimari/özellik dokümantasyonu `docs/` klasöründedir — özellikle:
