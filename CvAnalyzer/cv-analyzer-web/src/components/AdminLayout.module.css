@@ -1,58 +1,61 @@
 .shell {
   display: flex;
-  min-height: calc(100svh - 60px);
+  min-height: 100svh;
 }
 
-.sidebar {
-  flex-shrink: 0;
-  width: 200px;
-  padding: 24px 12px;
+.main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-right: 1px solid var(--border);
-}
-
-.link,
-.linkActive {
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.linkActive {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.link:hover {
-  background: var(--surface-muted);
+  flex: 1;
+  min-width: 0;
 }
 
 .content {
-  flex-grow: 1;
-  min-width: 0;
-  padding: 24px 32px;
+  flex: 1;
 }
 
-@media (max-width: 700px) {
-  .shell {
-    flex-direction: column;
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-6) 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab,
+.tabActive {
+  display: inline-flex;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 2px solid transparent;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+.tab:hover {
+  color: var(--text-heading);
+}
+
+.tabActive {
+  color: var(--accent-text-on-soft);
+  border-bottom-color: var(--accent);
+  font-weight: var(--font-semibold);
+}
+
+.page {
+  padding: var(--space-6);
+}
+
+@media (max-width: 640px) {
+  .tabs {
+    padding: var(--space-2) var(--space-4) 0;
   }
 
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 12px;
-  }
-
-  .content {
-    padding: 20px 16px;
+  .page {
+    padding: var(--space-4);
   }
 }

@@ -1,5 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  BadgeCheck,
+  CheckCircle2,
+  FileSearch,
+  Gauge,
+  Lightbulb,
+  ListChecks,
+  Lock,
+  Map,
+  MessageSquareText,
+  Sparkles,
+  Target,
+  TimerReset,
+  TrendingUp,
+} from 'lucide-react'
 import { getPlans } from '../api/billingService'
 import { useAuth } from '../hooks/useAuth'
 import { useBilling } from '../hooks/useBilling'
@@ -51,17 +66,83 @@ function LandingPage() {
 
       <main>
         <section className={styles.hero}>
-          <h1>{t('landing.hero.title')}</h1>
-          <p className={styles.heroSubtitle}>{t('landing.hero.subtitle')}</p>
-          <div className={styles.heroActions}>
-            <Link to={primaryCtaTarget} className={styles.heroCta}>
-              {primaryCtaLabel}
-            </Link>
+          <div className={styles.heroCopy}>
+            <h1>{t('landing.hero.title')}</h1>
+            <p className={styles.heroSubtitle}>{t('landing.hero.subtitle')}</p>
+            <div className={styles.heroActions}>
+              <Link to={primaryCtaTarget} className={styles.heroCta}>
+                {primaryCtaLabel}
+              </Link>
+              <a href="#showcase" className={styles.heroSecondaryCta}>
+                {t('landing.hero.secondaryCta')}
+              </a>
+            </div>
             <span className={styles.heroHint}>{t('landing.hero.hint')}</span>
+          </div>
+
+          <div className={styles.heroVisual} aria-hidden="true">
+            <div className={styles.heroCard}>
+              <div className={styles.heroCardHeader}>
+                <span className={styles.heroCardDot} />
+                <span className={styles.heroCardDot} />
+                <span className={styles.heroCardDot} />
+              </div>
+              <div className={styles.heroCardBody}>
+                <div className={styles.heroScoreRing}>
+                  <span className={styles.heroScoreValue}>87</span>
+                </div>
+                <div className={styles.heroCardBars}>
+                  <div className={styles.heroCardBarRow}>
+                    <span>{t('analysis.skills')}</span>
+                    <div className={styles.heroCardBarTrack}>
+                      <div className={styles.heroCardBarFill} style={{ width: '82%' }} />
+                    </div>
+                  </div>
+                  <div className={styles.heroCardBarRow}>
+                    <span>{t('analysis.experience')}</span>
+                    <div className={styles.heroCardBarTrack}>
+                      <div className={styles.heroCardBarFill} style={{ width: '90%' }} />
+                    </div>
+                  </div>
+                  <div className={styles.heroCardBarRow}>
+                    <span>{t('analysis.education')}</span>
+                    <div className={styles.heroCardBarTrack}>
+                      <div className={styles.heroCardBarFill} style={{ width: '76%' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className={styles.howItWorks} aria-labelledby="how-it-works-heading">
+        <section className={styles.trust} aria-labelledby="trust-heading">
+          <h2 id="trust-heading">{t('landing.trust.heading')}</h2>
+          <div className={styles.trustGrid}>
+            <div className={styles.trustCard}>
+              <Sparkles size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
+              <h3>{t('landing.trust.point1.title')}</h3>
+              <p>{t('landing.trust.point1.body')}</p>
+            </div>
+            <div className={styles.trustCard}>
+              <Lock size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
+              <h3>{t('landing.trust.point2.title')}</h3>
+              <p>{t('landing.trust.point2.body')}</p>
+            </div>
+            <div className={styles.trustCard}>
+              <TimerReset size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
+              <h3>{t('landing.trust.point3.title')}</h3>
+              <p>{t('landing.trust.point3.body')}</p>
+            </div>
+            <div className={styles.trustCard}>
+              <TrendingUp size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
+              <h3>{t('landing.trust.point4.title')}</h3>
+              <p>{t('landing.trust.point4.body')}</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="showcase" className={styles.howItWorks} aria-labelledby="how-it-works-heading">
           <h2 id="how-it-works-heading">{t('landing.howItWorks.heading')}</h2>
           <ol className={styles.steps}>
             <li>
@@ -92,21 +173,108 @@ function LandingPage() {
           <h2 id="benefits-heading">{t('landing.benefits.heading')}</h2>
           <div className={styles.benefitGrid}>
             <div className={styles.benefitCard}>
+              <Target size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
               <h3>{t('landing.benefits.objective.title')}</h3>
               <p>{t('landing.benefits.objective.body')}</p>
             </div>
             <div className={styles.benefitCard}>
+              <Lightbulb size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
               <h3>{t('landing.benefits.concrete.title')}</h3>
               <p>{t('landing.benefits.concrete.body')}</p>
             </div>
             <div className={styles.benefitCard}>
+              <FileSearch size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
               <h3>{t('landing.benefits.keywords.title')}</h3>
               <p>{t('landing.benefits.keywords.body')}</p>
             </div>
             <div className={styles.benefitCard}>
+              <ListChecks size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
               <h3>{t('landing.benefits.history.title')}</h3>
               <p>{t('landing.benefits.history.body')}</p>
             </div>
+          </div>
+        </section>
+
+        <section className={styles.split} aria-labelledby="career-insights-heading">
+          <div className={styles.splitCopy}>
+            <h2 id="career-insights-heading">{t('landing.careerInsights.heading')}</h2>
+            <p className={styles.splitBody}>{t('landing.careerInsights.body')}</p>
+            <ul className={styles.splitList}>
+              <li>
+                <MessageSquareText size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.careerInsights.point1.title')}</strong>
+                  <p>{t('landing.careerInsights.point1.body')}</p>
+                </div>
+              </li>
+              <li>
+                <Map size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.careerInsights.point2.title')}</strong>
+                  <p>{t('landing.careerInsights.point2.body')}</p>
+                </div>
+              </li>
+              <li>
+                <BadgeCheck size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.careerInsights.point3.title')}</strong>
+                  <p>{t('landing.careerInsights.point3.body')}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section className={`${styles.split} ${styles.splitReverse}`} aria-labelledby="scoring-heading">
+          <div className={styles.splitCopy}>
+            <h2 id="scoring-heading">{t('landing.scoring.heading')}</h2>
+            <p className={styles.splitBody}>{t('landing.scoring.body')}</p>
+            <ul className={styles.splitList}>
+              <li>
+                <Gauge size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.scoring.point1.title')}</strong>
+                  <p>{t('landing.scoring.point1.body')}</p>
+                </div>
+              </li>
+              <li>
+                <CheckCircle2 size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.scoring.point2.title')}</strong>
+                  <p>{t('landing.scoring.point2.body')}</p>
+                </div>
+              </li>
+              <li>
+                <ListChecks size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.scoring.point3.title')}</strong>
+                  <p>{t('landing.scoring.point3.body')}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section className={styles.split} aria-labelledby="job-matching-heading">
+          <div className={styles.splitCopy}>
+            <h2 id="job-matching-heading">{t('landing.jobMatching.heading')}</h2>
+            <p className={styles.splitBody}>{t('landing.jobMatching.body')}</p>
+            <ul className={styles.splitList}>
+              <li>
+                <Target size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.jobMatching.point1.title')}</strong>
+                  <p>{t('landing.jobMatching.point1.body')}</p>
+                </div>
+              </li>
+              <li>
+                <FileSearch size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <strong>{t('landing.jobMatching.point2.title')}</strong>
+                  <p>{t('landing.jobMatching.point2.body')}</p>
+                </div>
+              </li>
+            </ul>
           </div>
         </section>
 
@@ -174,6 +342,14 @@ function LandingPage() {
               </div>
             ))}
           </dl>
+        </section>
+
+        <section className={styles.finalCta} aria-labelledby="final-cta-heading">
+          <h2 id="final-cta-heading">{t('landing.finalCta.heading')}</h2>
+          <p>{t('landing.finalCta.body')}</p>
+          <Link to={primaryCtaTarget} className={styles.heroCta}>
+            {primaryCtaLabel}
+          </Link>
         </section>
       </main>
 

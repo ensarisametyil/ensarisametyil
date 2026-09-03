@@ -37,7 +37,10 @@
     "history": "Analysis History",
     "account": "Account",
     "logout": "Log Out",
-    "admin": "Admin Panel"
+    "admin": "Admin Panel",
+    "compare": "Compare",
+    "toggleMenu": "Menu",
+    "closeMenu": "Close menu"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -51,7 +54,8 @@
       "subtitle": "As soon as you upload your CV, CVora AI reveals your strengths, weaknesses, missing skills, and improvement suggestions — strengthen your CV before you apply.",
       "ctaAuthenticated": "Go to App",
       "ctaAnonymous": "Start Free",
-      "hint": "No credit card required — get started with the Free plan right away."
+      "hint": "No credit card required — get started with the Free plan right away.",
+      "secondaryCta": "How It Works"
     },
     "howItWorks": {
       "heading": "How It Works",
@@ -125,6 +129,73 @@
         "question": "Can I delete my CV after analyzing it?",
         "answer": "Yes. You can delete any CV and its analysis result at any time from your Analysis History page."
       }
+    },
+    "trust": {
+      "heading": "Why CVora AI?",
+      "point1": {
+        "title": "AI-Powered Analysis",
+        "body": "An advanced language model reads your CV in seconds and evaluates it from a recruiter's perspective."
+      },
+      "point2": {
+        "title": "Your Data Stays Safe",
+        "body": "Your CV content is used only to produce your analysis, stored tied to your account, and never shared with other users."
+      },
+      "point3": {
+        "title": "Results in Minutes",
+        "body": "See your score and detailed feedback right after you upload — no waiting."
+      },
+      "point4": {
+        "title": "A Constantly Improving Product",
+        "body": "Keep strengthening your CV with features like the Career Assistant, comparison, and analysis history alongside the core analysis."
+      }
+    },
+    "careerInsights": {
+      "heading": "Career Insights",
+      "body": "Go beyond a single analysis. Career Assistant evaluates your CV against the roles you're targeting and gives you concrete, personalized career recommendations.",
+      "point1": {
+        "title": "Rewrite Suggestions",
+        "body": "Get line-by-line suggestions to describe your experience more powerfully and effectively."
+      },
+      "point2": {
+        "title": "Career Roadmap",
+        "body": "Learn which roles and skills to focus on next, based on your current experience."
+      },
+      "point3": {
+        "title": "Personalized Cover Letter",
+        "body": "Generate a cover letter draft tailored to the role you're applying for, built from your CV."
+      }
+    },
+    "scoring": {
+      "heading": "Detailed Resume Scoring",
+      "body": "CVora Score doesn't just reduce your CV to a single number — it separately shows your strengths, the areas that need work, and a skills/experience/education breakdown.",
+      "point1": {
+        "title": "Overall Score",
+        "body": "See your CV's overall strength as a clear score out of 100."
+      },
+      "point2": {
+        "title": "Strengths & Weaknesses",
+        "body": "See, side by side, what will catch a recruiter's eye and what might work against you."
+      },
+      "point3": {
+        "title": "Skills, Experience & Education Breakdown",
+        "body": "Get each section of your CV evaluated on its own."
+      }
+    },
+    "jobMatching": {
+      "heading": "Job & Career Recommendations",
+      "body": "Career Assistant matches your CV against a target role — showing your fit and missing keywords — and points you toward the roles you're best suited for.",
+      "point1": {
+        "title": "Role Fit Analysis",
+        "body": "See how well your CV fits the job posting you're targeting."
+      },
+      "point2": {
+        "title": "Missing Keywords",
+        "body": "Discover the missing skills and keywords that would help your application stand out."
+      }
+    },
+    "finalCta": {
+      "heading": "Strengthen Your CV Today",
+      "body": "No credit card required. Start with the Free plan and get your first analysis in seconds."
     }
   },
   "auth": {

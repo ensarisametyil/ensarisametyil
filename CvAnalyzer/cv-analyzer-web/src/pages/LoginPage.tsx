@@ -41,6 +41,9 @@ function LoginPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
+        <Link to="/" className={styles.brand}>
+          {t('app.name')}
+        </Link>
         <h1>{t('auth.login.title')}</h1>
 
         {error && <ErrorBanner message={error} />}

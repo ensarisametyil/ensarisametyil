@@ -16,7 +16,7 @@ function PublicHeader() {
       </Link>
       <nav className={styles.topNav}>
         {isAuthenticated ? (
-          <Link to="/app" className={styles.topNavLink}>
+          <Link to="/app" className={styles.topNavCta}>
             {t('publicHeader.goToApp')}
           </Link>
         ) : (

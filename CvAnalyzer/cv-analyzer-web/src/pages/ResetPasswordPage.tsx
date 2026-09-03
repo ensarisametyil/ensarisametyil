@@ -50,6 +50,9 @@ function ResetPasswordPage() {
     return (
       <main className={styles.page}>
         <div className={styles.card}>
+          <Link to="/" className={styles.brand}>
+            {t('app.name')}
+          </Link>
           <h1>{t('auth.resetPassword.invalidLinkTitle')}</h1>
           <ErrorBanner message={t('auth.resetPassword.invalidLinkMessage')} />
           <p className={styles.switchText}>
@@ -64,6 +67,9 @@ function ResetPasswordPage() {
     return (
       <main className={styles.page}>
         <div className={styles.card}>
+          <Link to="/" className={styles.brand}>
+            {t('app.name')}
+          </Link>
           <h1>{t('auth.resetPassword.successTitle')}</h1>
           <p className={styles.hint} role="status">
             {t('auth.resetPassword.successMessage')}
@@ -79,6 +85,9 @@ function ResetPasswordPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={handleSubmit}>
+        <Link to="/" className={styles.brand}>
+          {t('app.name')}
+        </Link>
         <h1>{t('auth.resetPassword.title')}</h1>
 
         {error && <ErrorBanner message={error} />}

@@ -1,3 +1,4 @@
+import { AlertTriangle, Check, Circle } from 'lucide-react'
 import cardStyles from './Card.module.css'
 import styles from './ListCard.module.css'
 
@@ -8,10 +9,10 @@ interface ListCardProps {
   className?: string
 }
 
-const TONE_MARKER: Record<NonNullable<ListCardProps['tone']>, string> = {
-  neutral: '•',
-  positive: '✓',
-  warning: '!',
+const TONE_ICON: Record<NonNullable<ListCardProps['tone']>, typeof Check> = {
+  neutral: Circle,
+  positive: Check,
+  warning: AlertTriangle,
 }
 
 /** Bulleted list section. Renders nothing when the AI returned an empty list for this field. */
@@ -20,6 +21,8 @@ function ListCard({ title, items, tone = 'neutral', className }: ListCardProps) 
     return null
   }
 
+  const ToneIcon = TONE_ICON[tone]
+
   return (
     <section className={`${cardStyles.card} ${className ?? ''}`}>
       <h2 className={cardStyles.title}>{title}</h2>
@@ -27,7 +30,7 @@ function ListCard({ title, items, tone = 'neutral', className }: ListCardProps) 
         {items.map((item, index) => (
           <li key={index} className={`${styles.item} ${styles[tone]}`}>
             <span className={styles.marker} aria-hidden="true">
-              {TONE_MARKER[tone]}
+              <ToneIcon size={tone === 'neutral' ? 7 : 12} strokeWidth={tone === 'neutral' ? 0 : 2.5} fill={tone === 'neutral' ? 'currentColor' : 'none'} />
             </span>
             <span>{item}</span>
           </li>

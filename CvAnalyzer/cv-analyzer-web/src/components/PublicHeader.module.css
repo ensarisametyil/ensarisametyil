@@ -1,43 +1,77 @@
 .topBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: var(--space-4);
+  height: var(--topbar-height);
+  padding: 0 var(--space-6);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
 }
 
 .brand {
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
   color: var(--text-heading);
-  font-size: 1.1rem;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .topNav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-5);
 }
 
 .topNavLink {
   color: var(--text);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .topNavLink:hover,
 .topNavLink:focus-visible {
-  color: var(--accent);
+  color: var(--text-heading);
 }
 
 .topNavCta {
+  display: inline-flex;
+  align-items: center;
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-xs);
+  transition: background var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.topNavCta:hover,
+.topNavCta:focus-visible {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 640px) {
+  .topBar {
+    padding: 0 var(--space-4);
+  }
+
+  .topNav {
+    gap: var(--space-3);
+  }
+
+  .topNavLink {
+    display: none;
+  }
 }

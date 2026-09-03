@@ -7,78 +7,90 @@
 .content {
   max-width: 480px;
   margin: 0 auto;
-  padding: 40px 24px 64px;
+  padding: var(--space-10) var(--space-6) var(--space-16);
   flex-grow: 1;
   width: 100%;
 }
 
 .content h1 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-2xl);
 }
 
 .intro {
   color: var(--text-muted);
-  margin: 0 0 24px;
+  margin: 0 0 var(--space-6);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text);
 }
 
 .field input,
 .field textarea {
   font: inherit;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
   resize: vertical;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.field input:focus,
-.field textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-focus);
 }
 
 .submitButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
+  gap: var(--space-2);
+  padding: var(--space-3);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 600;
+  color: var(--text-on-accent);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: background var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .submitButton:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .successMessage {
   color: var(--success);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 24px 16px 48px;
+    padding: var(--space-6) var(--space-4) var(--space-12);
   }
 }

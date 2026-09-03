@@ -1,3 +1,4 @@
+import { AlertCircle } from 'lucide-react'
 import styles from './ErrorBanner.module.css'
 
 interface ErrorBannerProps {
@@ -8,9 +9,7 @@ interface ErrorBannerProps {
 function ErrorBanner({ message }: ErrorBannerProps) {
   return (
     <div className={styles.banner} role="alert">
-      <span className={styles.icon} aria-hidden="true">
-        ⚠
-      </span>
+      <AlertCircle size={18} className={styles.icon} aria-hidden="true" />
       <span>{message}</span>
     </div>
   )

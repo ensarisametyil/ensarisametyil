@@ -37,7 +37,10 @@
     "history": "Analiz Geçmişim",
     "account": "Hesabım",
     "logout": "Çıkış Yap",
-    "admin": "Admin Paneli"
+    "admin": "Admin Paneli",
+    "compare": "Karşılaştır",
+    "toggleMenu": "Menü",
+    "closeMenu": "Menüyü kapat"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -51,7 +54,8 @@
       "subtitle": "CVora AI, CV'nizi yükler yüklemez güçlü/zayıf yönlerinizi, eksik becerilerinizi ve iyileştirme önerilerinizi ortaya çıkarır — başvurmadan önce CV'nizi güçlendirin.",
       "ctaAuthenticated": "Uygulamaya Git",
       "ctaAnonymous": "Ücretsiz Başla",
-      "hint": "Kredi kartı gerekmez — Free planla hemen başlayın."
+      "hint": "Kredi kartı gerekmez — Free planla hemen başlayın.",
+      "secondaryCta": "Nasıl Çalışır?"
     },
     "howItWorks": {
       "heading": "Nasıl Çalışır?",
@@ -125,6 +129,73 @@
         "question": "CV'mi analiz ettikten sonra silebilir miyim?",
         "answer": "Evet. Analiz Geçmişim sayfanızdan her CV'yi ve analiz sonucunu istediğiniz zaman silebilirsiniz."
       }
+    },
+    "trust": {
+      "heading": "Neden CVora AI?",
+      "point1": {
+        "title": "Yapay Zekâ Destekli Analiz",
+        "body": "Gelişmiş bir dil modeli CV'nizi saniyeler içinde okur ve işe alım uzmanı bakış açısıyla değerlendirir."
+      },
+      "point2": {
+        "title": "Verileriniz Güvende",
+        "body": "CV içeriğiniz yalnızca analiz üretmek için kullanılır, hesabınıza bağlı olarak saklanır ve başka kullanıcılarla paylaşılmaz."
+      },
+      "point3": {
+        "title": "Dakikalar İçinde Sonuç",
+        "body": "Yükleme yaptıktan hemen sonra puanınızı ve detaylı geri bildiriminizi görürsünüz."
+      },
+      "point4": {
+        "title": "Sürekli Gelişen Ürün",
+        "body": "CV analizinin yanında kariyer asistanı, karşılaştırma ve geçmiş takibi gibi özelliklerle CV'nizi sürekli geliştirin."
+      }
+    },
+    "careerInsights": {
+      "heading": "Kariyer İçgörüleri",
+      "body": "CV analizinin ötesine geçin. Kariyer Asistanı, CV'nizi hedeflediğiniz pozisyonlara göre değerlendirir ve somut, kişiselleştirilmiş kariyer önerileri sunar.",
+      "point1": {
+        "title": "Yeniden Yazım Önerileri",
+        "body": "Deneyimlerinizi daha güçlü ve etkili anlatmanız için satır satır iyileştirme önerileri alın."
+      },
+      "point2": {
+        "title": "Kariyer Yol Haritası",
+        "body": "Mevcut deneyiminize göre hangi rollere ve becerilere odaklanmanız gerektiğini öğrenin."
+      },
+      "point3": {
+        "title": "Kişiselleştirilmiş Ön Yazı",
+        "body": "Başvurduğunuz pozisyona özel, CV'nizden yola çıkan bir ön yazı taslağı oluşturun."
+      }
+    },
+    "scoring": {
+      "heading": "Detaylı CV Puanlama",
+      "body": "CVora Score, CV'nizi tek bir sayıya indirgemekle kalmaz; güçlü yönlerinizi, geliştirilmesi gereken alanları ve beceri/deneyim/eğitim kırılımını ayrı ayrı gösterir.",
+      "point1": {
+        "title": "Genel Puan",
+        "body": "CV'nizin genel gücünü 100 üzerinden net bir puanla görün."
+      },
+      "point2": {
+        "title": "Güçlü ve Zayıf Yönler",
+        "body": "İşe alım uzmanlarının dikkatini çekecek ve düşürecek noktaları ayrı ayrı görün."
+      },
+      "point3": {
+        "title": "Beceri, Deneyim ve Eğitim Analizi",
+        "body": "Her bölümün CV'nizdeki gücünü ayrı ayrı değerlendirin."
+      }
+    },
+    "jobMatching": {
+      "heading": "İş ve Kariyer Önerileri",
+      "body": "Kariyer Asistanı, CV'nizi hedef pozisyonla eşleştirir; uyum düzeyinizi ve eksik anahtar kelimeleri gösterir, hangi rollere daha uygun olduğunuz konusunda size yol gösterir.",
+      "point1": {
+        "title": "Pozisyon Uyum Analizi",
+        "body": "CV'nizin hedeflediğiniz ilana ne kadar uyduğunu görün."
+      },
+      "point2": {
+        "title": "Eksik Anahtar Kelimeler",
+        "body": "Başvurunuzda öne çıkmanızı sağlayacak eksik becerileri ve anahtar kelimeleri keşfedin."
+      }
+    },
+    "finalCta": {
+      "heading": "CV'nizi Bugün Güçlendirin",
+      "body": "Kredi kartı gerekmez. Free planla hemen başlayın, saniyeler içinde ilk analizinizi alın."
     }
   },
   "auth": {

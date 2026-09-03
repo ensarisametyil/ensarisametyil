@@ -1,24 +1,42 @@
+/*
+ * CVora AI design system — the single source of truth for color, type, spacing, radius, shadow
+ * and motion tokens. Every component/page reads from these custom properties rather than
+ * hardcoding values, so the whole product stays visually coherent and themeable in one place.
+ */
 :root {
-  --text: #3f3f46;
-  --text-muted: #71717a;
-  --text-heading: #18181b;
-  --bg: #ffffff;
-  --accent: #6d28d9;
-  --accent-soft: #ede9fe;
-
+  /* ---------- Color: surfaces & text (light) ---------- */
+  --bg: #fbfbfc;
+  --bg-subtle: #f5f5f7;
   --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --border: #e4e4e7;
-  --shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 4px 12px rgba(24, 24, 27, 0.06);
+  --surface-raised: #ffffff;
+  --surface-muted: #f4f4f6;
+  --surface-hover: #f7f7f9;
+  --border: #e6e6ea;
+  --border-strong: #d4d4da;
 
-  --success: #15803d;
-  --success-soft: #dcfce7;
-  --warning: #b45309;
-  --warning-soft: #fef3c7;
-  --danger: #b91c1c;
-  --danger-soft: #fee2e2;
-  --info: #1d4ed8;
-  --info-soft: #dbeafe;
+  --text-heading: #0f0f14;
+  --text: #45454f;
+  --text-muted: #75757f;
+  --text-subtle: #9d9da6;
+  --text-on-accent: #ffffff;
+
+  /* ---------- Color: single controlled brand accent ---------- */
+  --accent: #6947e0;
+  --accent-hover: #5c3ad1;
+  --accent-active: #4f30bc;
+  --accent-soft: #f1edfd;
+  --accent-soft-strong: #e4dbfb;
+  --accent-text-on-soft: #5834c9;
+
+  /* ---------- Color: semantic (used sparingly — scores, states, badges) ---------- */
+  --success: #0f8a5f;
+  --success-soft: #e6f6ef;
+  --warning: #b06a00;
+  --warning-soft: #fbf1de;
+  --danger: #c22929;
+  --danger-soft: #fbe9e9;
+  --info: #1f5fd6;
+  --info-soft: #e8f0fd;
 
   /* Score tiers: 0-49 low, 50-69 improvable, 70-84 good, 85-100 excellent */
   --score-low: var(--danger);
@@ -26,57 +44,201 @@
   --score-good: var(--info);
   --score-excellent: var(--success);
 
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* ---------- Shadow — soft, layered, never heavy ---------- */
+  --shadow-xs: 0 1px 2px rgba(15, 15, 20, 0.04);
+  --shadow-sm: 0 1px 2px rgba(15, 15, 20, 0.04), 0 2px 6px rgba(15, 15, 20, 0.04);
+  --shadow-md: 0 2px 4px rgba(15, 15, 20, 0.03), 0 8px 24px rgba(15, 15, 20, 0.07);
+  --shadow-lg: 0 4px 8px rgba(15, 15, 20, 0.03), 0 16px 40px rgba(15, 15, 20, 0.1);
+  --shadow-focus: 0 0 0 3px var(--accent-soft-strong);
+  /* Back-compat alias for any component not yet migrated to the sized scale above. */
+  --shadow: var(--shadow-sm);
+
+  /* ---------- Typography ---------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 2.875rem;
+  --text-5xl: 3.5rem;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+
+  /* ---------- Spacing — 4px base scale ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---------- Radius — three controlled sizes, used consistently ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+
+  /* ---------- Layout ---------- */
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+  --content-max-width: 1180px;
+
+  font: var(--font-normal) var(--text-base)/var(--leading-normal) var(--font-sans);
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #d4d4d8;
-    --text-muted: #a1a1aa;
-    --text-heading: #fafafa;
-    --bg: #0f0f12;
-    --accent: #a78bfa;
-    --accent-soft: #2e1f4d;
+    --bg: #0b0b0e;
+    --bg-subtle: #101014;
+    --surface: #16161b;
+    --surface-raised: #1a1a20;
+    --surface-muted: #1d1d23;
+    --surface-hover: #202027;
+    --border: #26262e;
+    --border-strong: #34343e;
 
-    --surface: #18181b;
-    --surface-muted: #1f1f23;
-    --border: #2e2e33;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.35);
+    --text-heading: #f7f7f9;
+    --text: #c7c7d1;
+    --text-muted: #8f8f9c;
+    --text-subtle: #66666f;
+    --text-on-accent: #ffffff;
 
-    --success: #4ade80;
-    --success-soft: #14301f;
-    --warning: #fbbf24;
-    --warning-soft: #3a2a0d;
-    --danger: #f87171;
-    --danger-soft: #3a1414;
-    --info: #60a5fa;
-    --info-soft: #132548;
+    --accent: #8b74ee;
+    --accent-hover: #9d89f1;
+    --accent-active: #a996f3;
+    --accent-soft: #221b3d;
+    --accent-soft-strong: #2c2350;
+    --accent-text-on-soft: #b5a3f7;
+
+    --success: #3ecf8e;
+    --success-soft: #123326;
+    --warning: #e0a942;
+    --warning-soft: #382a10;
+    --danger: #ea6363;
+    --danger-soft: #3a1a1a;
+    --info: #5b8ff5;
+    --info-soft: #14233f;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.28), 0 8px 24px rgba(0, 0, 0, 0.32);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.32), 0 16px 48px rgba(0, 0, 0, 0.44);
+    --shadow-focus: 0 0 0 3px var(--accent-soft-strong);
+    --shadow: var(--shadow-sm);
   }
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100svh;
+  background: var(--bg);
 }
 
 #root {
   min-height: 100svh;
 }
 
-h1 {
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
   color: var(--text-heading);
-  font-weight: 600;
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
 }
 
 button {
-  font-family: inherit;
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent-soft-strong);
+  color: var(--accent-text-on-soft);
+}
+
+/* A single, consistent focus ring across every interactive element — visible for keyboard
+   navigation, never a default browser blue outline that clashes with the rest of the system. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

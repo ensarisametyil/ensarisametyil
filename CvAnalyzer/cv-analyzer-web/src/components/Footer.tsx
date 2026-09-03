@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
 import styles from './Footer.module.css'
 
-/** Shared footer for public pages (landing + legal + contact). Not shown inside the authenticated app shell (AppLayout has its own NavBar-only chrome). */
+/** Shared footer for public pages (landing + legal + contact). Not shown inside the authenticated app shell (AppLayout has its own sidebar/topbar chrome). */
 function Footer() {
   const { t } = useTranslation()
 

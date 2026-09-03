@@ -1,13 +1,13 @@
 .row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .labelRow {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .label {
@@ -15,21 +15,21 @@
 }
 
 .value {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text-heading);
 }
 
 .track {
-  height: 8px;
-  border-radius: 999px;
+  height: 7px;
+  border-radius: var(--radius-full);
   background: var(--surface-muted);
   overflow: hidden;
 }
 
 .fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s ease;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
 }
 
 .fill[data-tier='low'] {

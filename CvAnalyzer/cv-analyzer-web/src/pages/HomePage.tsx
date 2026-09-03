@@ -45,7 +45,7 @@ function HomePage() {
           {uploadError && <ErrorBanner message={uploadError} />}
 
           {cv && (
-            <div className={styles.cvInfoRow}>
+            <div className={`${styles.cvInfoRow} ${isAnalyzing ? styles.cvInfoRowActive : ''}`}>
               <div>
                 <p className={styles.cvInfoLabel}>{t('home.uploadedCv')}</p>
                 <p className={styles.cvInfoName}>{cv.fileName}</p>
@@ -65,7 +65,7 @@ function HomePage() {
 
       {hasAnalysis && analysis && (
         <section className={styles.resultSection}>
-          <div className={styles.resultHeader}>
+          <div className={`${styles.resultHeader} ${isAnalyzing ? styles.resultHeaderActive : ''}`}>
             <div>
               <p className={styles.cvInfoLabel}>{t('home.analyzedCv')}</p>
               <p className={styles.cvInfoName}>{cv?.fileName}</p>

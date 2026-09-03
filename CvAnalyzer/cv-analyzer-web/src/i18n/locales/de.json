@@ -37,7 +37,10 @@
     "history": "Analyseverlauf",
     "account": "Konto",
     "logout": "Abmelden",
-    "admin": "Admin-Bereich"
+    "admin": "Admin-Bereich",
+    "compare": "Vergleichen",
+    "toggleMenu": "Menü",
+    "closeMenu": "Menü schließen"
   },
   "billing": {
     "freePlan": "FREE-PLAN",
@@ -51,7 +54,8 @@
       "subtitle": "Sobald Sie Ihren Lebenslauf hochladen, zeigt CVora AI Ihre Stärken, Schwächen, fehlenden Fähigkeiten und Verbesserungsvorschläge auf — stärken Sie Ihren Lebenslauf, bevor Sie sich bewerben.",
       "ctaAuthenticated": "Zur App",
       "ctaAnonymous": "Kostenlos starten",
-      "hint": "Keine Kreditkarte erforderlich — starten Sie sofort mit dem Free-Plan."
+      "hint": "Keine Kreditkarte erforderlich — starten Sie sofort mit dem Free-Plan.",
+      "secondaryCta": "So funktioniert's"
     },
     "howItWorks": {
       "heading": "So funktioniert's",
@@ -125,6 +129,73 @@
         "question": "Kann ich meinen Lebenslauf nach der Analyse löschen?",
         "answer": "Ja. Sie können jeden Lebenslauf und sein Analyseergebnis jederzeit auf Ihrer Seite „Analyseverlauf“ löschen."
       }
+    },
+    "trust": {
+      "heading": "Warum CVora AI?",
+      "point1": {
+        "title": "KI-gestützte Analyse",
+        "body": "Ein fortschrittliches Sprachmodell liest Ihren Lebenslauf in Sekunden und bewertet ihn aus der Perspektive eines Recruiters."
+      },
+      "point2": {
+        "title": "Ihre Daten sind sicher",
+        "body": "Ihr Lebenslaufinhalt wird nur zur Erstellung Ihrer Analyse verwendet, an Ihr Konto gebunden gespeichert und niemals mit anderen Nutzern geteilt."
+      },
+      "point3": {
+        "title": "Ergebnisse in Minuten",
+        "body": "Sehen Sie Ihre Bewertung und detailliertes Feedback direkt nach dem Hochladen."
+      },
+      "point4": {
+        "title": "Ein stetig wachsendes Produkt",
+        "body": "Verbessern Sie Ihren Lebenslauf kontinuierlich mit Funktionen wie dem Karriereassistenten, dem Vergleich und dem Analyseverlauf."
+      }
+    },
+    "careerInsights": {
+      "heading": "Karriere-Einblicke",
+      "body": "Gehen Sie über eine einzelne Analyse hinaus. Der Karriereassistent bewertet Ihren Lebenslauf anhand der Rollen, die Sie anstreben, und gibt Ihnen konkrete, personalisierte Karriereempfehlungen.",
+      "point1": {
+        "title": "Umformulierungsvorschläge",
+        "body": "Erhalten Sie zeilenweise Vorschläge, um Ihre Erfahrung überzeugender und wirkungsvoller zu beschreiben."
+      },
+      "point2": {
+        "title": "Karriere-Roadmap",
+        "body": "Erfahren Sie, auf welche Rollen und Fähigkeiten Sie sich als Nächstes konzentrieren sollten."
+      },
+      "point3": {
+        "title": "Personalisiertes Anschreiben",
+        "body": "Erstellen Sie einen Anschreiben-Entwurf, der auf die gewünschte Stelle zugeschnitten ist und auf Ihrem Lebenslauf basiert."
+      }
+    },
+    "scoring": {
+      "heading": "Detaillierte Lebenslauf-Bewertung",
+      "body": "CVora Score reduziert Ihren Lebenslauf nicht nur auf eine einzige Zahl — es zeigt Ihre Stärken, die verbesserungswürdigen Bereiche und eine Aufschlüsselung nach Fähigkeiten, Erfahrung und Ausbildung getrennt an.",
+      "point1": {
+        "title": "Gesamtbewertung",
+        "body": "Sehen Sie die Gesamtstärke Ihres Lebenslaufs als klare Punktzahl von 100."
+      },
+      "point2": {
+        "title": "Stärken und Schwächen",
+        "body": "Sehen Sie nebeneinander, was Recruitern auffällt und was gegen Sie sprechen könnte."
+      },
+      "point3": {
+        "title": "Aufschlüsselung nach Fähigkeiten, Erfahrung und Ausbildung",
+        "body": "Lassen Sie jeden Abschnitt Ihres Lebenslaufs einzeln bewerten."
+      }
+    },
+    "jobMatching": {
+      "heading": "Job- und Karriereempfehlungen",
+      "body": "Der Karriereassistent gleicht Ihren Lebenslauf mit einer Zielrolle ab — zeigt Ihre Passung und fehlende Schlüsselwörter — und weist Ihnen den Weg zu den Rollen, die am besten zu Ihnen passen.",
+      "point1": {
+        "title": "Passungsanalyse",
+        "body": "Sehen Sie, wie gut Ihr Lebenslauf zur angestrebten Stellenausschreibung passt."
+      },
+      "point2": {
+        "title": "Fehlende Schlüsselwörter",
+        "body": "Entdecken Sie fehlende Fähigkeiten und Schlüsselwörter, die Ihre Bewerbung hervorstechen lassen."
+      }
+    },
+    "finalCta": {
+      "heading": "Stärken Sie Ihren Lebenslauf noch heute",
+      "body": "Keine Kreditkarte erforderlich. Starten Sie mit dem Free-Plan und erhalten Sie Ihre erste Analyse in Sekunden."
     }
   },
   "auth": {

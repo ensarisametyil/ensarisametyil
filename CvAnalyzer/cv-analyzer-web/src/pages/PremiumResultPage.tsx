@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { useBilling } from '../hooks/useBilling'
 import { useTranslation } from '../hooks/useTranslation'
 import styles from './PremiumResultPage.module.css'
@@ -23,8 +24,8 @@ function PremiumResultPage() {
   return (
     <main className={styles.page}>
       <div className={styles.card}>
-        <span className={styles.icon} aria-hidden="true">
-          {isSuccess ? '🎉' : '⚠️'}
+        <span className={styles.icon} data-tone={isSuccess ? 'success' : 'danger'} aria-hidden="true">
+          {isSuccess ? <CheckCircle2 size={28} strokeWidth={1.75} /> : <XCircle size={28} strokeWidth={1.75} />}
         </span>
         <h1>{isSuccess ? t('paymentResult.successTitle') : t('paymentResult.failTitle')}</h1>
         <p>{isSuccess ? t('paymentResult.successMessage') : t('paymentResult.failMessage')}</p>

@@ -1,4 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react'
+import { UploadCloud } from 'lucide-react'
 import { useTranslation } from '../hooks/useTranslation'
 import Spinner from './Spinner'
 import styles from './UploadBox.module.css'
@@ -85,7 +86,7 @@ function UploadBox({ onFileSelected, isUploading }: UploadBoxProps) {
         ) : (
           <>
             <span className={styles.icon} aria-hidden="true">
-              📄
+              <UploadCloud size={22} strokeWidth={1.75} />
             </span>
             <p className={styles.title}>{t('upload.dropHint')}</p>
             <p className={styles.hint}>{t('upload.sizeHint')}</p>
