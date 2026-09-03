@@ -42,18 +42,36 @@ gömülmez.
 
 ### 1. Veritabanı
 
+**Seçenek A — kendi PostgreSQL kurulumunuz varsa:**
+
 ```bash
 # PostgreSQL'de boş bir veritabanı ve kullanıcı oluşturun (örnek):
 createdb cvanalyzer_dev
 ```
+
+**Seçenek B — Docker Desktop kuruluysa (PostgreSQL kurulum/şifre derdiyle uğraşmak
+istemiyorsanız, önerilen):**
+
+```bash
+docker compose up -d
+```
+
+Bu, `docker-compose.yml`'de tanımlı, yalnızca yerel geliştirme için sabit kullanıcı adı/şifreyle
+(`cvora` / `cvora_local_dev_only`, `cvanalyzer_dev` veritabanı, port `5432`) bir PostgreSQL
+container'ı başlatır — bu, gerçek bir secret değildir, yalnızca bu tek-amaçlı container'a özel,
+dışarıya kapalı bir yerel geliştirme değeridir. 2. adımdaki connection string'i buna göre
+kullanın (aşağıdaki örnekte zaten bu değerler var).
 
 ### 2. Backend (`CvAnalyzer.Api`)
 
 ```bash
 cd CvAnalyzer.Api
 
-# Development'ta secret'lar dotnet user-secrets ile ayarlanır (repo'ya asla yazılmaz):
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=cvanalyzer_dev;Username=<kullanici>;Password=<parola>"
+# Development'ta secret'lar dotnet user-secrets ile ayarlanır (repo'ya asla yazılmaz).
+# Seçenek B'yi (docker compose up) kullandıysanız aşağıdaki gibi kullanın:
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=cvanalyzer_dev;Username=cvora;Password=cvora_local_dev_only"
+# Seçenek A'yı kullandıysanız kendi kullanıcı adı/şifrenizi yazın:
+# dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=cvanalyzer_dev;Username=<kullanici>;Password=<parola>"
 dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 48)"
 
 # Migration'ları uygulayın (dotnet-ef aracı kurulu değilse: dotnet tool install --global dotnet-ef)

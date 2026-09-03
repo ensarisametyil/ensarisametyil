@@ -1,0 +1,35 @@
+# Yerel geliştirme için TEK AMAÇLI PostgreSQL container'ı — CVora AI'ın kendisi bunu kullanmaz,
+# yalnızca "PostgreSQL'i kurmak/şifresini yönetmek istemiyorum" diyen geliştiriciler için bir
+# kolaylık. Backend/frontend hâlâ README'deki gibi native (dotnet run / npm run dev) çalışır;
+# sadece veritabanı bu container'dan gelir.
+#
+# Kullanım:
+#   docker compose up -d
+#   (sonra README'deki "dotnet user-secrets set ConnectionStrings:DefaultConnection ..." adımında
+#    aşağıdaki POSTGRES_* değerleriyle eşleşen connection string'i kullanın)
+#
+# Buradaki POSTGRES_PASSWORD, İNTERNETE AÇIK OLMAYAN, yalnızca localhost'a port-forward edilen bu
+# tek amaçlı container için sabit bir yerel geliştirme değeridir — gerçek bir production secret
+# DEĞİLDİR. appsettings.json/Jwt/AI/Smtp/Iyzico secret'larıyla hiçbir ilgisi yoktur ve production'a
+# asla taşınmamalıdır.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cvora-ai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cvora
+      POSTGRES_PASSWORD: cvora_local_dev_only
+      POSTGRES_DB: cvanalyzer_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - cvora-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cvora -d cvanalyzer_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  cvora-db-data:
