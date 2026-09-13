@@ -42,3 +42,11 @@
 .ctaButton:hover {
   background: var(--accent-hover);
 }
+
+@media (max-width: 480px) {
+  /* Keeps the topbar to a manageable number of wrapped rows on small phones — the exact usage
+     count is still visible on the Account page, this is just the persistent-chrome copy. */
+  .usage {
+    display: none;
+  }
+}

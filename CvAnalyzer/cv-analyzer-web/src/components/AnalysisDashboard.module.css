@@ -8,6 +8,11 @@
   grid-column: 1 / -1;
 }
 
+.summarySlot,
+.halfSlot {
+  grid-column: span 1;
+}
+
 .scoreCard {
   display: flex;
   flex-direction: column;
