@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed'
 import { useTranslation } from '../hooks/useTranslation'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
@@ -11,12 +12,18 @@ import styles from './AdminLayout.module.css'
 function AdminLayout() {
   const { t } = useTranslation()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { isCollapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
 
   const tabClass = ({ isActive }: { isActive: boolean }) => (isActive ? styles.tabActive : styles.tab)
 
   return (
     <div className={styles.shell}>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={toggleCollapsed}
+      />
       <div className={styles.main}>
         <Topbar onMenuClick={() => setIsSidebarOpen((open) => !open)} />
         <div className={styles.content}>

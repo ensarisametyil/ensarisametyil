@@ -5,19 +5,22 @@ import { MemoryRouter } from 'react-router-dom'
 import PrivacyPage from './PrivacyPage'
 import TermsPage from './TermsPage'
 import CookiesPage from './CookiesPage'
+import { ThemeProvider } from '../context/ThemeContext'
 import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
 
 function renderWithProviders(ui: ReactElement) {
   return render(
-    <I18nProvider>
-      <MemoryRouter>
-        <AuthProvider>
-          <BillingProvider>{ui}</BillingProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    </I18nProvider>,
+    <ThemeProvider>
+      <I18nProvider>
+        <MemoryRouter>
+          <AuthProvider>
+            <BillingProvider>{ui}</BillingProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      </I18nProvider>
+    </ThemeProvider>,
   )
 }
 

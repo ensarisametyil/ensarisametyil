@@ -40,7 +40,9 @@
     "admin": "Admin-Bereich",
     "compare": "Vergleichen",
     "toggleMenu": "Menü",
-    "closeMenu": "Menü schließen"
+    "closeMenu": "Menü schließen",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen"
   },
   "billing": {
     "freePlan": "FREE-PLAN",
@@ -735,5 +737,9 @@
       "next": "Weiter",
       "pageIndicator": "Seite {page} von {totalPages}"
     }
+  },
+  "theme": {
+    "switchToLight": "Zum hellen Modus wechseln",
+    "switchToDark": "Zum dunklen Modus wechseln"
   }
 }

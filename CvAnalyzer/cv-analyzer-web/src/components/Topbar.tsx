@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../hooks/useTranslation'
 import LanguageSelector from './LanguageSelector'
 import PlanBadge from './PlanBadge'
+import ThemeToggle from './ThemeToggle'
 import styles from './Topbar.module.css'
 
 interface TopbarProps {
@@ -36,6 +37,7 @@ function Topbar({ onMenuClick }: TopbarProps) {
           <LogOut size={15} strokeWidth={1.75} aria-hidden="true" />
           {t('nav.logout')}
         </button>
+        <ThemeToggle />
         <LanguageSelector />
       </div>
     </header>

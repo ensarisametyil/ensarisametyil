@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import LandingPage from './LandingPage'
+import { ThemeProvider } from '../context/ThemeContext'
 import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
@@ -10,15 +11,17 @@ import type { User } from '../types/auth'
 
 function renderLanding() {
   return render(
-    <I18nProvider>
-      <MemoryRouter>
-        <AuthProvider>
-          <BillingProvider>
-            <LandingPage />
-          </BillingProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    </I18nProvider>,
+    <ThemeProvider>
+      <I18nProvider>
+        <MemoryRouter>
+          <AuthProvider>
+            <BillingProvider>
+              <LandingPage />
+            </BillingProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      </I18nProvider>
+    </ThemeProvider>,
   )
 }
 

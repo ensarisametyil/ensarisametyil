@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../hooks/useTranslation'
 import LanguageSelector from './LanguageSelector'
+import ThemeToggle from './ThemeToggle'
 import styles from './PublicHeader.module.css'
 
 /** Shared top bar for public (unauthenticated-reachable) pages — landing, legal pages, contact. */
@@ -29,6 +30,7 @@ function PublicHeader() {
             </Link>
           </>
         )}
+        <ThemeToggle />
         <LanguageSelector />
       </nav>
     </header>

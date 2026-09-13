@@ -40,7 +40,9 @@
     "admin": "Admin Panel",
     "compare": "Compare",
     "toggleMenu": "Menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -735,5 +737,9 @@
       "next": "Next",
       "pageIndicator": "Page {page} of {totalPages}"
     }
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
   }
 }

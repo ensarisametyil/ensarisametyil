@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useCanonicalUrl } from './hooks/useCanonicalUrl'
+import { ThemeProvider } from './context/ThemeContext'
 import { I18nProvider } from './context/I18nContext'
 import { AuthProvider } from './context/AuthContext'
 import { BillingProvider } from './context/BillingContext'
@@ -35,57 +36,59 @@ function App() {
   useCanonicalUrl()
 
   return (
-    <I18nProvider>
-      <AuthProvider>
-        <BillingProvider>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/cookies" element={<CookiesPage />} />
-            <Route path="/contact" element={<ContactPage />} />
+    <ThemeProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <BillingProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/cookies" element={<CookiesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
 
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/app" element={<HomePage />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/history/:id" element={<HistoryDetailPage />} />
-              <Route path="/assistant/:cvId" element={<CareerAssistantPage />} />
-              <Route path="/assistant/history/:id" element={<CareerAssistantHistoryDetailPage />} />
-              <Route path="/compare" element={<ComparePage />} />
-              <Route path="/premium/checkout" element={<PremiumCheckoutPage />} />
-              <Route path="/premium/result" element={<PremiumResultPage />} />
-              <Route path="/account" element={<AccountPage />} />
-            </Route>
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/app" element={<HomePage />} />
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/history/:id" element={<HistoryDetailPage />} />
+                <Route path="/assistant/:cvId" element={<CareerAssistantPage />} />
+                <Route path="/assistant/history/:id" element={<CareerAssistantHistoryDetailPage />} />
+                <Route path="/compare" element={<ComparePage />} />
+                <Route path="/premium/checkout" element={<PremiumCheckoutPage />} />
+                <Route path="/premium/result" element={<PremiumResultPage />} />
+                <Route path="/account" element={<AccountPage />} />
+              </Route>
 
-            <Route
-              element={
-                <AdminRoute>
-                  <AdminLayout />
-                </AdminRoute>
-              }
-            >
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="/admin/users" element={<AdminUsersPage />} />
-              <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
-              <Route path="/admin/payments" element={<AdminPaymentsPage />} />
-              <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
-            </Route>
+              <Route
+                element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }
+              >
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+                <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+                <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BillingProvider>
-      </AuthProvider>
-    </I18nProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BillingProvider>
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>
   )
 }
 

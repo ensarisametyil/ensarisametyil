@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import ContactPage from './ContactPage'
+import { ThemeProvider } from '../context/ThemeContext'
 import { I18nProvider } from '../context/I18nContext'
 import { AuthProvider } from '../context/AuthContext'
 import { BillingProvider } from '../context/BillingContext'
@@ -13,15 +14,17 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderPage() {
   return render(
-    <I18nProvider>
-      <MemoryRouter>
-        <AuthProvider>
-          <BillingProvider>
-            <ContactPage />
-          </BillingProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    </I18nProvider>,
+    <ThemeProvider>
+      <I18nProvider>
+        <MemoryRouter>
+          <AuthProvider>
+            <BillingProvider>
+              <ContactPage />
+            </BillingProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      </I18nProvider>
+    </ThemeProvider>,
   )
 }
 

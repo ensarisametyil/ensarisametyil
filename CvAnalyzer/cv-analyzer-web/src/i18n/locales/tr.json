@@ -40,7 +40,9 @@
     "admin": "Admin Paneli",
     "compare": "Karşılaştır",
     "toggleMenu": "Menü",
-    "closeMenu": "Menüyü kapat"
+    "closeMenu": "Menüyü kapat",
+    "collapseSidebar": "Kenar çubuğunu daralt",
+    "expandSidebar": "Kenar çubuğunu genişlet"
   },
   "billing": {
     "freePlan": "FREE PLAN",
@@ -735,5 +737,9 @@
       "next": "Sonraki",
       "pageIndicator": "Sayfa {page} / {totalPages}"
     }
+  },
+  "theme": {
+    "switchToLight": "Aydınlık moda geç",
+    "switchToDark": "Karanlık moda geç"
   }
 }

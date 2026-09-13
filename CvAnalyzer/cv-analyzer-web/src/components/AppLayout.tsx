@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import styles from './AppLayout.module.css'
@@ -9,10 +10,16 @@ import styles from './AppLayout.module.css'
  * (menu button) and Sidebar (scrim/close button/link clicks) need to read and change it. */
 function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { isCollapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
 
   return (
     <div className={styles.shell}>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={toggleCollapsed}
+      />
       <div className={styles.main}>
         <Topbar onMenuClick={() => setIsSidebarOpen((open) => !open)} />
         <div className={styles.content}>
