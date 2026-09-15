@@ -57,7 +57,10 @@
       "ctaAuthenticated": "Go to App",
       "ctaAnonymous": "Start Free",
       "hint": "No credit card required — get started with the Free plan right away.",
-      "secondaryCta": "How It Works"
+      "secondaryCta": "How It Works",
+      "eyebrow": "AI-Powered Career Platform",
+      "previewBadge": "Sample Preview",
+      "previewFileName": "example_cv.pdf"
     },
     "howItWorks": {
       "heading": "How It Works",
@@ -198,6 +201,15 @@
     "finalCta": {
       "heading": "Strengthen Your CV Today",
       "body": "No credit card required. Start with the Free plan and get your first analysis in seconds."
+    },
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "pricing": "Pricing"
+    },
+    "preview": {
+      "rewriteOriginal": "Worked well in a team environment.",
+      "rewriteImproved": "Led a 6-person team and cut project delivery time by 20%."
     }
   },
   "auth": {

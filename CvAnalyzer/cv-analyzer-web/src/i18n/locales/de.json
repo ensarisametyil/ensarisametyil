@@ -57,7 +57,10 @@
       "ctaAuthenticated": "Zur App",
       "ctaAnonymous": "Kostenlos starten",
       "hint": "Keine Kreditkarte erforderlich — starten Sie sofort mit dem Free-Plan.",
-      "secondaryCta": "So funktioniert's"
+      "secondaryCta": "So funktioniert's",
+      "eyebrow": "KI-gestützte Karriereplattform",
+      "previewBadge": "Beispielvorschau",
+      "previewFileName": "beispiel_lebenslauf.pdf"
     },
     "howItWorks": {
       "heading": "So funktioniert's",
@@ -198,6 +201,15 @@
     "finalCta": {
       "heading": "Stärken Sie Ihren Lebenslauf noch heute",
       "body": "Keine Kreditkarte erforderlich. Starten Sie mit dem Free-Plan und erhalten Sie Ihre erste Analyse in Sekunden."
+    },
+    "nav": {
+      "features": "Funktionen",
+      "howItWorks": "So funktioniert’s",
+      "pricing": "Preise"
+    },
+    "preview": {
+      "rewriteOriginal": "Habe gut im Team gearbeitet.",
+      "rewriteImproved": "Ein 6-köpfiges Team geleitet und die Projektlaufzeit um 20% verkürzt."
     }
   },
   "auth": {

@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  ArrowRight,
   BadgeCheck,
+  Check,
   CheckCircle2,
+  ChevronDown,
   FileSearch,
   Gauge,
   Lightbulb,
@@ -10,10 +13,12 @@ import {
   Lock,
   Map,
   MessageSquareText,
+  ShieldCheck,
   Sparkles,
   Target,
   TimerReset,
   TrendingUp,
+  X,
 } from 'lucide-react'
 import { getPlans } from '../api/billingService'
 import { useAuth } from '../hooks/useAuth'
@@ -22,11 +27,45 @@ import { useTranslation } from '../hooks/useTranslation'
 import { formatCurrency } from '../i18n/format'
 import Footer from '../components/Footer'
 import PublicHeader from '../components/PublicHeader'
+import ScoreBar from '../components/ScoreBar'
 import { withLink } from '../utils/withLink'
 import type { PlanPricing } from '../types/billing'
 import styles from './LandingPage.module.css'
 
 const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
+
+/**
+ * Browser-chrome frame shared by every illustrative product-preview mockup on this page (the hero
+ * visual + the three feature-split visuals). Purely presentational — every number/label inside is
+ * static, clearly-illustrative demo content, never real platform statistics (see docs/i18n.md and
+ * the brief this redesign was built against: no fake claims, ever).
+ */
+function PreviewFrame({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`${styles.previewFrame} ${className ?? ''}`}>
+      <div className={styles.previewFrameHeader}>
+        <span className={styles.previewDot} />
+        <span className={styles.previewDot} />
+        <span className={styles.previewDot} />
+      </div>
+      <div className={styles.previewFrameBody}>{children}</div>
+    </div>
+  )
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className={styles.faqItem}>
+      <button type="button" className={styles.faqTrigger} aria-expanded={isOpen} onClick={() => setIsOpen((open) => !open)}>
+        <span>{question}</span>
+        <ChevronDown size={18} strokeWidth={1.75} className={isOpen ? styles.faqChevronOpen : styles.faqChevron} aria-hidden="true" />
+      </button>
+      {isOpen && <p className={styles.faqAnswer}>{answer}</p>}
+    </div>
+  )
+}
 
 function LandingPage() {
   const { isAuthenticated } = useAuth()
@@ -64,85 +103,130 @@ function LandingPage() {
     <div className={styles.page}>
       <PublicHeader />
 
-      <main>
+      <main className={styles.main}>
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>
+              <Sparkles size={14} strokeWidth={2} aria-hidden="true" />
+              {t('landing.hero.eyebrow')}
+            </span>
             <h1>{t('landing.hero.title')}</h1>
             <p className={styles.heroSubtitle}>{t('landing.hero.subtitle')}</p>
             <div className={styles.heroActions}>
               <Link to={primaryCtaTarget} className={styles.heroCta}>
                 {primaryCtaLabel}
+                <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
               </Link>
-              <a href="#showcase" className={styles.heroSecondaryCta}>
+              <a href="#how-it-works" className={styles.heroSecondaryCta}>
                 {t('landing.hero.secondaryCta')}
               </a>
             </div>
             <span className={styles.heroHint}>{t('landing.hero.hint')}</span>
           </div>
 
-          <div className={styles.heroVisual} aria-hidden="true">
-            <div className={styles.heroCard}>
-              <div className={styles.heroCardHeader}>
-                <span className={styles.heroCardDot} />
-                <span className={styles.heroCardDot} />
-                <span className={styles.heroCardDot} />
+          <div className={styles.heroVisual}>
+            <PreviewFrame className={styles.heroPreview}>
+              <div className={styles.previewTopRow}>
+                <span className={styles.previewFileName}>{t('landing.hero.previewFileName')}</span>
+                <span className={styles.previewBadge}>{t('landing.hero.previewBadge')}</span>
               </div>
-              <div className={styles.heroCardBody}>
+
+              <div className={styles.previewScoreRow}>
                 <div className={styles.heroScoreRing}>
                   <span className={styles.heroScoreValue}>87</span>
                 </div>
-                <div className={styles.heroCardBars}>
-                  <div className={styles.heroCardBarRow}>
-                    <span>{t('analysis.skills')}</span>
-                    <div className={styles.heroCardBarTrack}>
-                      <div className={styles.heroCardBarFill} style={{ width: '82%' }} />
-                    </div>
-                  </div>
-                  <div className={styles.heroCardBarRow}>
-                    <span>{t('analysis.experience')}</span>
-                    <div className={styles.heroCardBarTrack}>
-                      <div className={styles.heroCardBarFill} style={{ width: '90%' }} />
-                    </div>
-                  </div>
-                  <div className={styles.heroCardBarRow}>
-                    <span>{t('analysis.education')}</span>
-                    <div className={styles.heroCardBarTrack}>
-                      <div className={styles.heroCardBarFill} style={{ width: '76%' }} />
-                    </div>
-                  </div>
+                <div className={styles.previewScoreMeta}>
+                  <span className={styles.previewScoreLabel}>{t('analysis.cvScore')}</span>
+                  <span className={styles.previewScoreTier} data-tier="excellent">
+                    {t('analysis.tier.excellent')}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.previewBars}>
+                <ScoreBar label={t('analysis.skills')} score={82} />
+                <ScoreBar label={t('analysis.experience')} score={90} />
+                <ScoreBar label={t('analysis.education')} score={76} />
+              </div>
+
+              <div className={styles.previewInsightRow}>
+                <span className={styles.previewInsightPositive}>
+                  <Check size={13} strokeWidth={2.5} aria-hidden="true" />
+                  {t('analysis.strengths')}
+                </span>
+                <span className={styles.previewInsightWarning}>
+                  <X size={13} strokeWidth={2.5} aria-hidden="true" />
+                  {t('analysis.weaknesses')}
+                </span>
+              </div>
+            </PreviewFrame>
+          </div>
+        </section>
+
+        <section id="features" className={styles.features} aria-labelledby="features-heading">
+          <h2 id="features-heading">{t('landing.trust.heading')}</h2>
+          <div className={styles.featuresLayout}>
+            <div className={styles.featuredCard}>
+              <Sparkles size={22} strokeWidth={1.75} className={styles.featuredIcon} aria-hidden="true" />
+              <h3>{t('landing.trust.point1.title')}</h3>
+              <p>{t('landing.trust.point1.body')}</p>
+            </div>
+
+            <div className={styles.featureGrid}>
+              <div className={styles.featureRow}>
+                <Lock size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.trust.point2.title')}</h3>
+                  <p>{t('landing.trust.point2.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <TimerReset size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.trust.point3.title')}</h3>
+                  <p>{t('landing.trust.point3.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <TrendingUp size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.trust.point4.title')}</h3>
+                  <p>{t('landing.trust.point4.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <Target size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.benefits.objective.title')}</h3>
+                  <p>{t('landing.benefits.objective.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <Lightbulb size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.benefits.concrete.title')}</h3>
+                  <p>{t('landing.benefits.concrete.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <FileSearch size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.benefits.keywords.title')}</h3>
+                  <p>{t('landing.benefits.keywords.body')}</p>
+                </div>
+              </div>
+              <div className={styles.featureRow}>
+                <ListChecks size={18} strokeWidth={1.75} aria-hidden="true" />
+                <div>
+                  <h3>{t('landing.benefits.history.title')}</h3>
+                  <p>{t('landing.benefits.history.body')}</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className={styles.trust} aria-labelledby="trust-heading">
-          <h2 id="trust-heading">{t('landing.trust.heading')}</h2>
-          <div className={styles.trustGrid}>
-            <div className={styles.trustCard}>
-              <Sparkles size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
-              <h3>{t('landing.trust.point1.title')}</h3>
-              <p>{t('landing.trust.point1.body')}</p>
-            </div>
-            <div className={styles.trustCard}>
-              <Lock size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
-              <h3>{t('landing.trust.point2.title')}</h3>
-              <p>{t('landing.trust.point2.body')}</p>
-            </div>
-            <div className={styles.trustCard}>
-              <TimerReset size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
-              <h3>{t('landing.trust.point3.title')}</h3>
-              <p>{t('landing.trust.point3.body')}</p>
-            </div>
-            <div className={styles.trustCard}>
-              <TrendingUp size={20} strokeWidth={1.75} className={styles.trustIcon} aria-hidden="true" />
-              <h3>{t('landing.trust.point4.title')}</h3>
-              <p>{t('landing.trust.point4.body')}</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="showcase" className={styles.howItWorks} aria-labelledby="how-it-works-heading">
+        <section id="how-it-works" className={styles.howItWorks} aria-labelledby="how-it-works-heading">
           <h2 id="how-it-works-heading">{t('landing.howItWorks.heading')}</h2>
           <ol className={styles.steps}>
             <li>
@@ -167,32 +251,6 @@ function LandingPage() {
               </div>
             </li>
           </ol>
-        </section>
-
-        <section className={styles.benefits} aria-labelledby="benefits-heading">
-          <h2 id="benefits-heading">{t('landing.benefits.heading')}</h2>
-          <div className={styles.benefitGrid}>
-            <div className={styles.benefitCard}>
-              <Target size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
-              <h3>{t('landing.benefits.objective.title')}</h3>
-              <p>{t('landing.benefits.objective.body')}</p>
-            </div>
-            <div className={styles.benefitCard}>
-              <Lightbulb size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
-              <h3>{t('landing.benefits.concrete.title')}</h3>
-              <p>{t('landing.benefits.concrete.body')}</p>
-            </div>
-            <div className={styles.benefitCard}>
-              <FileSearch size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
-              <h3>{t('landing.benefits.keywords.title')}</h3>
-              <p>{t('landing.benefits.keywords.body')}</p>
-            </div>
-            <div className={styles.benefitCard}>
-              <ListChecks size={20} strokeWidth={1.75} className={styles.benefitIcon} aria-hidden="true" />
-              <h3>{t('landing.benefits.history.title')}</h3>
-              <p>{t('landing.benefits.history.body')}</p>
-            </div>
-          </div>
         </section>
 
         <section className={styles.split} aria-labelledby="career-insights-heading">
@@ -222,6 +280,14 @@ function LandingPage() {
                 </div>
               </li>
             </ul>
+          </div>
+          <div className={styles.splitVisual}>
+            <PreviewFrame className={styles.splitPreview}>
+              <span className={styles.rewriteLabel}>{t('careerAssistant.rewrite.original')}</span>
+              <p className={styles.rewriteOriginal}>{t('landing.preview.rewriteOriginal')}</p>
+              <span className={styles.rewriteLabel}>{t('careerAssistant.rewrite.improved')}</span>
+              <p className={styles.rewriteImproved}>{t('landing.preview.rewriteImproved')}</p>
+            </PreviewFrame>
           </div>
         </section>
 
@@ -253,6 +319,15 @@ function LandingPage() {
               </li>
             </ul>
           </div>
+          <div className={styles.splitVisual}>
+            <PreviewFrame className={styles.splitPreview}>
+              <div className={styles.previewBars}>
+                <ScoreBar label={t('analysis.skills')} score={78} />
+                <ScoreBar label={t('analysis.experience')} score={85} />
+                <ScoreBar label={t('analysis.education')} score={70} />
+              </div>
+            </PreviewFrame>
+          </div>
         </section>
 
         <section className={styles.split} aria-labelledby="job-matching-heading">
@@ -276,18 +351,39 @@ function LandingPage() {
               </li>
             </ul>
           </div>
+          <div className={styles.splitVisual}>
+            <PreviewFrame className={styles.splitPreview}>
+              <div className={styles.matchScoreRow}>
+                <span className={styles.matchPercent}>78%</span>
+                <span className={styles.matchLabel}>{t('careerAssistant.jobMatch.overallScore')}</span>
+              </div>
+              <div className={styles.previewBars}>
+                <ScoreBar label={t('careerAssistant.jobMatch.skillsScore')} score={80} />
+                <ScoreBar label={t('careerAssistant.jobMatch.keywordsScore')} score={65} />
+              </div>
+            </PreviewFrame>
+          </div>
         </section>
 
-        <section className={styles.plans} aria-labelledby="plans-heading">
+        <section id="pricing" className={styles.plans} aria-labelledby="plans-heading">
           <h2 id="plans-heading">{t('landing.plans.heading')}</h2>
           <div className={styles.planGrid}>
             <div className={styles.planCard}>
               <h3>{t('landing.plans.free.title')}</h3>
               <p className={styles.planPriceNote}>{t('landing.plans.free.priceNote')}</p>
               <ul>
-                <li>{t('landing.plans.free.feature1')}</li>
-                <li>{t('landing.plans.free.feature2')}</li>
-                <li>{t('landing.plans.free.feature3')}</li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.free.feature1')}
+                </li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.free.feature2')}
+                </li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.free.feature3')}
+                </li>
               </ul>
               <Link to={isAuthenticated ? '/app' : '/register'} className={styles.planCta}>
                 {t('landing.plans.free.cta')}
@@ -307,10 +403,22 @@ function LandingPage() {
                 <p className={styles.planPriceNote}>{t('landing.plans.premium.priceNote')}</p>
               )}
               <ul>
-                <li>{t('landing.plans.premium.feature1')}</li>
-                <li>{t('landing.plans.premium.feature2')}</li>
-                <li>{t('landing.plans.premium.feature3')}</li>
-                <li>{t('landing.plans.premium.feature4')}</li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.premium.feature1')}
+                </li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.premium.feature2')}
+                </li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.premium.feature3')}
+                </li>
+                <li>
+                  <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                  {t('landing.plans.premium.feature4')}
+                </li>
               </ul>
               <Link to={premiumCtaTarget} className={styles.planCta}>
                 {t('landing.plans.premium.cta')}
@@ -320,6 +428,7 @@ function LandingPage() {
         </section>
 
         <section className={styles.security} aria-labelledby="security-heading">
+          <ShieldCheck size={22} strokeWidth={1.75} className={styles.securityIcon} aria-hidden="true" />
           <h2 id="security-heading">{t('landing.security.heading')}</h2>
           <p>
             {withLink(
@@ -334,22 +443,22 @@ function LandingPage() {
 
         <section className={styles.faq} aria-labelledby="faq-heading">
           <h2 id="faq-heading">{t('landing.faq.heading')}</h2>
-          <dl>
+          <div className={styles.faqList}>
             {FAQ_KEYS.map((key) => (
-              <div key={key} className={styles.faqItem}>
-                <dt>{t(`landing.faq.${key}.question`)}</dt>
-                <dd>{t(`landing.faq.${key}.answer`)}</dd>
-              </div>
+              <FaqItem key={key} question={t(`landing.faq.${key}.question`)} answer={t(`landing.faq.${key}.answer`)} />
             ))}
-          </dl>
+          </div>
         </section>
 
         <section className={styles.finalCta} aria-labelledby="final-cta-heading">
-          <h2 id="final-cta-heading">{t('landing.finalCta.heading')}</h2>
-          <p>{t('landing.finalCta.body')}</p>
-          <Link to={primaryCtaTarget} className={styles.heroCta}>
-            {primaryCtaLabel}
-          </Link>
+          <div className={styles.finalCtaPanel}>
+            <h2 id="final-cta-heading">{t('landing.finalCta.heading')}</h2>
+            <p>{t('landing.finalCta.body')}</p>
+            <Link to={primaryCtaTarget} className={styles.heroCta}>
+              {primaryCtaLabel}
+              <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+            </Link>
+          </div>
         </section>
       </main>
 

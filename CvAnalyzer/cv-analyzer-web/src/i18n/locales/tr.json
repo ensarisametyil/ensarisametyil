@@ -57,7 +57,10 @@
       "ctaAuthenticated": "Uygulamaya Git",
       "ctaAnonymous": "Ücretsiz Başla",
       "hint": "Kredi kartı gerekmez — Free planla hemen başlayın.",
-      "secondaryCta": "Nasıl Çalışır?"
+      "secondaryCta": "Nasıl Çalışır?",
+      "eyebrow": "AI Destekli Kariyer Platformu",
+      "previewBadge": "Örnek Önizleme",
+      "previewFileName": "ornek_cv.pdf"
     },
     "howItWorks": {
       "heading": "Nasıl Çalışır?",
@@ -198,6 +201,15 @@
     "finalCta": {
       "heading": "CV'nizi Bugün Güçlendirin",
       "body": "Kredi kartı gerekmez. Free planla hemen başlayın, saniyeler içinde ilk analizinizi alın."
+    },
+    "nav": {
+      "features": "Özellikler",
+      "howItWorks": "Nasıl Çalışır",
+      "pricing": "Fiyatlandırma"
+    },
+    "preview": {
+      "rewriteOriginal": "Takım çalışmasına önem verdim.",
+      "rewriteImproved": "6 kişilik bir ekibi yönetip proje teslim süresini %20 kısalttım."
     }
   },
   "auth": {

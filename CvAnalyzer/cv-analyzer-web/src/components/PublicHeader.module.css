@@ -23,10 +23,35 @@
   flex-shrink: 0;
 }
 
+/* Landing-page-only in-page section links — sits between the brand and the auth actions on
+   desktop, hidden below 960px where there isn't room for a third nav cluster (the sections
+   themselves are still reachable by scrolling). */
+.sectionNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex: 1;
+  justify-content: center;
+}
+
+.sectionNav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.sectionNav a:hover,
+.sectionNav a:focus-visible {
+  color: var(--text-heading);
+}
+
 .topNav {
   display: flex;
   align-items: center;
   gap: var(--space-5);
+  flex-shrink: 0;
 }
 
 .topNavLink {
@@ -60,6 +85,12 @@
 .topNavCta:focus-visible {
   background: var(--accent-hover);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 960px) {
+  .sectionNav {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
