@@ -1,0 +1,38 @@
+// Marka ve arayüz metinleri — kaynak bundle'dan bire bir alınmıştır.
+export const site = {
+  brandLine1: "ACİLTİMEKG",
+  brandLine2: "VE H.Ö. ACİL TIP",
+  instructor: "Eğitmen Paramedik Mustafa Katırcı",
+  audience: "Acil tıp profesyonelleri için",
+  workspaceLabel: "Çalışma alanı",
+  heroKicker: "Sakin kal. Ritmi oku.",
+  heroLead: "Kritik anda ihtiyaç duyduğunuz bilgiye tek dokunuşla ulaşın.",
+  emotionalLine: "Bir ambulansın sireni, bir ailenin umudu olabilir.",
+  quickMenuLabel: "Hızlı menü",
+  quickRefVersion: "Hızlı referans • v1.0",
+  commandShortcut: "⌘ K",
+  searchNoResults: "Bu aramayla eşleşen konu bulunamadı.",
+  infoAreasLabel: "Bilgi alanları",
+  topicHeadingsLabel: "Konu başlıkları",
+  personalListLabel: "Kişisel listeniz",
+  startingPointLabel: "Başlangıç noktası",
+  ekgLibraryLabel: "EKG kütüphanesi",
+  favorites: {
+    title: "Favorileriniz",
+    subtitle: "Kritik anda tekrar bakmak istediğiniz tüm referans konuları burada tutulur.",
+    empty: "Listeniz henüz boş.",
+  },
+  notFound: {
+    generic: { title: "404 / Sayfa Bulunamadı", body: "Aradığınız referans yok.", hint: "Adres değişmiş olabilir. Hızlı referans merkezine geri dönebilirsiniz." },
+    topic: { title: "404 / Konu Yok", body: "Bu konu bulunamadı." },
+    category: { title: "404 / Kategori Yok", body: "Bu kategori bulunamadı." },
+  },
+  placeholder: {
+    warning: "UYARI",
+    note: "NOT",
+    contentPlaceholder: "Yer tutucu içerik.",
+    contentsArePlaceholder: "İçerikler yer tutucudur.",
+    missing: "Burada içerik eksik; geliştirici/uzman tarafından doldurulmalı.",
+    interfaceDemo: "Arayüz gösterimi:",
+  },
+} as const;
