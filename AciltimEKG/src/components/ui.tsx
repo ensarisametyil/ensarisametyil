@@ -1,10 +1,12 @@
-import type { ReactNode } from "react";
-import { AlertTriangle, Info } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { AlertTriangle, Info, ZoomIn } from "lucide-react";
 import { cn } from "../lib/cn";
+import { ImageLightbox } from "./ImageLightbox";
+import { EkgWaveformGraphic } from "./EkgWaveform";
 
 export function Badge({ children, tone = "navy" }: { children: ReactNode; tone?: "navy" | "cyan" | "crit" }) {
   const tones = {
-    navy: "bg-navy-900/[0.06] text-navy-800",
+    navy: "bg-navy-900/[0.06] text-navy-800 dark:bg-white/10 dark:text-white/80",
     cyan: "bg-cyan-100 text-cyan-600",
     crit: "bg-crit-100 text-crit-700",
   } as const;
@@ -24,7 +26,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <div
       className={cn(
-        "rounded-2xl border border-line bg-white shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]",
+        "rounded-2xl border border-line bg-card shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]",
         className,
       )}
     >
@@ -47,7 +49,7 @@ export function SectionHeading({
       {eyebrow && (
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-cyan-600">{eyebrow}</p>
       )}
-      <h2 className="text-2xl font-extrabold text-navy-900 sm:text-3xl">{title}</h2>
+      <h2 className="text-2xl font-extrabold text-heading sm:text-3xl">{title}</h2>
       {lead && <p className="mt-3 text-base leading-relaxed text-ink-soft">{lead}</p>}
     </div>
   );
@@ -78,38 +80,49 @@ export function CriticalNote({ heading, text }: { heading: string; text: string 
   );
 }
 
-/** Placeholder visual area standing in for a real EKG strip / algorithm flow image that wasn't recovered from the source archive. */
+/** Visual area standing in for a real EKG strip / algorithm flow image that wasn't recovered from the source archive. Click/tap opens the full viewer (zoom, pan, fullscreen). */
 export function VisualPlaceholder({
   caption,
   aspect = "aspect-[16/9]",
+  expandable = true,
+  seed,
 }: {
   caption: string;
   aspect?: string;
+  expandable?: boolean;
+  seed?: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const graphicSeed = seed ?? caption;
+
+  const graphic = (fill = "h-full w-full") => <EkgWaveformGraphic seed={graphicSeed} className={fill} />;
+
   return (
-    <figure className="overflow-hidden rounded-xl border border-line bg-navy-950">
-      <div className={cn("relative flex items-center justify-center", aspect)}>
-        <svg viewBox="0 0 400 120" className="h-full w-full" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M20 0H0V20" fill="none" stroke="rgba(34,211,238,0.08)" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="400" height="120" fill="url(#grid)" />
-          <path
-            d="M0 60 H150 L160 60 L172 20 L184 100 L196 60 L206 60 L216 40 L226 60 H400"
-            fill="none"
-            stroke="#22D3EE"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.9"
-          />
-        </svg>
-      </div>
-      <figcaption className="border-t border-white/10 bg-navy-900 px-4 py-2.5 text-xs font-medium text-white/70">
-        {caption}
-      </figcaption>
-    </figure>
+    <>
+      <figure className="group overflow-hidden rounded-xl border border-line bg-navy-950">
+        <button
+          type="button"
+          disabled={!expandable}
+          onClick={() => setOpen(true)}
+          aria-label={expandable ? `${caption} — büyüt` : undefined}
+          className={cn("relative flex w-full items-center justify-center", aspect, expandable && "cursor-zoom-in")}
+        >
+          {graphic()}
+          {expandable && (
+            <span className="absolute inset-0 flex items-center justify-center bg-navy-950/0 opacity-0 transition-all duration-200 group-hover:bg-navy-950/30 group-hover:opacity-100">
+              <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                <ZoomIn className="h-3.5 w-3.5" /> Büyüt
+              </span>
+            </span>
+          )}
+        </button>
+        <figcaption className="border-t border-white/10 bg-navy-900 px-4 py-2.5 text-xs font-medium text-white/70">
+          {caption}
+        </figcaption>
+      </figure>
+      {expandable && (
+        <ImageLightbox open={open} onClose={() => setOpen(false)} caption={caption} renderGraphic={() => graphic("w-full")} />
+      )}
+    </>
   );
 }

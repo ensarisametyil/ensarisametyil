@@ -60,7 +60,12 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col items-start justify-between gap-2 py-5 text-xs text-white/40 sm:flex-row sm:items-center">
           <p>{site.quickRefVersion}</p>
-          <p>{site.workspaceLabel} · {site.instructor}</p>
+          <p className="flex items-center gap-3">
+            <span>{site.workspaceLabel} · {site.instructor}</span>
+            <Link to="/admin" className="text-white/30 hover:text-cyan-400">
+              Yönetim Paneli (demo)
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

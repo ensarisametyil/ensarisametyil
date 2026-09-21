@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-6 text-center">
-          <p className="text-lg font-bold text-navy-900">Something went wrong</p>
+          <p className="text-lg font-bold text-heading">Something went wrong</p>
           <p className="max-w-sm text-sm text-ink-soft">
             This part of the app hit an error. The rest of the app is still running.
           </p>

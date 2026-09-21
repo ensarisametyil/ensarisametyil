@@ -3,6 +3,12 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { CommandPalette } from "../components/CommandPalette";
+import { Sidebar } from "../components/Sidebar";
+import { MobileBottomNav } from "../components/MobileBottomNav";
+
+export interface LayoutContext {
+  openSearch: () => void;
+}
 
 export function RootLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -10,7 +16,13 @@ export function RootLayout() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      } else if (e.key === "/" && !typing) {
         e.preventDefault();
         setSearchOpen(true);
       }
@@ -33,10 +45,14 @@ export function RootLayout() {
         İçeriğe geç
       </a>
       <Navbar onOpenSearch={() => setSearchOpen(true)} />
-      <main id="main-content" className="flex-1">
-        <Outlet />
-      </main>
+      <div className="flex flex-1">
+        <Sidebar />
+        <main id="main-content" className="min-w-0 flex-1 pb-20 lg:pb-0">
+          <Outlet context={{ openSearch: () => setSearchOpen(true) } satisfies LayoutContext} />
+        </main>
+      </div>
       <Footer />
+      <MobileBottomNav onOpenSearch={() => setSearchOpen(true)} />
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );

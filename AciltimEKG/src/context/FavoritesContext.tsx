@@ -1,10 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-interface FavoriteEntry {
-  key: string; // `${categorySlug}/${topicSlug}`
+export type ContentKind = "algorithm" | "drug" | "rhythm" | "article" | "category";
+
+export interface FavoriteEntry {
+  key: string; // `${categorySlug}/${topicSlug}` or `ekg/${slug}`
   title: string;
   categorySlug: string;
   categoryLabel: string;
+  kind: ContentKind;
+  href: string;
 }
 
 interface FavoritesValue {
@@ -13,14 +17,24 @@ interface FavoritesValue {
   toggleFavorite: (entry: FavoriteEntry) => void;
 }
 
-const STORAGE_KEY = "aciltimekg.favorites.v1";
+const STORAGE_KEY = "aciltimekg.favorites.v2";
+const LEGACY_KEY = "aciltimekg.favorites.v1";
 
 const FavoritesContext = createContext<FavoritesValue | null>(null);
 
 function readStorage(): FavoriteEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as FavoriteEntry[]) : [];
+    if (raw) return JSON.parse(raw) as FavoriteEntry[];
+    // Best-effort migration from the pre-kind/href favorites shape.
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (!legacy) return [];
+    const parsed = JSON.parse(legacy) as Omit<FavoriteEntry, "kind" | "href">[];
+    return parsed.map((f) => ({
+      ...f,
+      kind: "algorithm" as const,
+      href: `/kategori/${f.categorySlug}/${f.key.split("/")[1] ?? ""}`,
+    }));
   } catch {
     return [];
   }
@@ -41,7 +55,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const toggleFavorite = useCallback((entry: FavoriteEntry) => {
     setFavorites((prev) =>
-      prev.some((f) => f.key === entry.key) ? prev.filter((f) => f.key !== entry.key) : [...prev, entry],
+      prev.some((f) => f.key === entry.key) ? prev.filter((f) => f.key !== entry.key) : [entry, ...prev],
     );
   }, []);
 

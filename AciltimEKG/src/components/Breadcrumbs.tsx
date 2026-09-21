@@ -8,7 +8,7 @@ export function Breadcrumbs({ items }: { items: { label: string; href?: string }
         <span key={i} className="flex items-center gap-1.5">
           {i > 0 && <ChevronRight className="h-3.5 w-3.5" />}
           {item.href ? (
-            <Link to={item.href} className="hover:text-navy-900">
+            <Link to={item.href} className="hover:text-heading">
               {item.label}
             </Link>
           ) : (

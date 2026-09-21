@@ -18,6 +18,8 @@ export interface DrugProfile {
   formCaption: string;
   timing: { label: string; value: string }[];
   indications: { context: string; note?: string; placeholder?: boolean }[];
+  /** Not present in the recovered source content for any of the three drugs — always shown as a placeholder. */
+  contraindications: { text: string; placeholder: true }[];
   doseGroups: {
     heading: string; // e.g. "Yetişkin", "Pediatri", "Yetişkin · VF / Nabızsız VT"
     subheading?: string; // e.g. "Kilo bazlı doz"
@@ -26,6 +28,8 @@ export interface DrugProfile {
   sideEffects: { text: string; placeholder?: boolean }[];
   criticalNotes: { heading: string; text: string; placeholder?: boolean }[];
   usageNote?: string;
+  /** Categories to pull "İlişkili Algoritmalar" from — derived from the drug's real clinical context (e.g. Amiodaron → Kardiyoloji), not invented per-item links. */
+  relatedCategorySlugs: ("acil-yaklasimlar" | "kardiyoloji" | "toksikoloji" | "pediatri")[];
 }
 
 export const drugs: DrugProfile[] = [
@@ -56,9 +60,11 @@ export const drugs: DrugProfile[] = [
         ],
       },
     ],
+    contraindications: [{ text: "", placeholder: true }],
     sideEffects: [{ text: "", placeholder: true }],
     criticalNotes: [{ heading: "Dikkat · kritik güvenlik", text: "Monitörizasyon zorunludur." }],
     usageNote: "Üçlü musluk · Adenozin ve SF hızlı bolus uygulaması ile, hızlı uygulama tekniği gerektirir.",
+    relatedCategorySlugs: ["kardiyoloji", "acil-yaklasimlar"],
   },
   {
     slug: "amiodaron",
@@ -105,6 +111,8 @@ export const drugs: DrugProfile[] = [
         text: "3. ve 5. şoktan sonraki dozlar (Sınıf 2b, KD B) olarak sınıflandırılır.",
       },
     ],
+    contraindications: [{ text: "", placeholder: true }],
+    relatedCategorySlugs: ["kardiyoloji", "acil-yaklasimlar"],
   },
   {
     slug: "atropin",
@@ -161,6 +169,8 @@ export const drugs: DrugProfile[] = [
         text: "6 yaş altı çocuk: 24 saat yatış ve yakın takip. Büyük çocuk ve erişkin: 6 saat acil serviste gözlem.",
       },
     ],
+    contraindications: [{ text: "", placeholder: true }],
+    relatedCategorySlugs: ["acil-yaklasimlar", "toksikoloji", "pediatri"],
   },
 ];
 

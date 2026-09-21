@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  /* Medical navy — primary brand */
+  /* Medical navy — primary brand (fixed: used for solid surfaces/buttons in both themes) */
   --color-navy-950: #050e1e;
   --color-navy-900: #0a1a33;
   --color-navy-800: #0f2748;
@@ -12,13 +14,15 @@
   --color-navy-600: #204879;
   --color-navy-500: #2d5c96;
 
-  /* Cool neutral surface + text */
+  /* Theme-aware semantic tokens — overridden under .dark below */
   --color-surface: #f6f8fb;
   --color-surface-alt: #eef2f7;
+  --color-card: #ffffff;
   --color-line: #dfe5ed;
   --color-ink: #0f1720;
   --color-ink-soft: #45505f;
   --color-ink-faint: #74808f;
+  --color-heading: #0a1a33;
 
   /* Soft medical blue / cyan accent */
   --color-cyan-600: #0891a8;
@@ -38,6 +42,34 @@
 
   --shadow-card: 0 1px 2px rgba(15, 23, 32, 0.04), 0 8px 24px -12px rgba(15, 23, 32, 0.12);
   --shadow-card-hover: 0 4px 10px rgba(15, 23, 32, 0.06), 0 16px 32px -12px rgba(15, 23, 32, 0.16);
+}
+
+/* Professional medical dark theme: deep navy/slate + muted cyan + controlled red.
+   Deliberately not black+neon. */
+.dark {
+  --color-surface: #0a1220;
+  --color-surface-alt: #101b2d;
+  --color-card: #111f34;
+  --color-line: #253550;
+  --color-ink: #e9eef5;
+  --color-ink-soft: #aab7c9;
+  --color-ink-faint: #7c8aa2;
+  --color-heading: #f2f5f9;
+
+  --color-cyan-600: #3fd0e6;
+  --color-cyan-100: #0d2e36;
+
+  --color-crit-700: #ff96a8;
+  --color-crit-600: #ef4463;
+  --color-crit-100: #34121c;
+
+  --color-amber-600: #f0b866;
+  --color-amber-100: #34260f;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.3), 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
 }
 
 @layer base {
@@ -65,11 +97,12 @@
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   ::selection {
     background: var(--color-cyan-100);
-    color: var(--color-navy-900);
+    color: var(--color-heading);
   }
 
   :focus-visible {
@@ -81,7 +114,7 @@
   h1, h2, h3, h4 {
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--color-navy-900);
+    color: var(--color-heading);
   }
 
   /* Long-form medical text: optimized measure and rhythm */
@@ -93,6 +126,11 @@
   }
   .prose-medical p + p {
     margin-top: 1.1em;
+  }
+
+  /* Anchor targets for table-of-contents scrolling under the sticky header */
+  [id].scroll-anchor {
+    scroll-margin-top: 5.5rem;
   }
 }
 
@@ -127,4 +165,30 @@
 }
 .reveal {
   animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes favorite-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.favorite-pop {
+  animation: favorite-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Print: strip chrome, keep content legible on paper regardless of theme. */
+@media print {
+  header, footer, .no-print, #recently-viewed-rail, #scroll-progress {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  a[href]::after {
+    content: "";
+  }
 }
