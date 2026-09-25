@@ -1,36 +1,10 @@
-// Thin fetch wrapper around the /api/* backend (see AciltimEKG/api). Same-origin
-// on Vercel; proxied to the local dev-api server by Vite in development.
+// Authenticated admin calls to the /api/admin/* backend. Public reads
+// (categories, topics) live in ./api and are shared with the public site.
 
-export interface AdminCategory {
-  slug: string;
-  label: string;
-  count: number;
-}
+import { request, ApiError, type PublicTopic } from "./api";
 
-export interface AdminTopic {
-  id: number;
-  categorySlug: string;
-  slug: string;
-  title: string;
-  content: string;
-  imageUrl: string | null;
-  order: number;
-}
-
-export class ApiError extends Error {}
-
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(path, {
-    credentials: "same-origin",
-    headers: options.body && typeof options.body === "string" ? { "Content-Type": "application/json" } : undefined,
-    ...options,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new ApiError((data as { error?: string }).error ?? "Beklenmeyen bir hata oluştu.");
-  }
-  return data as T;
-}
+export { ApiError };
+export type AdminTopic = PublicTopic;
 
 export function login(username: string, password: string) {
   return request<{ ok: true; username: string }>("/api/admin/login", {
@@ -45,10 +19,6 @@ export function logout() {
 
 export function getSession() {
   return request<{ authenticated: boolean; username: string | null }>("/api/admin/session");
-}
-
-export function getCategories() {
-  return request<{ categories: AdminCategory[] }>("/api/categories").then((d) => d.categories);
 }
 
 export function getAdminTopics(categorySlug: string) {

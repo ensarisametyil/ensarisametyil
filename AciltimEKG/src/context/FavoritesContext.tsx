@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type ContentKind = "algorithm" | "drug" | "rhythm" | "article" | "category";
+export type ContentKind = "algorithm" | "drug" | "rhythm" | "article" | "category" | "topic";
 
 export interface FavoriteEntry {
   key: string; // `${categorySlug}/${topicSlug}` or `ekg/${slug}`

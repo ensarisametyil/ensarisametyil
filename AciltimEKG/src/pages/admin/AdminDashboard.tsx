@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Lock, RefreshCcw } from "lucide-react";
 import { ekgTopics } from "../../data/rhythms";
-import { getCategories, type AdminCategory } from "../../lib/adminApi";
+import { getCategories, type PublicCategory } from "../../lib/api";
 import { CriticalNote } from "../../components/ui";
 
 export function AdminDashboard() {
-  const [categories, setCategories] = useState<AdminCategory[] | null>(null);
+  const [categories, setCategories] = useState<PublicCategory[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function load() {

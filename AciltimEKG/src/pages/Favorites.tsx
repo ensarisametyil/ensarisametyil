@@ -16,6 +16,7 @@ const filters: { value: FilterValue; label: string }[] = [
   { value: "drug", label: "İlaçlar" },
   { value: "rhythm", label: "Ritimler" },
   { value: "article", label: "Makaleler" },
+  { value: "topic", label: "Konular" },
 ];
 
 export function Favorites() {

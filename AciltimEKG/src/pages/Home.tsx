@@ -1,8 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { ArrowRight, Search, HeartPulse, History, Activity, Clock } from "lucide-react";
 import { site } from "../data/site";
 import { systematicSteps, ekgTopics } from "../data/rhythms";
-import { itemsForCategory } from "../lib/categoryItems";
+import { getCategories } from "../lib/api";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
 import { Card, VisualPlaceholder } from "../components/ui";
@@ -18,20 +19,22 @@ interface InfoAreaCard {
   description?: string;
 }
 
-const infoAreaCards: InfoAreaCard[] = [
-  {
-    label: "EKG",
-    href: "/ekg",
-    count: ekgTopics.length,
-    description: "Sistematik EKG yorumlama, ritim kütüphanesi ve kalibrasyon rehberi.",
-  },
-  { label: "Yetişkin Algoritmalar", href: "/kategori/acil-yaklasimlar", count: itemsForCategory("acil-yaklasimlar").length },
-  { label: "Pediatri Algoritmalar", href: "/kategori/pediatri", count: itemsForCategory("pediatri").length },
-  { label: "Doğum ve Yenidoğan", href: "/kategori/dogum-ve-yenidogan", count: itemsForCategory("dogum-ve-yenidogan").length },
-  { label: "İlaçlar", href: "/kategori/ilaclar", count: itemsForCategory("ilaclar").length },
-  { label: "Toksikoloji", href: "/kategori/toksikoloji", count: itemsForCategory("toksikoloji").length },
-  { label: "Makaleler", href: "/kategori/makaleler", count: itemsForCategory("makaleler").length },
-];
+function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
+  return [
+    {
+      label: "EKG",
+      href: "/ekg",
+      count: ekgTopics.length,
+      description: "Sistematik EKG yorumlama, ritim kütüphanesi ve kalibrasyon rehberi.",
+    },
+    { label: "Yetişkin Algoritmalar", href: "/kategori/acil-yaklasimlar", count: counts["acil-yaklasimlar"] ?? 0 },
+    { label: "Pediatri Algoritmalar", href: "/kategori/pediatri", count: counts["pediatri"] ?? 0 },
+    { label: "Doğum ve Yenidoğan", href: "/kategori/dogum-ve-yenidogan", count: counts["dogum-ve-yenidogan"] ?? 0 },
+    { label: "İlaçlar", href: "/kategori/ilaclar", count: counts["ilaclar"] ?? 0 },
+    { label: "Toksikoloji", href: "/kategori/toksikoloji", count: counts["toksikoloji"] ?? 0 },
+    { label: "Makaleler", href: "/kategori/makaleler", count: counts["makaleler"] ?? 0 },
+  ];
+}
 
 export function Home() {
   useMeta(
@@ -40,6 +43,21 @@ export function Home() {
   );
   const { openSearch } = useOutletContext<LayoutContext>();
   const { recent } = useRecentlyViewed();
+
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    let cancelled = false;
+    getCategories()
+      .then((categories) => {
+        if (cancelled) return;
+        setCounts(Object.fromEntries(categories.map((c) => [c.slug, c.count])));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const infoAreaCards = buildInfoAreaCards(counts);
 
   return (
     <>

@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowRight, Search } from "lucide-react";
 import { categoryMap, type CategorySlug } from "../data/categories";
 import { drugs } from "../data/drugs";
 import { popularityScore, isPopular } from "../lib/demoSignals";
-import { itemsForCategory } from "../lib/categoryItems";
+import { itemsForCategory, type CategoryCardItem } from "../lib/categoryItems";
+import { isDynamicCategory } from "../lib/dynamicCategories";
+import { getTopics } from "../lib/api";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { EkgWaveformGraphic } from "../components/EkgWaveform";
 import { Card, Badge } from "../components/ui";
@@ -29,7 +31,42 @@ export function CategoryHub() {
 
   useMeta(category ? category.label : "Kategori bulunamadı", category?.description);
 
-  const allItems = useMemo(() => (category ? itemsForCategory(category.slug) : []), [category]);
+  const [dynamicItems, setDynamicItems] = useState<CategoryCardItem[] | null>(null);
+  useEffect(() => {
+    if (!category || !isDynamicCategory(category.slug)) {
+      setDynamicItems(null);
+      return;
+    }
+    let cancelled = false;
+    setDynamicItems(null);
+    getTopics(category.slug)
+      .then((topics) => {
+        if (cancelled) return;
+        setDynamicItems(
+          topics.map((t) => ({
+            slug: t.slug,
+            title: t.title,
+            href: `/kategori/${category.slug}/${t.slug}`,
+            kindLabel: "Konu",
+            imageUrl: t.imageUrl,
+          })),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setDynamicItems([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
+
+  const isDynamic = !!category && isDynamicCategory(category.slug);
+  const loadingDynamic = isDynamic && dynamicItems === null;
+  const allItems = useMemo(() => {
+    if (!category) return [];
+    if (isDynamicCategory(category.slug)) return dynamicItems ?? [];
+    return itemsForCategory(category.slug);
+  }, [category, dynamicItems]);
 
   const items = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr");
@@ -102,7 +139,9 @@ export function CategoryHub() {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {loadingDynamic ? (
+        <div className="mt-10 text-center text-sm text-ink-faint">Yükleniyor…</div>
+      ) : items.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-line bg-surface-alt px-5 py-10 text-center text-sm text-ink-faint">
           {allItems.length === 0 ? "Bu kategoride henüz yayınlanmış konu yok." : "Aradığınız içerik bulunamadı."}
         </div>
@@ -134,6 +173,13 @@ export function CategoryHub() {
             <Link key={item.slug} to={item.href}>
               <Card className="flex h-full flex-col justify-between gap-4 p-5">
                 <div>
+                  {item.imageUrl && (
+                    <img
+                      src={item.imageUrl}
+                      alt=""
+                      className="mb-3 h-32 w-full rounded-lg object-cover"
+                    />
+                  )}
                   <div className="flex items-center gap-1.5">
                     <span className="text-[11px] font-bold uppercase tracking-wide text-cyan-600">
                       {item.kindLabel}

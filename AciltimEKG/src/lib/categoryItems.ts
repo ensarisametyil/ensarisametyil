@@ -8,6 +8,7 @@ export interface CategoryCardItem {
   href: string;
   kindLabel: string;
   showWaveform?: boolean;
+  imageUrl?: string | null;
 }
 
 /**
