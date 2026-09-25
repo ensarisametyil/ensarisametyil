@@ -14,7 +14,7 @@ export function Navbar({ onOpenSearch }: { onOpenSearch: () => void }) {
     <header className="sticky top-0 z-40 border-b border-line bg-card/85 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setMobileOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900 text-cyan-400">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-navy-700 to-cyan-600 text-white shadow-sm">
             <Activity className="h-5 w-5" strokeWidth={2.25} />
           </span>
           <span className="flex flex-col leading-none">
