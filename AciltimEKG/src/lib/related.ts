@@ -1,7 +1,7 @@
 import { categoryMap, type CategorySlug } from "../data/categories";
 import { topics, type Topic } from "../data/topics";
 import { drugs } from "../data/drugs";
-import { allRhythms, rhythmGroups } from "../data/rhythms";
+import { ekgTopics } from "../data/rhythms";
 
 export interface RelatedItem {
   title: string;
@@ -47,14 +47,16 @@ export function relatedForDrug(drugSlug: string, categorySlugs: CategorySlug[], 
   return items.slice(0, max);
 }
 
+/** "İlgili" EKG konuları, sabit sıradaki en yakın komşu konulardan (önce sonraki, sonra önceki) oluşturulur — sıra bozulmadan. */
 export function relatedForRhythm(rhythmSlug: string, max = 6): RelatedItem[] {
-  const owningGroup = rhythmGroups.find((g) => g.items.some((i) => i.slug === rhythmSlug));
-  const pool = owningGroup ? owningGroup.items : allRhythms;
-  const siblings = pool.filter((r) => r.slug !== rhythmSlug);
-  const rest = siblings.length >= max ? siblings : [...siblings, ...allRhythms.filter((r) => r.slug !== rhythmSlug && !siblings.includes(r))];
-  return rest.slice(0, max).map((r) => ({
-    title: r.title,
-    categoryLabel: owningGroup?.heading ?? "EKG Kütüphanesi",
-    href: `/ekg/${r.slug}`,
+  const idx = ekgTopics.findIndex((t) => t.slug === rhythmSlug);
+  if (idx === -1) return [];
+  const after = ekgTopics.slice(idx + 1);
+  const before = ekgTopics.slice(0, idx).reverse();
+  const ordered = [...after, ...before];
+  return ordered.slice(0, max).map((t) => ({
+    title: t.title,
+    categoryLabel: "EKG Kütüphanesi",
+    href: `/ekg/${t.slug}`,
   }));
 }

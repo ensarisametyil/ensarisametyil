@@ -3,12 +3,12 @@ import { FolderKanban, Pill, Activity, GitBranch, Newspaper, ArrowRight, Databas
 import { categories } from "../../data/categories";
 import { topics } from "../../data/topics";
 import { drugs } from "../../data/drugs";
-import { allRhythms } from "../../data/rhythms";
+import { ekgTopics } from "../../data/rhythms";
 
 export function AdminDashboard() {
   const algorithmCount = topics.filter((t) => t.kind === "algorithm").length;
   const drugCount = drugs.length;
-  const rhythmCount = allRhythms.length;
+  const rhythmCount = ekgTopics.length;
   const articleCount = topics.filter((t) => t.kind === "article").length;
   const placeholderCount = topics.filter((t) => t.kind === "algorithm" && !t.hasDetail).length;
 

@@ -3,7 +3,7 @@ import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { categories, categoryMap } from "../../data/categories";
 import { topics } from "../../data/topics";
 import { drugs } from "../../data/drugs";
-import { allRhythms, rhythmGroups } from "../../data/rhythms";
+import { ekgTopics } from "../../data/rhythms";
 
 type Kind = "all" | "category" | "drug" | "rhythm" | "algorithm" | "article";
 
@@ -25,10 +25,7 @@ const titles: Record<Kind, string> = {
 function buildRows(kind: Kind): Row[] {
   const categoryRows: Row[] = categories.map((c) => ({ title: c.label, category: "Kategori", status: "Yayında" }));
   const drugRows: Row[] = drugs.map((d) => ({ title: d.name, category: "İlaçlar", status: "Yayında" }));
-  const rhythmRows: Row[] = allRhythms.map((r) => {
-    const group = rhythmGroups.find((g) => g.items.some((i) => i.slug === r.slug));
-    return { title: r.title, category: group?.heading ?? "EKG", status: "Yayında" };
-  });
+  const rhythmRows: Row[] = ekgTopics.map((t) => ({ title: t.title, category: "EKG", status: "Yayında" }));
   const algorithmRows: Row[] = topics
     .filter((t) => t.kind === "algorithm")
     .map((t) => ({

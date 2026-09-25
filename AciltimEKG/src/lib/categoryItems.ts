@@ -1,6 +1,6 @@
 import type { CategorySlug } from "../data/categories";
 import { topicsByCategory } from "../data/topics";
-import { allRhythms } from "../data/rhythms";
+import { ekgTopics } from "../data/rhythms";
 
 export interface CategoryCardItem {
   slug: string;
@@ -19,10 +19,10 @@ export interface CategoryCardItem {
  */
 export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[] {
   if (categorySlug === "ritimler") {
-    return allRhythms.map((r) => ({
-      slug: r.slug,
-      title: r.title,
-      href: `/ekg/${r.slug}`,
+    return ekgTopics.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      href: `/ekg/${t.slug}`,
       kindLabel: "Ritim",
       showWaveform: true,
     }));

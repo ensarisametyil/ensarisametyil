@@ -80,22 +80,35 @@ export function CriticalNote({ heading, text }: { heading: string; text: string 
   );
 }
 
-/** Visual area standing in for a real EKG strip / algorithm flow image that wasn't recovered from the source archive. Click/tap opens the full viewer (zoom, pan, fullscreen). */
+/**
+ * Visual area for an EKG/algorithm reference image. When `src` is given, the
+ * real image (e.g. an EKG strip under /public/ekg/) is shown; otherwise a
+ * decorative placeholder waveform stands in for an image that wasn't
+ * recovered from the source. Click/tap opens the full viewer (zoom, pan,
+ * fullscreen).
+ */
 export function VisualPlaceholder({
   caption,
   aspect = "aspect-[16/9]",
   expandable = true,
   seed,
+  src,
 }: {
   caption: string;
   aspect?: string;
   expandable?: boolean;
   seed?: string;
+  src?: string;
 }) {
   const [open, setOpen] = useState(false);
   const graphicSeed = seed ?? caption;
 
-  const graphic = (fill = "h-full w-full") => <EkgWaveformGraphic seed={graphicSeed} className={fill} />;
+  const graphic = (fill = "h-full w-full") =>
+    src ? (
+      <img src={src} alt={caption} loading="lazy" className={cn(fill, "object-contain")} />
+    ) : (
+      <EkgWaveformGraphic seed={graphicSeed} className={fill} />
+    );
 
   return (
     <>
@@ -105,7 +118,12 @@ export function VisualPlaceholder({
           disabled={!expandable}
           onClick={() => setOpen(true)}
           aria-label={expandable ? `${caption} — büyüt` : undefined}
-          className={cn("relative flex w-full items-center justify-center", aspect, expandable && "cursor-zoom-in")}
+          className={cn(
+            "relative flex w-full items-center justify-center",
+            aspect,
+            src && "bg-white",
+            expandable && "cursor-zoom-in",
+          )}
         >
           {graphic()}
           {expandable && (

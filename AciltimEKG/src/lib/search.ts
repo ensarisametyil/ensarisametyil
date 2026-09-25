@@ -1,6 +1,6 @@
 import { categories, type CategorySlug } from "../data/categories";
 import { topics } from "../data/topics";
-import { allRhythms } from "../data/rhythms";
+import { ekgTopics } from "../data/rhythms";
 
 export type SearchKind = "algorithm" | "drug" | "rhythm" | "category" | "article";
 
@@ -44,11 +44,11 @@ const index: SearchItem[] = [
     kind: (t.kind === "drug" ? "drug" : t.kind === "article" ? "article" : "algorithm") as SearchKind,
     categorySlug: t.primaryCategory,
   })),
-  ...allRhythms.map((r) => ({
-    title: r.title,
+  ...ekgTopics.map((t) => ({
+    title: t.title,
     subtitle: "EKG kütüphanesi",
-    description: r.caption,
-    href: `/ekg/${r.slug}`,
+    description: t.definition,
+    href: `/ekg/${t.slug}`,
     kind: "rhythm" as SearchKind,
     categorySlug: "ekg" as const,
   })),

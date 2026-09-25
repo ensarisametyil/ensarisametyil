@@ -1,34 +1,29 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { rhythmGroups, systematicSteps } from "../data/rhythms";
+import { ekgTopics, systematicSteps } from "../data/rhythms";
 import { site } from "../data/site";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { VisualPlaceholder } from "../components/ui";
-import { EkgWaveformGraphic } from "../components/EkgWaveform";
-import { cn } from "../lib/cn";
 import { useMeta } from "../lib/useMeta";
 
 export function EkgHub() {
-  useMeta("EKG Kütüphanesi", "Sinüs, atriyal, ventriküler ritimler ve ileti bozuklukları — hızlı referans EKG kütüphanesi.");
+  useMeta("EKG Kütüphanesi", "Kalbin ileti sisteminden ritim bozukluklarına, sistematik sırayla 28 EKG konusu.");
 
   const [query, setQuery] = useState("");
-  const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
-  const filteredGroups = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr");
-    return rhythmGroups
-      .filter((g) => !activeGroup || g.heading === activeGroup)
-      .map((g) => ({ ...g, items: g.items.filter((i) => !q || i.title.toLocaleLowerCase("tr").includes(q)) }))
-      .filter((g) => g.items.length > 0);
-  }, [query, activeGroup]);
+    if (!q) return ekgTopics;
+    return ekgTopics.filter((t) => t.title.toLocaleLowerCase("tr").includes(q));
+  }, [query]);
 
   return (
     <div className="container-page py-10 sm:py-14">
       <Breadcrumbs items={[{ label: "Ana Sayfa", href: "/" }, { label: "EKG" }]} />
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_22rem] lg:items-start">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-3xl font-extrabold text-heading sm:text-4xl">{site.ekgLibraryLabel}</h1>
           <p className="prose-medical mt-3">{site.heroLead}</p>
 
@@ -37,69 +32,37 @@ export function EkgHub() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ritim ara…"
+              placeholder="Konu ara…"
               className="w-full rounded-xl border border-line bg-card py-3 pl-11 pr-4 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
             />
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveGroup(null)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                activeGroup === null
-                  ? "border-navy-900 bg-navy-900 text-white dark:border-cyan-500 dark:bg-cyan-500 dark:text-navy-950"
-                  : "border-line text-ink-soft hover:text-heading",
-              )}
-            >
-              Tümü
-            </button>
-            {rhythmGroups.map((g) => (
-              <button
-                key={g.heading}
-                type="button"
-                onClick={() => setActiveGroup(g.heading)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                  activeGroup === g.heading
-                    ? "border-navy-900 bg-navy-900 text-white dark:border-cyan-500 dark:bg-cyan-500 dark:text-navy-950"
-                    : "border-line text-ink-soft hover:text-heading",
-                )}
-              >
-                {g.heading}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-8 space-y-10">
-            {filteredGroups.length === 0 ? (
+          <div className="mt-8">
+            {filtered.length === 0 ? (
               <div className="rounded-xl border border-dashed border-line bg-surface-alt px-5 py-10 text-center text-sm text-ink-faint">
-                Aradığınız ritim bulunamadı.
+                Aradığınız konu bulunamadı.
               </div>
             ) : (
-              filteredGroups.map((group) => (
-                <div key={group.heading}>
-                  <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-cyan-600">{group.heading}</h2>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {group.items.map((item) => (
-                      <Link
-                        key={item.slug}
-                        to={`/ekg/${item.slug}`}
-                        className="group overflow-hidden rounded-xl border border-line bg-navy-950 transition-colors hover:border-cyan-500/50"
-                      >
-                        <div className="aspect-[16/10]">
-                          <EkgWaveformGraphic seed={item.slug} />
-                        </div>
-                        <div className="border-t border-white/10 bg-navy-900 px-4 py-3">
-                          <p className="text-sm font-semibold text-white">{item.title}</p>
-                          <p className="mt-0.5 text-xs text-white/50">{item.caption}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))
+              <ol className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((topic) => (
+                  <li key={topic.slug}>
+                    <Link
+                      to={`/ekg/${topic.slug}`}
+                      className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-card transition-colors hover:border-cyan-500/50"
+                    >
+                      <div className="aspect-[4/3] bg-white">
+                        <img src={topic.image} alt={topic.title} loading="lazy" className="h-full w-full object-contain" />
+                      </div>
+                      <div className="flex items-start gap-2.5 border-t border-line px-4 py-3">
+                        <span className="mt-0.5 shrink-0 font-mono text-xs text-ink-faint">
+                          {String(topic.order).padStart(2, "0")}
+                        </span>
+                        <p className="text-sm font-semibold text-heading">{topic.title}</p>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
             )}
           </div>
         </div>
@@ -119,9 +82,15 @@ export function EkgHub() {
                 </li>
               ))}
             </ol>
+            <Link
+              to={`/ekg/${ekgTopics[3]?.slug ?? ""}`}
+              className="mt-4 inline-block text-sm font-semibold text-cyan-600 hover:text-cyan-700"
+            >
+              10 basamaklı tam yorumlama rehberi →
+            </Link>
           </div>
           <div className="mt-4">
-            <VisualPlaceholder caption="Kalbin ileti sistemi · Anatomik gösterim" seed="conduction-system" />
+            <VisualPlaceholder caption={ekgTopics[0]?.title ?? ""} src={ekgTopics[0]?.image} aspect="aspect-[4/3]" />
           </div>
         </aside>
       </div>

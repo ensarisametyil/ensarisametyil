@@ -1,18 +1,37 @@
 import { Link, useOutletContext } from "react-router-dom";
-import { ArrowRight, Search, Pill, HeartPulse, History, GitBranch } from "lucide-react";
-import { categories } from "../data/categories";
+import { ArrowRight, Search, HeartPulse, History, Activity, Clock } from "lucide-react";
 import { site } from "../data/site";
-import { systematicSteps } from "../data/rhythms";
-import { drugs } from "../data/drugs";
-import { topics } from "../data/topics";
-import { isPopular } from "../lib/demoSignals";
+import { systematicSteps, ekgTopics } from "../data/rhythms";
+import { itemsForCategory } from "../lib/categoryItems";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
 import { Card, VisualPlaceholder } from "../components/ui";
 import { useMeta } from "../lib/useMeta";
 import type { LayoutContext } from "../layouts/RootLayout";
 
-const popularAlgorithms = topics.filter((t) => t.kind === "algorithm" && isPopular(t.slug)).slice(0, 3);
+// "Bilgi Alanları" — sadece bu 7 kart, bu sırayla. Diğer kategoriler
+// (Kardiyoloji, Travma, Ritimler) bu bölümde gösterilmez.
+interface InfoAreaCard {
+  label: string;
+  href: string;
+  count: number;
+  description?: string;
+}
+
+const infoAreaCards: InfoAreaCard[] = [
+  {
+    label: "EKG",
+    href: "/ekg",
+    count: ekgTopics.length,
+    description: "Sistematik EKG yorumlama, ritim kütüphanesi ve kalibrasyon rehberi.",
+  },
+  { label: "Yetişkin Algoritmalar", href: "/kategori/acil-yaklasimlar", count: itemsForCategory("acil-yaklasimlar").length },
+  { label: "Pediatri Algoritmalar", href: "/kategori/pediatri", count: itemsForCategory("pediatri").length },
+  { label: "Doğum ve Yenidoğan", href: "/kategori/dogum-ve-yenidogan", count: itemsForCategory("dogum-ve-yenidogan").length },
+  { label: "İlaçlar", href: "/kategori/ilaclar", count: itemsForCategory("ilaclar").length },
+  { label: "Toksikoloji", href: "/kategori/toksikoloji", count: itemsForCategory("toksikoloji").length },
+  { label: "Makaleler", href: "/kategori/makaleler", count: itemsForCategory("makaleler").length },
+];
 
 export function Home() {
   useMeta(
@@ -53,16 +72,13 @@ export function Home() {
             </button>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              {[
-                { label: "EKG", href: "/ekg" },
-                ...categories.slice(0, 5).map((c) => ({ label: c.label, href: `/kategori/${c.slug}` })),
-              ].map((chip) => (
+              {infoAreaCards.map((c) => (
                 <Link
-                  key={chip.href}
-                  to={chip.href}
+                  key={c.href}
+                  to={c.href}
                   className="rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-semibold text-white/75 transition-colors hover:border-cyan-400/50 hover:text-white"
                 >
-                  {chip.label}
+                  {c.label}
                 </Link>
               ))}
             </div>
@@ -95,33 +111,20 @@ export function Home() {
         </section>
       )}
 
-      {/* Critical / frequently used */}
+      {/* Critical / frequently used — currently the EKG library, the only category with published content */}
       <section className="container-page py-16 sm:py-20">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-cyan-600">Kritik · Sık Kullanılanlar</p>
         <h2 className="text-2xl font-extrabold text-heading sm:text-3xl">Başlangıç Noktası</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {drugs.map((d) => (
-            <Link key={d.slug} to={`/kategori/ilaclar/${d.slug}`}>
-              <Card className="flex h-full flex-col gap-3 p-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-crit-100 text-crit-700">
-                  <Pill className="h-4.5 w-4.5" />
-                </span>
-                <div>
-                  <p className="text-base font-extrabold uppercase tracking-tight text-heading">{d.name}</p>
-                  <p className="mt-0.5 text-sm text-ink-faint">{d.timing[0]?.value}</p>
-                </div>
-              </Card>
-            </Link>
-          ))}
-          {popularAlgorithms.map((t) => (
-            <Link key={t.slug} to={`/kategori/${t.primaryCategory}/${t.slug}`}>
+          {ekgTopics.slice(0, 6).map((t) => (
+            <Link key={t.slug} to={`/ekg/${t.slug}`}>
               <Card className="flex h-full flex-col gap-3 p-5">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900/[0.06] text-navy-800 dark:bg-white/10 dark:text-white/80">
-                  <GitBranch className="h-4.5 w-4.5" />
+                  <Activity className="h-4.5 w-4.5" />
                 </span>
                 <div>
                   <p className="text-base font-semibold text-heading">{t.title}</p>
-                  <p className="mt-0.5 text-sm text-ink-faint">Algoritma</p>
+                  <p className="mt-0.5 text-sm text-ink-faint">EKG</p>
                 </div>
               </Card>
             </Link>
@@ -129,32 +132,41 @@ export function Home() {
         </div>
       </section>
 
-      {/* Category grid */}
+      {/* Bilgi Alanları / Konu Başlıkları — sadece 7 sabit kart */}
       <section className="container-page pb-16 sm:pb-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-cyan-600">{site.infoAreasLabel}</p>
             <h2 className="text-2xl font-extrabold text-heading sm:text-3xl">Konu Başlıkları</h2>
           </div>
-          <Link to="/kategoriler" className="text-sm font-semibold text-heading hover:text-cyan-600">
-            Tüm kategoriler →
-          </Link>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
-            <Link key={c.slug} to={`/kategori/${c.slug}`} className="group">
-              <Card className="flex h-full flex-col justify-between p-5">
-                <div>
-                  <p className="text-base font-bold text-heading">{c.label}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{c.description}</p>
-                </div>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-600">
-                  İncele
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </Card>
-            </Link>
-          ))}
+          {infoAreaCards.map((c, i) => {
+            const isEmpty = c.count === 0;
+            return (
+              <Link key={c.href} to={c.href} className="group">
+                <Card className="flex h-full flex-col justify-between p-5">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                      {String(i + 1).padStart(2, "0")}
+                    </p>
+                    <p className="mt-1 text-base font-bold text-heading">{c.label}</p>
+                    {isEmpty ? (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-faint">
+                        <Clock className="h-3.5 w-3.5" /> İçerik hazırlanıyor
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{c.description}</p>
+                    )}
+                  </div>
+                  <span className="mt-5 flex items-center justify-between text-sm font-semibold">
+                    <span className="text-ink-faint">{c.count} hızlı referans konusu</span>
+                    <ArrowRight className="h-3.5 w-3.5 text-cyan-600 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -193,32 +205,6 @@ export function Home() {
               seed="12-lead-home"
             />
           </div>
-        </div>
-      </section>
-
-      {/* Drug cards teaser */}
-      <section className="container-page py-16 sm:py-20">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-cyan-600">İLAÇLAR</p>
-            <h2 className="text-2xl font-extrabold text-heading sm:text-3xl">Hızlı Doz Referansı</h2>
-          </div>
-          <Link to="/kategori/ilaclar" className="text-sm font-semibold text-heading hover:text-cyan-600">
-            Tüm ilaçlar →
-          </Link>
-        </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {drugs.map((d) => (
-            <Link key={d.slug} to={`/kategori/ilaclar/${d.slug}`}>
-              <Card className="flex h-full flex-col gap-3 p-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900/[0.06] text-navy-800 dark:bg-white/10 dark:text-white/80">
-                  <Pill className="h-4.5 w-4.5" />
-                </span>
-                <p className="text-lg font-extrabold uppercase tracking-tight text-heading">{d.name}</p>
-                <p className="text-sm text-ink-faint">{d.timing[0]?.value}</p>
-              </Card>
-            </Link>
-          ))}
         </div>
       </section>
 
