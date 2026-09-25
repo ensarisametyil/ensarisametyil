@@ -1,29 +1,32 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  Pill,
-  Activity,
-  GitBranch,
-  Newspaper,
-  Layers,
-  ArrowLeft,
-} from "lucide-react";
+import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
+import { LayoutDashboard, Activity, ArrowLeft, LogOut, Lock } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { useMeta } from "../../lib/useMeta";
+import { useAdminAuth } from "../../context/AdminAuthContext";
+import { DYNAMIC_CATEGORIES } from "../../lib/dynamicCategories";
 
 const navItems = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/icerikler", label: "İçerikler", icon: Layers, end: true },
-  { to: "/admin/kategoriler", label: "Kategoriler", icon: FolderKanban, end: true },
-  { to: "/admin/ilaclar", label: "İlaçlar", icon: Pill, end: true },
-  { to: "/admin/ritimler", label: "Ritimler", icon: Activity, end: true },
-  { to: "/admin/algoritmalar", label: "Algoritmalar", icon: GitBranch, end: true },
-  { to: "/admin/makaleler", label: "Makaleler", icon: Newspaper, end: true },
+  { to: "/admin", label: "Panel", end: true },
+  ...DYNAMIC_CATEGORIES.map((c) => ({ to: `/admin/${c.slug}`, label: c.label, end: false })),
+  { to: "/admin/ekg", label: "EKG (salt okunur)", end: false },
 ];
 
 export function AdminLayout() {
-  useMeta("Yönetim Paneli (Demo)");
+  useMeta("Yönetim Paneli");
+  const { status, username, logout } = useAdminAuth();
+  const location = useLocation();
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface text-sm font-semibold text-ink-faint">
+        Yükleniyor…
+      </div>
+    );
+  }
+
+  if (status === "anonymous") {
+    return <Navigate to="/admin/giris" replace state={{ from: location.pathname }} />;
+  }
 
   return (
     <div className="flex min-h-dvh bg-surface text-ink">
@@ -50,33 +53,42 @@ export function AdminLayout() {
                 )
               }
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              {item.to === "/admin" && <LayoutDashboard className="h-4 w-4 shrink-0" />}
+              {item.to === "/admin/ekg" && <Lock className="h-4 w-4 shrink-0" />}
+              <span className="truncate">{item.label}</span>
             </NavLink>
           ))}
         </nav>
-        <div className="mt-4 px-3">
+        <div className="mt-4 space-y-1 px-3">
           <Link
             to="/"
             className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-faint hover:bg-surface-alt hover:text-heading"
           >
             <ArrowLeft className="h-4 w-4" /> Siteye dön
           </Link>
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-faint hover:bg-surface-alt hover:text-heading"
+          >
+            <LogOut className="h-4 w-4" /> Çıkış yap ({username})
+          </button>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="border-b border-amber-600/30 bg-amber-100 px-4 py-2 text-center text-xs font-semibold text-amber-700 sm:px-6">
-          Demo modu — bu panel yalnızca arayüz önizlemesidir. Gerçek kimlik doğrulama, veritabanı veya kaydetme
-          işlemi yoktur.
-        </div>
         <header className="flex h-14 items-center justify-between border-b border-line bg-card px-4 sm:px-6 lg:hidden">
           <Link to="/admin" className="text-sm font-extrabold text-heading">
             ACİLTİMEKG · Admin
           </Link>
-          <Link to="/" className="text-xs font-semibold text-ink-faint">
-            Siteye dön
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-xs font-semibold text-ink-faint">
+              Siteye dön
+            </Link>
+            <button type="button" onClick={() => logout()} className="text-xs font-semibold text-ink-faint">
+              Çıkış
+            </button>
+          </div>
         </header>
         <nav className="flex gap-1 overflow-x-auto border-b border-line bg-card px-3 py-2 lg:hidden">
           {navItems.map((item) => (

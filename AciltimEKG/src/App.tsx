@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Outlet, Routes, Route } from "react-router-dom";
 import { RootLayout } from "./layouts/RootLayout";
 import { Home } from "./pages/Home";
 import { EkgHub } from "./pages/EkgHub";
@@ -9,9 +9,21 @@ import { TopicDetail } from "./pages/TopicDetail";
 import { Favorites } from "./pages/Favorites";
 import { SearchPage } from "./pages/SearchPage";
 import { NotFound } from "./pages/NotFound";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
-import { AdminList } from "./pages/admin/AdminList";
+import { AdminEkgReadOnly } from "./pages/admin/AdminEkgReadOnly";
+import { CategoryTopics } from "./pages/admin/CategoryTopics";
+import { TopicForm } from "./pages/admin/TopicForm";
+
+function AdminAuthGate() {
+  return (
+    <AdminAuthProvider>
+      <Outlet />
+    </AdminAuthProvider>
+  );
+}
 
 export default function App() {
   return (
@@ -27,14 +39,16 @@ export default function App() {
         <Route path="/arama" element={<SearchPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="icerikler" element={<AdminList kind="all" />} />
-        <Route path="kategoriler" element={<AdminList kind="category" />} />
-        <Route path="ilaclar" element={<AdminList kind="drug" />} />
-        <Route path="ritimler" element={<AdminList kind="rhythm" />} />
-        <Route path="algoritmalar" element={<AdminList kind="algorithm" />} />
-        <Route path="makaleler" element={<AdminList kind="article" />} />
+
+      <Route element={<AdminAuthGate />}>
+        <Route path="/admin/giris" element={<Login />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="ekg" element={<AdminEkgReadOnly />} />
+          <Route path=":categorySlug" element={<CategoryTopics />} />
+          <Route path=":categorySlug/yeni" element={<TopicForm />} />
+          <Route path=":categorySlug/:topicSlug/duzenle" element={<TopicForm />} />
+        </Route>
       </Route>
     </Routes>
   );

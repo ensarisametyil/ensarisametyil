@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local-dev-only image upload fallback (production uses Vercel Blob)
+/public/uploads/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
