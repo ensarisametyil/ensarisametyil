@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Local secrets (see .env.example for the variables this project needs)
+.env
+.env.*
+!.env.example
+
 # Local-dev-only image upload fallback (production uses Vercel Blob)
 /public/uploads/
 

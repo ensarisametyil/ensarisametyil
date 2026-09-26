@@ -12,14 +12,19 @@ Kaynakta bulunmayan tıbbi içerik (doz, tanı, klinik protokol) **uydurulmamı�
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev      # site + /api backend birlikte, http://localhost:5173
 npm run build    # tip kontrolü + prod build
 npm run lint      # oxlint
 ```
 
+Yönetim paneli (`/admin`) bir Postgres veritabanı ve birkaç ortam
+değişkeni gerektirir — bkz. `.env.example` ve `SETUP.md`.
+
 ## Yapı
 
-- `src/data/` — kategoriler, konu başlıkları, ilaç doz kartları, EKG ritim kütüphanesi ve arayüz metinleri (kaynaktan çıkarılan gerçek içerik)
+- `src/data/` — EKG ritim kütüphanesi ve arayüz metinleri (kaynaktan çıkarılan gerçek içerik, statik)
 - `src/components/` — tasarım sistemi bileşenleri (Card, Badge, VisualPlaceholder, CommandPalette, Navbar, Footer…)
-- `src/pages/` — Ana Sayfa, EKG kütüphanesi, kategori/konu detay sayfaları, favoriler, 404 varyantları
-- `src/context/` — favoriler (localStorage tabanlı)
+- `src/pages/` — Ana Sayfa, EKG kütüphanesi, kategori/konu detay sayfaları, favoriler, 404 varyantları, yönetim paneli (`admin/`)
+- `src/context/` — favoriler ve admin oturumu (React context)
+- `api/` — yönetim paneli backend'i: kimlik doğrulama, konu CRUD/sıralama, görsel yükleme (Vercel Serverless Functions + Postgres + Vercel Blob)
+- `src/data/` altındaki 6 kategori (EKG hariç) artık veritabanından beslenir; EKG kütüphanesi kasıtlı olarak statik veri olarak kalır
