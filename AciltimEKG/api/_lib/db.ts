@@ -1,4 +1,6 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { ACIL_YAKLASIMLAR_INITIAL_TOPICS } from "./initialSeedData";
+import { slugify } from "./slugify";
 
 // Works against any standard Postgres connection string — Vercel Postgres,
 // Neon, Supabase, PlanetScale's Postgres-compatible endpoint, or a local
@@ -78,5 +80,35 @@ export async function ensureSchema(): Promise<void> {
     );
   `);
   await query(`CREATE INDEX IF NOT EXISTS idx_topics_category_order ON topics (category_slug, order_index);`);
+  await query(`CREATE TABLE IF NOT EXISTS seed_meta (key TEXT PRIMARY KEY, seeded_at TIMESTAMPTZ NOT NULL DEFAULT now());`);
+  await seedAcilYaklasimlarOnce();
   migrated = true;
+}
+
+/**
+ * Populates the "acil-yaklasimlar" (Yetişkin Algoritmalar) topics on first
+ * use of a fresh database — so connecting Postgres and deploying is enough
+ * to see this content live, with no separate seed script to run. Guarded by
+ * a row in `seed_meta` inserted with ON CONFLICT DO NOTHING, so concurrent
+ * cold starts can't double-insert and a deliberate later deletion of these
+ * topics via the admin panel is never silently reverted.
+ */
+async function seedAcilYaklasimlarOnce(): Promise<void> {
+  const { rows } = await query<{ key: string }>(
+    `INSERT INTO seed_meta (key) VALUES ($1) ON CONFLICT (key) DO NOTHING RETURNING key`,
+    ["acil-yaklasimlar-initial"],
+  );
+  if (rows.length === 0) return;
+
+  await withTransaction(async (client) => {
+    for (let i = 0; i < ACIL_YAKLASIMLAR_INITIAL_TOPICS.length; i++) {
+      const { title, image } = ACIL_YAKLASIMLAR_INITIAL_TOPICS[i];
+      await client.query(
+        `INSERT INTO topics (category_slug, slug, title, content, image_url, order_index)
+         VALUES ('acil-yaklasimlar', $1, $2, '', $3, $4)
+         ON CONFLICT (category_slug, slug) DO NOTHING`,
+        [slugify(title), title, `/algorithms/acil-yaklasimlar/${image}.jpg`, i],
+      );
+    }
+  });
 }

@@ -1,3 +1,10 @@
+// NOTE: this no longer needs to be run manually — api/_lib/db.ts's
+// ensureSchema() now seeds these same 53 topics automatically the first
+// time the database is used (guarded by a `seed_meta` row, so it only ever
+// runs once and a later deletion via the admin panel is never resurrected).
+// Kept here as a manual/CLI fallback (e.g. to force-reseed against a
+// database that already has a seed_meta row, or for local testing).
+//
 // One-off content seed: creates the "Yetişkin Algoritmalar" (acil-yaklasimlar)
 // topics from the T.C. Sağlık Bakanlığı algorithm images in
 // public/algorithms/acil-yaklasimlar/. Each topic is image-only (no body
