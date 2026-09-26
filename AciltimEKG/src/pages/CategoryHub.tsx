@@ -14,9 +14,10 @@ import { cn } from "../lib/cn";
 import { useMeta } from "../lib/useMeta";
 import { CategoryNotFound } from "./NotFound";
 
-type SortMode = "alfabetik" | "son-eklenen" | "sik-kullanilan";
+type SortMode = "varsayilan" | "alfabetik" | "son-eklenen" | "sik-kullanilan";
 
 const sortOptions: { value: SortMode; label: string }[] = [
+  { value: "varsayilan", label: "Varsayılan Sıra" },
   { value: "alfabetik", label: "Alfabetik" },
   { value: "son-eklenen", label: "Son Eklenen" },
   { value: "sik-kullanilan", label: "Sık Kullanılan" },
@@ -26,7 +27,7 @@ export function CategoryHub() {
   const { slug = "" } = useParams();
   const category = categoryMap[slug as CategorySlug];
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortMode>("alfabetik");
+  const [sort, setSort] = useState<SortMode>("varsayilan");
   const [onlyPopular, setOnlyPopular] = useState(false);
 
   useMeta(category ? category.label : "Kategori bulunamadı", category?.description);

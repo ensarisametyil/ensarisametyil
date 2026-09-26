@@ -85,9 +85,8 @@ export function DynamicTopicDetail({ categorySlug, slug }: { categorySlug: Categ
         {topic.imageUrl && (
           <img src={topic.imageUrl} alt={topic.title} className="w-full rounded-2xl border border-line object-cover" />
         )}
-        {topic.content ? (
-          <p className="whitespace-pre-wrap text-base leading-relaxed text-ink">{topic.content}</p>
-        ) : (
+        {topic.content && <p className="whitespace-pre-wrap text-base leading-relaxed text-ink">{topic.content}</p>}
+        {!topic.imageUrl && !topic.content && (
           <p className="text-sm text-ink-faint">Bu konu için henüz içerik eklenmemiş.</p>
         )}
       </div>
