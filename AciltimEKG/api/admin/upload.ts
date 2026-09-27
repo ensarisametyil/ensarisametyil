@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import formidable from "formidable";
-import type { ApiRequest, ApiResponse } from "../_lib/http";
-import { badRequest, methodNotAllowed, ok, serverError } from "../_lib/http";
-import { requireAuth } from "../_lib/auth";
-import { optimizeImage, storeImage } from "../_lib/storage";
+import type { ApiRequest, ApiResponse } from "../_lib/http.js";
+import { badRequest, methodNotAllowed, ok, serverError } from "../_lib/http.js";
+import { requireAuth } from "../_lib/auth.js";
+import { optimizeImage, storeImage } from "../_lib/storage.js";
 
 export const config = {
   api: { bodyParser: false },

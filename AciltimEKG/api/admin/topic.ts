@@ -1,9 +1,9 @@
-import type { ApiRequest, ApiResponse } from "../_lib/http";
-import { badRequest, methodNotAllowed, notFound, ok, readJsonBody, serverError } from "../_lib/http";
-import { ensureSchema, query } from "../_lib/db";
-import { requireAuth } from "../_lib/auth";
-import { isDynamicCategory } from "../_lib/categories";
-import { slugify } from "../_lib/slugify";
+import type { ApiRequest, ApiResponse } from "../_lib/http.js";
+import { badRequest, methodNotAllowed, notFound, ok, readJsonBody, serverError } from "../_lib/http.js";
+import { ensureSchema, query } from "../_lib/db.js";
+import { requireAuth } from "../_lib/auth.js";
+import { isDynamicCategory } from "../_lib/categories.js";
+import { slugify } from "../_lib/slugify.js";
 
 interface TopicRow {
   id: number;

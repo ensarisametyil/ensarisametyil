@@ -1,6 +1,6 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
-import { ACIL_YAKLASIMLAR_INITIAL_TOPICS } from "./initialSeedData";
-import { slugify } from "./slugify";
+import { ACIL_YAKLASIMLAR_INITIAL_TOPICS } from "./initialSeedData.js";
+import { slugify } from "./slugify.js";
 
 // Works against any standard Postgres connection string — Vercel Postgres,
 // Neon, Supabase, PlanetScale's Postgres-compatible endpoint, or a local

@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { badRequest, methodNotAllowed, notFound, ok, serverError } from "./_lib/http";
-import { ensureSchema, query } from "./_lib/db";
-import { isDynamicCategory } from "./_lib/categories";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { badRequest, methodNotAllowed, notFound, ok, serverError } from "./_lib/http.js";
+import { ensureSchema, query } from "./_lib/db.js";
+import { isDynamicCategory } from "./_lib/categories.js";
 
 interface TopicRow {
   id: number;

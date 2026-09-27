@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import type { ApiRequest, ApiResponse } from "../_lib/http";
-import { badRequest, methodNotAllowed, ok, readJsonBody, serverError, unauthorized } from "../_lib/http";
-import { setSessionCookie } from "../_lib/auth";
+import type { ApiRequest, ApiResponse } from "../_lib/http.js";
+import { badRequest, methodNotAllowed, ok, readJsonBody, serverError, unauthorized } from "../_lib/http.js";
+import { setSessionCookie } from "../_lib/auth.js";
 
 interface LoginBody {
   username?: string;

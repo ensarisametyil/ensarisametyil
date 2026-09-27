@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { ApiRequest, ApiResponse } from "./http";
-import { parseCookies, serializeCookie, unauthorized } from "./http";
+import type { ApiRequest, ApiResponse } from "./http.js";
+import { parseCookies, serializeCookie, unauthorized } from "./http.js";
 
 const COOKIE_NAME = "aciltimekg_admin_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 gün

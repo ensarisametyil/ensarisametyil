@@ -1,8 +1,8 @@
-import type { ApiRequest, ApiResponse } from "../_lib/http";
-import { badRequest, methodNotAllowed, ok, readJsonBody, serverError } from "../_lib/http";
-import { ensureSchema, query, withTransaction } from "../_lib/db";
-import { requireAuth } from "../_lib/auth";
-import { isDynamicCategory } from "../_lib/categories";
+import type { ApiRequest, ApiResponse } from "../_lib/http.js";
+import { badRequest, methodNotAllowed, ok, readJsonBody, serverError } from "../_lib/http.js";
+import { ensureSchema, query, withTransaction } from "../_lib/db.js";
+import { requireAuth } from "../_lib/auth.js";
+import { isDynamicCategory } from "../_lib/categories.js";
 
 interface ReorderBody {
   categorySlug?: string;
