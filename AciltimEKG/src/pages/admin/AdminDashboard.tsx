@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Lock, RefreshCcw } from "lucide-react";
 import { ekgTopics } from "../../data/rhythms";
 import { acilYaklasimlarTopics } from "../../data/algorithms";
+import { pediatriTopics } from "../../data/pediatricAlgorithms";
 import { getCategories, type PublicCategory } from "../../lib/api";
 import { CriticalNote } from "../../components/ui";
 
@@ -71,6 +72,16 @@ export function AdminDashboard() {
         </Link>
 
         <Link
+          to="/admin/pediatri"
+          className="group rounded-2xl border border-dashed border-line bg-card p-5 transition-colors hover:border-navy-500/40"
+        >
+          <p className="text-3xl font-extrabold text-heading">{pediatriTopics.length}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
+            <Lock className="h-3.5 w-3.5 shrink-0" /> Pediatri Algoritmalar (salt okunur)
+          </p>
+        </Link>
+
+        <Link
           to="/admin/ekg"
           className="group rounded-2xl border border-dashed border-line bg-card p-5 transition-colors hover:border-navy-500/40"
         >
@@ -86,7 +97,7 @@ export function AdminDashboard() {
         <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-ink-soft">
           <li>Bir kategori kartına dokunun, konu ekleyin/düzenleyin/silin, sırasını değiştirin.</li>
           <li>Yaptığınız her değişiklik, kaydettiğiniz anda siteye yansır — yeniden yayınlama gerekmez.</li>
-          <li>EKG ve Yetişkin Algoritmalar içerikleri sabit koddadır; yalnızca görüntülenebilir, düzenlenemez.</li>
+          <li>EKG, Yetişkin Algoritmalar ve Pediatri Algoritmalar içerikleri sabit koddadır; yalnızca görüntülenebilir, düzenlenemez.</li>
         </ul>
       </div>
     </div>

@@ -20,6 +20,7 @@ import {
 import { site } from "../data/site";
 import { systematicSteps, ekgTopics } from "../data/rhythms";
 import { acilYaklasimlarTopics } from "../data/algorithms";
+import { pediatriTopics } from "../data/pediatricAlgorithms";
 import { getCategories } from "../lib/api";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
@@ -53,7 +54,13 @@ function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
       description: "Sahne yönetiminden ileri yaşam desteğine, yetişkin hastada acil yaklaşım algoritmaları.",
       icon: ListChecks,
     },
-    { label: "Pediatri Algoritmalar", href: "/kategori/pediatri", count: counts["pediatri"] ?? 0, icon: Baby },
+    {
+      label: "Pediatri Algoritmalar",
+      href: "/kategori/pediatri",
+      count: pediatriTopics.length,
+      description: "Pediatrik hastaya özgü triyaj, resüsitasyon ve acil yaklaşım algoritmaları.",
+      icon: Baby,
+    },
     {
       label: "Doğum ve Yenidoğan",
       href: "/kategori/dogum-ve-yenidogan",
@@ -98,7 +105,10 @@ export function Home() {
   }, []);
   const infoAreaCards = buildInfoAreaCards(counts);
   const totalTopics =
-    ekgTopics.length + acilYaklasimlarTopics.length + Object.values(counts).reduce((sum, n) => sum + n, 0);
+    ekgTopics.length +
+    acilYaklasimlarTopics.length +
+    pediatriTopics.length +
+    Object.values(counts).reduce((sum, n) => sum + n, 0);
 
   return (
     <>

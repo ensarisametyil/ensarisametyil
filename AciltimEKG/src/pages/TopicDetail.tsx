@@ -6,6 +6,7 @@ import { isDynamicCategory } from "../lib/dynamicCategories";
 import { useMeta } from "../lib/useMeta";
 import { AlgorithmDetail } from "./AlgorithmDetail";
 import { AlgorithmTopicDetail } from "./AlgorithmTopicDetail";
+import { PediatricTopicDetail } from "./PediatricTopicDetail";
 import { DrugDetail } from "./DrugDetail";
 import { DynamicTopicDetail } from "./DynamicTopicDetail";
 import { CategoryNotFound, TopicNotFound } from "./NotFound";
@@ -19,6 +20,10 @@ export function TopicDetail() {
 
   if (categorySlug === "acil-yaklasimlar") {
     return <AlgorithmTopicDetail slug={slug} />;
+  }
+
+  if (categorySlug === "pediatri") {
+    return <PediatricTopicDetail slug={slug} />;
   }
 
   return <StaticTopicDetail categorySlug={categorySlug} slug={slug} />;

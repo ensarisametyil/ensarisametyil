@@ -3,7 +3,7 @@ import { methodNotAllowed, ok, serverError } from "./_lib/http.js";
 import { ensureSchema, query } from "./_lib/db.js";
 import { DYNAMIC_CATEGORIES } from "./_lib/categories.js";
 
-/** Public: list the 6 admin-managed categories with their live topic counts. */
+/** Public: list the database-backed categories with their live topic counts. */
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== "GET") return methodNotAllowed(res);
 
