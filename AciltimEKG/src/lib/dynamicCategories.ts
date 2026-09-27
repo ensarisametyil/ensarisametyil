@@ -1,8 +1,8 @@
 // Mirrors AciltimEKG/api/_lib/categories.ts (kept as a separate small constant
-// since the frontend build doesn't include the /api directory). EKG is
-// managed separately (static data, read-only in the admin for now).
+// since the frontend build doesn't include the /api directory). EKG and
+// Yetişkin Algoritmalar are managed separately (static data, read-only in
+// the admin) — see src/data/rhythms.ts and src/data/algorithms.ts.
 export const DYNAMIC_CATEGORIES = [
-  { slug: "acil-yaklasimlar", label: "Yetişkin Algoritmalar" },
   { slug: "pediatri", label: "Pediatri Algoritmalar" },
   { slug: "dogum-ve-yenidogan", label: "Doğum ve Yenidoğan" },
   { slug: "ilaclar", label: "İlaçlar" },

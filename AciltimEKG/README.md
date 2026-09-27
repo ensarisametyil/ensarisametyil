@@ -22,9 +22,9 @@ değişkeni gerektirir — bkz. `.env.example` ve `SETUP.md`.
 
 ## Yapı
 
-- `src/data/` — EKG ritim kütüphanesi ve arayüz metinleri (kaynaktan çıkarılan gerçek içerik, statik)
+- `src/data/` — EKG ritim kütüphanesi (`rhythms.ts`), Yetişkin Algoritmalar (`algorithms.ts`) ve arayüz metinleri — statik, veritabanı gerektirmez
 - `src/components/` — tasarım sistemi bileşenleri (Card, Badge, VisualPlaceholder, CommandPalette, Navbar, Footer…)
 - `src/pages/` — Ana Sayfa, EKG kütüphanesi, kategori/konu detay sayfaları, favoriler, 404 varyantları, yönetim paneli (`admin/`)
 - `src/context/` — favoriler ve admin oturumu (React context)
 - `api/` — yönetim paneli backend'i: kimlik doğrulama, konu CRUD/sıralama, görsel yükleme (Vercel Serverless Functions + Postgres + Vercel Blob)
-- `src/data/` altındaki 6 kategori (EKG hariç) artık veritabanından beslenir; EKG kütüphanesi kasıtlı olarak statik veri olarak kalır
+- 7 "Bilgi Alanları" kategorisinden 5'i (Pediatri, Doğum ve Yenidoğan, İlaçlar, Toksikoloji, Makaleler) veritabanından beslenir ve admin panelden yönetilir; EKG ve Yetişkin Algoritmalar kasıtlı olarak statik veri olarak kalır (admin panelde salt okunur gösterilir)

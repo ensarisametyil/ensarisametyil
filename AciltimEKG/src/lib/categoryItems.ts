@@ -1,6 +1,7 @@
 import type { CategorySlug } from "../data/categories";
 import { topicsByCategory } from "../data/topics";
 import { ekgTopics } from "../data/rhythms";
+import { acilYaklasimlarTopics } from "../data/algorithms";
 
 export interface CategoryCardItem {
   slug: string;
@@ -17,6 +18,10 @@ export interface CategoryCardItem {
  * is the EKG rhythm library, which the source models as a separate
  * top-level section (/ekg). Rather than leaving this category empty, it
  * surfaces that same real rhythm data so the category isn't a dead end.
+ *
+ * "Yetişkin Algoritmalar" (acil-yaklasimlar) is likewise static — its 53
+ * topics live in src/data/algorithms.ts, not the database, so this category
+ * needs no Postgres connection to display content.
  */
 export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[] {
   if (categorySlug === "ritimler") {
@@ -26,6 +31,15 @@ export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[]
       href: `/ekg/${t.slug}`,
       kindLabel: "Ritim",
       showWaveform: true,
+    }));
+  }
+  if (categorySlug === "acil-yaklasimlar") {
+    return acilYaklasimlarTopics.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      href: `/kategori/acil-yaklasimlar/${t.slug}`,
+      kindLabel: "Konu",
+      imageUrl: t.image,
     }));
   }
   return topicsByCategory(categorySlug).map((t) => ({

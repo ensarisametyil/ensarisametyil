@@ -8,8 +8,11 @@ import { DYNAMIC_CATEGORIES } from "../../lib/dynamicCategories";
 const navItems = [
   { to: "/admin", label: "Panel", end: true },
   ...DYNAMIC_CATEGORIES.map((c) => ({ to: `/admin/${c.slug}`, label: c.label, end: false })),
+  { to: "/admin/acil-yaklasimlar", label: "Yetişkin Algoritmalar (salt okunur)", end: false },
   { to: "/admin/ekg", label: "EKG (salt okunur)", end: false },
 ];
+
+const READ_ONLY_NAV_PATHS = new Set(["/admin/ekg", "/admin/acil-yaklasimlar"]);
 
 export function AdminLayout() {
   useMeta("Yönetim Paneli");
@@ -54,7 +57,7 @@ export function AdminLayout() {
               }
             >
               {item.to === "/admin" && <LayoutDashboard className="h-4 w-4 shrink-0" />}
-              {item.to === "/admin/ekg" && <Lock className="h-4 w-4 shrink-0" />}
+              {READ_ONLY_NAV_PATHS.has(item.to) && <Lock className="h-4 w-4 shrink-0" />}
               <span className="truncate">{item.label}</span>
             </NavLink>
           ))}

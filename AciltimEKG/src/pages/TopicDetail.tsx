@@ -5,6 +5,7 @@ import { findDrug } from "../data/drugs";
 import { isDynamicCategory } from "../lib/dynamicCategories";
 import { useMeta } from "../lib/useMeta";
 import { AlgorithmDetail } from "./AlgorithmDetail";
+import { AlgorithmTopicDetail } from "./AlgorithmTopicDetail";
 import { DrugDetail } from "./DrugDetail";
 import { DynamicTopicDetail } from "./DynamicTopicDetail";
 import { CategoryNotFound, TopicNotFound } from "./NotFound";
@@ -14,6 +15,10 @@ export function TopicDetail() {
 
   if (isDynamicCategory(categorySlug)) {
     return <DynamicTopicDetail categorySlug={categorySlug} slug={slug} />;
+  }
+
+  if (categorySlug === "acil-yaklasimlar") {
+    return <AlgorithmTopicDetail slug={slug} />;
   }
 
   return <StaticTopicDetail categorySlug={categorySlug} slug={slug} />;

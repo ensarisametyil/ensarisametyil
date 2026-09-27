@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { site } from "../data/site";
 import { systematicSteps, ekgTopics } from "../data/rhythms";
+import { acilYaklasimlarTopics } from "../data/algorithms";
 import { getCategories } from "../lib/api";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
@@ -48,7 +49,8 @@ function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
     {
       label: "Yetişkin Algoritmalar",
       href: "/kategori/acil-yaklasimlar",
-      count: counts["acil-yaklasimlar"] ?? 0,
+      count: acilYaklasimlarTopics.length,
+      description: "Sahne yönetiminden ileri yaşam desteğine, yetişkin hastada acil yaklaşım algoritmaları.",
       icon: ListChecks,
     },
     { label: "Pediatri Algoritmalar", href: "/kategori/pediatri", count: counts["pediatri"] ?? 0, icon: Baby },
@@ -95,7 +97,8 @@ export function Home() {
     };
   }, []);
   const infoAreaCards = buildInfoAreaCards(counts);
-  const totalTopics = ekgTopics.length + Object.values(counts).reduce((sum, n) => sum + n, 0);
+  const totalTopics =
+    ekgTopics.length + acilYaklasimlarTopics.length + Object.values(counts).reduce((sum, n) => sum + n, 0);
 
   return (
     <>

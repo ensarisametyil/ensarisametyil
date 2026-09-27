@@ -14,6 +14,7 @@ import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminEkgReadOnly } from "./pages/admin/AdminEkgReadOnly";
+import { AdminAlgorithmsReadOnly } from "./pages/admin/AdminAlgorithmsReadOnly";
 import { CategoryTopics } from "./pages/admin/CategoryTopics";
 import { TopicForm } from "./pages/admin/TopicForm";
 
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="ekg" element={<AdminEkgReadOnly />} />
+          <Route path="acil-yaklasimlar" element={<AdminAlgorithmsReadOnly />} />
           <Route path=":categorySlug" element={<CategoryTopics />} />
           <Route path=":categorySlug/yeni" element={<TopicForm />} />
           <Route path=":categorySlug/:topicSlug/duzenle" element={<TopicForm />} />
