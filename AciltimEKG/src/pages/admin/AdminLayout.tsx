@@ -10,10 +10,16 @@ const navItems = [
   ...DYNAMIC_CATEGORIES.map((c) => ({ to: `/admin/${c.slug}`, label: c.label, end: false })),
   { to: "/admin/acil-yaklasimlar", label: "Yetişkin Algoritmalar (salt okunur)", end: false },
   { to: "/admin/pediatri", label: "Pediatri Algoritmalar (salt okunur)", end: false },
+  { to: "/admin/dogum-ve-yenidogan", label: "Doğum ve Yenidoğan (salt okunur)", end: false },
   { to: "/admin/ekg", label: "EKG (salt okunur)", end: false },
 ];
 
-const READ_ONLY_NAV_PATHS = new Set(["/admin/ekg", "/admin/acil-yaklasimlar", "/admin/pediatri"]);
+const READ_ONLY_NAV_PATHS = new Set([
+  "/admin/ekg",
+  "/admin/acil-yaklasimlar",
+  "/admin/pediatri",
+  "/admin/dogum-ve-yenidogan",
+]);
 
 export function AdminLayout() {
   useMeta("Yönetim Paneli");

@@ -1,10 +1,10 @@
 // The 7 fixed "Bilgi Alanları" categories. EKG (src/data/rhythms.ts),
-// Yetişkin Algoritmalar (src/data/algorithms.ts) and Pediatri Algoritmalar
-// (src/data/pediatricAlgorithms.ts) are managed separately as static
-// frontend data, untouched by this admin system — the other 4 are backed
-// by the database and manageable here.
+// Yetişkin Algoritmalar (src/data/algorithms.ts), Pediatri Algoritmalar
+// (src/data/pediatricAlgorithms.ts) and Doğum ve Yenidoğan
+// (src/data/dogumVeYenidogan.ts) are managed separately as static frontend
+// data, untouched by this admin system — the other 3 are backed by the
+// database and manageable here.
 export const DYNAMIC_CATEGORIES = [
-  { slug: "dogum-ve-yenidogan", label: "Doğum ve Yenidoğan" },
   { slug: "ilaclar", label: "İlaçlar" },
   { slug: "toksikoloji", label: "Toksikoloji" },
   { slug: "makaleler", label: "Makaleler" },

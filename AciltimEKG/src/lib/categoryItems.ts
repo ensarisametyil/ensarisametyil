@@ -3,6 +3,7 @@ import { topicsByCategory } from "../data/topics";
 import { ekgTopics } from "../data/rhythms";
 import { acilYaklasimlarTopics } from "../data/algorithms";
 import { pediatriTopics } from "../data/pediatricAlgorithms";
+import { dogumVeYenidoganTopics } from "../data/dogumVeYenidogan";
 
 export interface CategoryCardItem {
   slug: string;
@@ -20,10 +21,12 @@ export interface CategoryCardItem {
  * top-level section (/ekg). Rather than leaving this category empty, it
  * surfaces that same real rhythm data so the category isn't a dead end.
  *
- * "Yetişkin Algoritmalar" (acil-yaklasimlar) and "Pediatri Algoritmalar"
- * (pediatri) are likewise static — their topics live in src/data/algorithms.ts
- * and src/data/pediatricAlgorithms.ts, not the database, so these categories
- * need no Postgres connection to display content.
+ * "Yetişkin Algoritmalar" (acil-yaklasimlar), "Pediatri Algoritmalar"
+ * (pediatri) and "Doğum ve Yenidoğan" (dogum-ve-yenidogan) are likewise
+ * static — their topics live in src/data/algorithms.ts,
+ * src/data/pediatricAlgorithms.ts and src/data/dogumVeYenidogan.ts, not the
+ * database, so these categories need no Postgres connection to display
+ * content.
  */
 export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[] {
   if (categorySlug === "ritimler") {
@@ -49,6 +52,15 @@ export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[]
       slug: t.slug,
       title: t.title,
       href: `/kategori/pediatri/${t.slug}`,
+      kindLabel: "Konu",
+      imageUrl: t.image,
+    }));
+  }
+  if (categorySlug === "dogum-ve-yenidogan") {
+    return dogumVeYenidoganTopics.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      href: `/kategori/dogum-ve-yenidogan/${t.slug}`,
       kindLabel: "Konu",
       imageUrl: t.image,
     }));

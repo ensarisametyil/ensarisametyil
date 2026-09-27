@@ -21,6 +21,7 @@ import { site } from "../data/site";
 import { systematicSteps, ekgTopics } from "../data/rhythms";
 import { acilYaklasimlarTopics } from "../data/algorithms";
 import { pediatriTopics } from "../data/pediatricAlgorithms";
+import { dogumVeYenidoganTopics } from "../data/dogumVeYenidogan";
 import { getCategories } from "../lib/api";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
@@ -64,7 +65,8 @@ function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
     {
       label: "Doğum ve Yenidoğan",
       href: "/kategori/dogum-ve-yenidogan",
-      count: counts["dogum-ve-yenidogan"] ?? 0,
+      count: dogumVeYenidoganTopics.length,
+      description: "Saha doğumu, doğum komplikasyonları ve yenidoğan canlandırması.",
       icon: HeartHandshake,
     },
     { label: "İlaçlar", href: "/kategori/ilaclar", count: counts["ilaclar"] ?? 0, icon: Pill },
@@ -108,6 +110,7 @@ export function Home() {
     ekgTopics.length +
     acilYaklasimlarTopics.length +
     pediatriTopics.length +
+    dogumVeYenidoganTopics.length +
     Object.values(counts).reduce((sum, n) => sum + n, 0);
 
   return (
