@@ -50,7 +50,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "mucinac",
     order: 1,
-    title: "Mucinac",
+    title: "Mucinac (Asetilsistein)",
     genericName: "Asetilsistein",
     dose: "300 mg / 3 mL",
     image: "/drugs/ilaclar/mucinac.jpg",
@@ -97,7 +97,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "adozin",
     order: 2,
-    title: "Adozin",
+    title: "Adozin (Adenozin)",
     genericName: "Adenozin",
     dose: "10 mg / 2 mL",
     image: "/drugs/ilaclar/adozin.jpg",
@@ -144,7 +144,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "diapam",
     order: 3,
-    title: "Diapam",
+    title: "Diapam (Diazepam)",
     genericName: "Diazepam",
     dose: "10 mg / 2 mL",
     image: "/drugs/ilaclar/diapam.jpg",
@@ -191,7 +191,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "dramamine",
     order: 4,
-    title: "Dramamine",
+    title: "Dramamine (Dimenhidrinat)",
     genericName: "Dimenhidrinat",
     dose: "50 mg / mL",
     image: "/drugs/ilaclar/dramamine.jpg",
@@ -238,7 +238,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "cordarone",
     order: 5,
-    title: "Cordarone",
+    title: "Cordarone (Amiodaron HCl)",
     genericName: "Amiodaron HCl",
     dose: "150 mg / 3 mL",
     image: "/drugs/ilaclar/cordarone.jpg",
@@ -332,7 +332,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "diltizem-l",
     order: 7,
-    title: "Diltizem-L",
+    title: "Diltizem-L (Diltiazem HCl)",
     genericName: "Diltiazem HCl",
     dose: "25 mg",
     image: "/drugs/ilaclar/diltizem-l.jpg",
@@ -379,7 +379,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "dopadren",
     order: 8,
-    title: "Dopadren",
+    title: "Dopadren (Dopamin HCl)",
     genericName: "Dopamin HCl",
     dose: "200 mg / 5 mL",
     image: "/drugs/ilaclar/dopadren.jpg",
@@ -426,7 +426,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "adrenaline",
     order: 9,
-    title: "Adrenaline",
+    title: "Adrenaline (Epinefrin)",
     genericName: "Epinefrin (Adrenalin)",
     dose: "1 mg / 1 mL",
     image: "/drugs/ilaclar/adrenaline.jpg",
@@ -473,7 +473,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "talinat",
     order: 10,
-    title: "Talinat",
+    title: "Talinat (Fentanil Sitrat)",
     genericName: "Fentanil Sitrat",
     dose: "0,5 mg / 10 mL",
     image: "/drugs/ilaclar/talinat.jpg",
@@ -520,7 +520,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "mazenil",
     order: 11,
-    title: "Mazenil",
+    title: "Mazenil (Flumazenil)",
     genericName: "Flumazenil",
     dose: "0,5 mg / 5 mL",
     image: "/drugs/ilaclar/mazenil.jpg",
@@ -567,7 +567,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "epitoin",
     order: 12,
-    title: "Epitoin",
+    title: "Epitoin (Fenitoin Sodyum)",
     genericName: "Fenitoin Sodyum",
     dose: "250 mg / 5 mL",
     image: "/drugs/ilaclar/epitoin.jpg",
@@ -614,7 +614,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "lasix",
     order: 13,
-    title: "Lasix",
+    title: "Lasix (Furosemid Sodyum)",
     genericName: "Furosemid Sodyum",
     dose: "20 mg / 2 mL",
     image: "/drugs/ilaclar/lasix.jpg",
@@ -661,7 +661,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "coraspin-300",
     order: 14,
-    title: "Coraspin 300",
+    title: "Coraspin 300 (Asetilsalisilik Asit)",
     genericName: "Asetilsalisilik Asit",
     dose: "300 mg",
     image: "/drugs/ilaclar/coraspin-300.jpg",
@@ -708,7 +708,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "aritmal-2",
     order: 15,
-    title: "Aritmal %2",
+    title: "Aritmal %2 (Lidokain HCl)",
     genericName: "Lidokain HCl",
     dose: "100 mg / 5 mL",
     image: "/drugs/ilaclar/aritmal-2.jpg",
@@ -802,7 +802,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "beloc",
     order: 17,
-    title: "Beloc",
+    title: "Beloc (Metoprolol Tartrat)",
     genericName: "Metoprolol Tartrat",
     dose: "5 mg / 5 mL",
     image: "/drugs/ilaclar/beloc.jpg",
@@ -849,7 +849,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "metpamid",
     order: 18,
-    title: "Metpamid",
+    title: "Metpamid (Metoklopramid HCl)",
     genericName: "Metoklopramid HCl",
     dose: "10 mg / 2 mL",
     image: "/drugs/ilaclar/metpamid.jpg",
@@ -896,7 +896,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "meticure",
     order: 19,
-    title: "Meticure",
+    title: "Meticure (Metilprednizolon Sodyum Süksinat)",
     genericName: "Metilprednizolon Sodyum Süksinat",
     dose: "40 mg",
     image: "/drugs/ilaclar/meticure.jpg",
@@ -943,7 +943,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "dormicum",
     order: 20,
-    title: "Dormicum",
+    title: "Dormicum (Midazolam)",
     genericName: "Midazolam",
     dose: "5 mg / 5 mL (ayrıca 15 mg/3 mL ve 50 mg/10 mL formları mevcut)",
     image: "/drugs/ilaclar/dormicum.jpg",
@@ -990,7 +990,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "naloxone",
     order: 21,
-    title: "Naloxone",
+    title: "Naloxone (Naloksan Hidroklorür)",
     genericName: "Naloksan Hidroklorür",
     dose: "0,4 mg / mL",
     image: "/drugs/ilaclar/naloxone.jpg",
@@ -1037,7 +1037,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "perlinganit",
     order: 22,
-    title: "Perlinganit",
+    title: "Perlinganit (Gliseril Trinitrat)",
     genericName: "Gliseril Trinitrat",
     dose: "10 mg / 10 mL",
     image: "/drugs/ilaclar/perlinganit.jpg",
@@ -1084,7 +1084,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "zofer",
     order: 23,
-    title: "Zofer",
+    title: "Zofer (Ondansetron)",
     genericName: "Ondansetron",
     dose: "8 mg / 4 mL",
     image: "/drugs/ilaclar/zofer.jpg",
@@ -1131,7 +1131,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "progas",
     order: 24,
-    title: "Progas",
+    title: "Progas (Pantoprazol)",
     genericName: "Pantoprazol",
     dose: "40 mg",
     image: "/drugs/ilaclar/progas.jpg",
@@ -1225,7 +1225,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "avil",
     order: 26,
-    title: "Avil",
+    title: "Avil (Feniramin Maleat)",
     genericName: "Feniramin Maleat",
     dose: "45,5 mg / 2 mL",
     image: "/drugs/ilaclar/avil.jpg",
@@ -1272,7 +1272,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "dekort",
     order: 27,
-    title: "Dekort",
+    title: "Dekort (Deksametazon)",
     genericName: "Deksametazon",
     dose: "8 mg / 2 mL",
     image: "/drugs/ilaclar/dekort.jpg",
@@ -1319,7 +1319,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "isordil",
     order: 28,
-    title: "İsordil",
+    title: "İsordil (İzosorbid Dinitrat)",
     genericName: "İzosorbid Dinitrat",
     dose: "5 mg (dilaltı tablet)",
     image: "/drugs/ilaclar/isordil.jpg",
@@ -1365,7 +1365,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "buscopan",
     order: 29,
-    title: "Buscopan",
+    title: "Buscopan (Hiyosin-N-Butil Bromür)",
     genericName: "Hiyosin-N-Butil Bromür",
     dose: "20 mg / mL",
     image: "/drugs/ilaclar/buscopan.jpg",
@@ -1412,7 +1412,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "novalgin",
     order: 30,
-    title: "Novalgin",
+    title: "Novalgin (Metamizol Sodyum)",
     genericName: "Metamizol Sodyum",
     dose: "1 g / 2 mL",
     image: "/drugs/ilaclar/novalgin.jpg",
@@ -1459,7 +1459,7 @@ export const ilaclarTopics: IlacTopic[] = [
   {
     slug: "nitrolingual-pompspray",
     order: 31,
-    title: "Nitrolingual Pompspray",
+    title: "Nitrolingual Pompspray (Nitrogliserin)",
     genericName: "Nitrogliserin",
     dose: "0,4 mg / doz",
     image: "/drugs/ilaclar/nitrolingual-pompspray.jpg",

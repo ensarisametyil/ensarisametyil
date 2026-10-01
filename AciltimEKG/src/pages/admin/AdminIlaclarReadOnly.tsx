@@ -17,10 +17,7 @@ export function AdminIlaclarReadOnly() {
           <li key={topic.slug} className="flex items-center gap-3 px-4 py-3 sm:px-5">
             <span className="w-7 shrink-0 text-right text-xs font-bold text-ink-faint">{index + 1}</span>
             <img src={topic.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
-            <div className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-heading">{topic.title}</span>
-              <span className="block truncate text-xs text-ink-faint">{topic.genericName}</span>
-            </div>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-heading">{topic.title}</span>
           </li>
         ))}
       </ul>

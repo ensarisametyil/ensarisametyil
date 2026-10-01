@@ -28,7 +28,7 @@ export function IlacDetail({ slug }: { slug: string }) {
   const category = categoryMap["ilaclar"];
   const topic = findIlacTopic(slug);
 
-  useMeta(topic ? `${topic.title} (${topic.genericName})` : category.label);
+  useMeta(topic ? topic.title : category.label);
 
   const href = `/kategori/ilaclar/${slug}`;
   useRecordView(
@@ -67,9 +67,7 @@ export function IlacDetail({ slug }: { slug: string }) {
             <div>
               <Badge>{category.label}</Badge>
               <h1 className="mt-3 text-3xl font-extrabold text-heading sm:text-4xl">{topic.title}</h1>
-              <p className="mt-1.5 text-sm font-semibold text-ink-soft">
-                {topic.genericName} · {topic.dose}
-              </p>
+              <p className="mt-1.5 text-sm font-semibold text-ink-soft">{topic.dose}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <ShareButton title={topic.title} />
