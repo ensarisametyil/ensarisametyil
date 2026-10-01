@@ -109,55 +109,18 @@ export const ekgTopics: EkgTopic[] = [
     order: 4,
     title: "EKG Yorumlama Basamakları",
     image: "/ekg/ekg-yorumlama-basamaklari.png",
-    definition: "EKG'nin sistematik ve atlanmadan değerlendirilmesi için izlenen 10 basamaklı yaklaşımdır.",
+    definition: "EKG'nin sistematik ve atlanmadan değerlendirilmesi için izlenen, sırası kesinlikle değiştirilmeyen 10 basamaklı yaklaşımdır.",
     sections: [
-      {
-        heading: "1 · Hızı Değerlendir",
-        items: [
-          "Kalp hızını belirle.",
-          "300 – 150 – 100 – 75 – 60 – 50 yöntemi veya 6 saniyedeki QRS sayısı × 10.",
-          "Normal: 60–100/dk · Bradikardi: <60/dk · Taşikardi: >100/dk",
-        ],
-      },
-      {
-        heading: "2 · Ritmi Değerlendir",
-        items: ["Ritim düzenli mi, düzensiz mi?", "R-R aralıklarına bak.", "Düzenli: aralıklar eşit. Düzensiz: aralıklar değişken."],
-      },
-      {
-        heading: "3 · P Dalgasını İncele",
-        items: ["P dalgası var mı?", "Her QRS öncesinde P dalgası var mı?", "P dalgalarının morfolojisi normal mi?", "Atriyal aktiviteyi değerlendir."],
-      },
-      {
-        heading: "4 · PR Aralığını Ölç",
-        items: ["P başlangıcı ile QRS başlangıcı arasındaki süre.", "Normal: 0,12–0,20 sn (3–5 küçük kare)"],
-      },
-      {
-        heading: "5 · QRS Süresini İncele",
-        items: ["QRS geniş mi, dar mı?", "Normal (dar): <0,12 sn (≥3 küçük kare)", "Geniş: ≥0,12 sn (>3 küçük kare)"],
-      },
-      {
-        heading: "6 · Aksı Değerlendir",
-        items: ["Elektriksel aks normal mi?", "Normal aks: −30° ile +90° arası."],
-      },
-      {
-        heading: "7 · Dalgaları İncele",
-        items: ["P, Q, R, S, T dalgalarını değerlendir.", "P: atriyal depolarizasyon.", "QRS: ventriküler depolarizasyon.", "T: ventriküler repolarizasyon."],
-      },
-      {
-        heading: "8 · QT Aralığını Ölç",
-        items: ["QRS başlangıcı ile T bitişi arasındaki süre.", "QTc (düzeltilmiş QT) normal: <440 ms (erkek), <460 ms (kadın)"],
-      },
-      {
-        heading: "9 · Patolojik Bulguları Ara",
-        items: [
-          "ST segment değişiklikleri, T dalga anormallikleri, patolojik Q dalgaları, dal bloğu bulguları, hipertrofi kriterleri, iskemik değişiklikler.",
-          "Normal dışı her bulguyu sistematik olarak değerlendir.",
-        ],
-      },
-      {
-        heading: "10 · Genel Yorum Yap",
-        items: ["Tüm bulguları birleştir.", "Ritmi tanımla.", "Eşlik eden patolojileri belirt.", "Klinik ile korele et.", "Acil durumları öngör."],
-      },
+      { heading: "Adım 1", items: ["Kalibrasyon 25 mm/s, 10 mm/mV ayarında mı?"] },
+      { heading: "Adım 2", items: ["aVR derivasyonunda bütün dalgalar negatif mi, pozitif mi?"] },
+      { heading: "Adım 3", items: ["Ritim düzenli mi, düzensiz mi?"] },
+      { heading: "Adım 4", items: ["Ventriküler hız 60-100 arasında mı?"] },
+      { heading: "Adım 5", items: ["P dalgası var mı? Morfolojisi normal mi?"] },
+      { heading: "Adım 6", items: ["Her P dalgasını bir QRS kompleksi takip ediyor mu?"] },
+      { heading: "Adım 7", items: ["PR mesafesi 0.20 saniye altında mı?"] },
+      { heading: "Adım 8", items: ["QRS 0.12 saniye altında mı, üzerinde mi? (Dar mı, geniş mi?)"] },
+      { heading: "Adım 9", items: ["ST segmenti izoelektrik hatta mı? (Elevasyon veya depresyon var mı?)"] },
+      { heading: "Adım 10", items: ["T dalgası aVR ve V1 dışında pozitif mi?"] },
     ],
   },
   {
