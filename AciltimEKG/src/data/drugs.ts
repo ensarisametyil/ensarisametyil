@@ -29,7 +29,7 @@ export interface DrugProfile {
   criticalNotes: { heading: string; text: string; placeholder?: boolean }[];
   usageNote?: string;
   /** Categories to pull "İlişkili Algoritmalar" from — derived from the drug's real clinical context (e.g. Amiodaron → Kardiyoloji), not invented per-item links. */
-  relatedCategorySlugs: ("acil-yaklasimlar" | "kardiyoloji" | "toksikoloji" | "pediatri")[];
+  relatedCategorySlugs: ("acil-yaklasimlar" | "kardiyoloji" | "pediatri")[];
 }
 
 // İlaçlar kategorisi şu an kasıtlı olarak BOŞTUR — bu görev kapsamında

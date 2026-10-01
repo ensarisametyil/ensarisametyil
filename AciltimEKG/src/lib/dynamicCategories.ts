@@ -4,11 +4,9 @@
 // İlaçlar are managed separately (static data, read-only in the admin) —
 // see src/data/rhythms.ts, src/data/algorithms.ts,
 // src/data/pediatricAlgorithms.ts, src/data/dogumVeYenidogan.ts and
-// src/data/ilaclar.ts.
-export const DYNAMIC_CATEGORIES = [
-  { slug: "toksikoloji", label: "Toksikoloji" },
-  { slug: "makaleler", label: "Makaleler" },
-] as const;
+// src/data/ilaclar.ts. "Toksikoloji" was removed from here by request —
+// see the matching comment in api/_lib/categories.ts.
+export const DYNAMIC_CATEGORIES = [{ slug: "makaleler", label: "Makaleler" }] as const;
 
 export type DynamicCategorySlug = (typeof DYNAMIC_CATEGORIES)[number]["slug"];
 

@@ -13,7 +13,6 @@ import {
   Baby,
   HeartHandshake,
   Pill,
-  FlaskConical,
   Newspaper,
   type LucideIcon,
 } from "lucide-react";
@@ -77,7 +76,6 @@ function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
       description: "Sahada en sık kullanılan ilaçlar için doz, endikasyon ve dikkat noktalarını içeren hızlı referans kartları.",
       icon: Pill,
     },
-    { label: "Toksikoloji", href: "/kategori/toksikoloji", count: counts["toksikoloji"] ?? 0, icon: FlaskConical },
     { label: "Makaleler", href: "/kategori/makaleler", count: counts["makaleler"] ?? 0, icon: Newspaper },
   ];
 }
@@ -133,12 +131,17 @@ export function Home() {
         </div>
         <div className="container-page relative py-20 sm:py-28">
           <div className="reveal max-w-2xl">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">
-              {site.instructor} · {site.audience}
-            </p>
-            <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-white [text-shadow:0_4px_24px_rgba(34,211,238,0.35)] sm:text-6xl md:text-7xl lg:text-8xl">
-              {site.heroKicker}
-            </h1>
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">{site.audience}</p>
+            <div className="flex flex-wrap items-center gap-5">
+              <img
+                src="/logo.png"
+                alt={`${site.brandLine1} · ${site.instructor}`}
+                className="h-16 w-16 shrink-0 rounded-full object-cover shadow-xl sm:h-20 sm:w-20 md:h-28 md:w-28 lg:h-32 lg:w-32"
+              />
+              <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-white [text-shadow:0_4px_24px_rgba(34,211,238,0.35)] sm:text-6xl md:text-7xl lg:text-8xl">
+                {site.heroKicker}
+              </h1>
+            </div>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">{site.heroLead}</p>
 
             <div className="mt-6 flex flex-wrap gap-2.5">

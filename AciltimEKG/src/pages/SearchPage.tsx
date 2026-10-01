@@ -16,7 +16,6 @@ const filters: { value: FilterValue; label: string }[] = [
   { value: "rhythm", label: "Ritimler" },
   { value: "kardiyoloji", label: "Kardiyoloji" },
   { value: "travma", label: "Travma" },
-  { value: "toksikoloji", label: "Toksikoloji" },
   { value: "article", label: "Makaleler" },
 ];
 

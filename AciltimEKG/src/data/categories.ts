@@ -6,7 +6,6 @@ export type CategorySlug =
   | "ritimler"
   | "kardiyoloji"
   | "travma"
-  | "toksikoloji"
   | "makaleler";
 
 export interface Category {
@@ -20,6 +19,12 @@ export interface Category {
 // application's route configuration. Descriptions are short, neutral scope
 // summaries derived from the topics actually filed under each category below —
 // no clinical claims are made here.
+//
+// "Toksikoloji" is intentionally absent here — it was removed from site
+// navigation/visibility by request, but its rows in the `topics` table
+// (api/_lib/db.ts) are untouched, so re-adding the slug/label here restores
+// it with no data loss. With no entry in this map, categoryMap["toksikoloji"]
+// is undefined and CategoryHub renders CategoryNotFound for that route.
 export const categories: Category[] = [
   {
     slug: "acil-yaklasimlar",
@@ -55,11 +60,6 @@ export const categories: Category[] = [
     slug: "travma",
     label: "Travma",
     description: "Travmalı hastada olgu yönetimi, yanıklar ve çevresel travma yaklaşımları.",
-  },
-  {
-    slug: "toksikoloji",
-    label: "Toksikoloji",
-    description: "Zehirlenme, doz aşımı ve toksik ajan yönetimi algoritmaları.",
   },
   {
     slug: "makaleler",

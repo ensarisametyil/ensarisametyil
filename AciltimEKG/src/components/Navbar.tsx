@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Menu, X, Search, Star, ChevronDown, Activity } from "lucide-react";
+import { Menu, X, Search, Star, ChevronDown } from "lucide-react";
 import { categories } from "../data/categories";
 import { site } from "../data/site";
 import { cn } from "../lib/cn";
@@ -14,9 +14,7 @@ export function Navbar({ onOpenSearch }: { onOpenSearch: () => void }) {
     <header className="sticky top-0 z-40 border-b border-line bg-card/85 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setMobileOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-navy-700 to-cyan-600 text-white shadow-sm">
-            <Activity className="h-5 w-5" strokeWidth={2.25} />
-          </span>
+          <img src="/logo.png" alt="" className="h-10 w-10 shrink-0 rounded-full object-cover shadow-sm" />
           <span className="flex flex-col leading-none">
             <span className="text-[13px] font-extrabold tracking-tight text-heading">{site.brandLine1}</span>
             <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{site.brandLine2}</span>
