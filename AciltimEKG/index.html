@@ -11,6 +11,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
     <title>ACİLTİMEKG — Hastane Öncesi Acil Tıp ve EKG Hızlı Referansı</title>
+    <!--
+      NOT: Bu script'in içeriği değişirse vercel.json'daki Content-Security-Policy
+      script-src kuralındaki sha256 hash'i de güncellenmeli, yoksa tarayıcı
+      script'i engeller (sayfa yine çalışır, sadece tema geçişi anlık olmaz).
+    -->
     <script>
       // Applied before paint to avoid a light/dark flash on load.
       (function () {

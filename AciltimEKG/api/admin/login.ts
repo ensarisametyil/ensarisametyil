@@ -1,7 +1,14 @@
 import bcrypt from "bcryptjs";
 import type { ApiRequest, ApiResponse } from "../_lib/http.js";
-import { badRequest, methodNotAllowed, ok, readJsonBody, serverError, unauthorized } from "../_lib/http.js";
+import { badRequest, methodNotAllowed, ok, readJsonBody, serverError, tooManyRequests, unauthorized } from "../_lib/http.js";
 import { setSessionCookie } from "../_lib/auth.js";
+import {
+  checkLoginLock,
+  ensureLoginAttemptsSchema,
+  getClientIp,
+  recordLoginFailure,
+  recordLoginSuccess,
+} from "../_lib/rateLimit.js";
 
 interface LoginBody {
   username?: string;
@@ -12,6 +19,18 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== "POST") return methodNotAllowed(res);
 
   try {
+    await ensureLoginAttemptsSchema();
+    const ip = getClientIp(req);
+
+    const lock = await checkLoginLock(ip);
+    if (lock.locked) {
+      return tooManyRequests(
+        res,
+        `Çok fazla başarısız giriş denemesi. ${Math.ceil(lock.retryAfterSeconds / 60)} dakika sonra tekrar deneyin.`,
+        lock.retryAfterSeconds,
+      );
+    }
+
     const { username, password } = await readJsonBody<LoginBody>(req);
     if (!username || !password) return badRequest(res, "Kullanıcı adı ve şifre gerekli.");
 
@@ -26,9 +45,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const passwordMatches = await bcrypt.compare(password, expectedHash);
 
     if (!usernameMatches || !passwordMatches) {
+      await recordLoginFailure(ip);
       return unauthorized(res, "Kullanıcı adı veya şifre hatalı.");
     }
 
+    await recordLoginSuccess(ip);
     setSessionCookie(res, username);
     return ok(res, { ok: true, username });
   } catch (err) {

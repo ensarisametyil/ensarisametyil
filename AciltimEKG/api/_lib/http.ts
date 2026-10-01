@@ -16,7 +16,14 @@ export type ApiResponse = ServerResponse;
 
 export function send(res: ApiResponse, status: number, body: unknown, headers: Record<string, string> = {}) {
   const payload = typeof body === "string" ? body : JSON.stringify(body);
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", ...headers });
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    // Defense-in-depth: the page-level headers (CSP etc.) live in vercel.json,
+    // but this one is cheap to set on every API response too, in both local
+    // dev and production, regardless of how the route is reached.
+    "X-Content-Type-Options": "nosniff",
+    ...headers,
+  });
   res.end(payload);
 }
 
@@ -38,6 +45,10 @@ export function notFound(res: ApiResponse, message = "Bulunamadı.") {
 
 export function methodNotAllowed(res: ApiResponse) {
   send(res, 405, { error: "Yöntem desteklenmiyor." });
+}
+
+export function tooManyRequests(res: ApiResponse, message: string, retryAfterSeconds: number) {
+  send(res, 429, { error: message }, { "Retry-After": String(retryAfterSeconds) });
 }
 
 export function serverError(res: ApiResponse, err: unknown) {
