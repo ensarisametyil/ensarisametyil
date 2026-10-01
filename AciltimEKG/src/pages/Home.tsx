@@ -22,6 +22,7 @@ import { systematicSteps, ekgTopics } from "../data/rhythms";
 import { acilYaklasimlarTopics } from "../data/algorithms";
 import { pediatriTopics } from "../data/pediatricAlgorithms";
 import { dogumVeYenidoganTopics } from "../data/dogumVeYenidogan";
+import { ilaclarTopics } from "../data/ilaclar";
 import { getCategories } from "../lib/api";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { EkgMark } from "../components/EkgMark";
@@ -69,7 +70,13 @@ function buildInfoAreaCards(counts: Record<string, number>): InfoAreaCard[] {
       description: "Saha doğumu, doğum komplikasyonları ve yenidoğan canlandırması.",
       icon: HeartHandshake,
     },
-    { label: "İlaçlar", href: "/kategori/ilaclar", count: counts["ilaclar"] ?? 0, icon: Pill },
+    {
+      label: "İlaçlar",
+      href: "/kategori/ilaclar",
+      count: ilaclarTopics.length,
+      description: "Sahada en sık kullanılan ilaçlar için doz, endikasyon ve dikkat noktalarını içeren hızlı referans kartları.",
+      icon: Pill,
+    },
     { label: "Toksikoloji", href: "/kategori/toksikoloji", count: counts["toksikoloji"] ?? 0, icon: FlaskConical },
     { label: "Makaleler", href: "/kategori/makaleler", count: counts["makaleler"] ?? 0, icon: Newspaper },
   ];
@@ -111,6 +118,7 @@ export function Home() {
     acilYaklasimlarTopics.length +
     pediatriTopics.length +
     dogumVeYenidoganTopics.length +
+    ilaclarTopics.length +
     Object.values(counts).reduce((sum, n) => sum + n, 0);
 
   return (
@@ -128,7 +136,7 @@ export function Home() {
             <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">
               {site.instructor} · {site.audience}
             </p>
-            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">
+            <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-white [text-shadow:0_4px_24px_rgba(34,211,238,0.35)] sm:text-6xl md:text-7xl lg:text-8xl">
               {site.heroKicker}
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">{site.heroLead}</p>

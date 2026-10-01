@@ -17,6 +17,7 @@ import { AdminEkgReadOnly } from "./pages/admin/AdminEkgReadOnly";
 import { AdminAlgorithmsReadOnly } from "./pages/admin/AdminAlgorithmsReadOnly";
 import { AdminPediatricReadOnly } from "./pages/admin/AdminPediatricReadOnly";
 import { AdminDogumReadOnly } from "./pages/admin/AdminDogumReadOnly";
+import { AdminIlaclarReadOnly } from "./pages/admin/AdminIlaclarReadOnly";
 import { CategoryTopics } from "./pages/admin/CategoryTopics";
 import { TopicForm } from "./pages/admin/TopicForm";
 
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="acil-yaklasimlar" element={<AdminAlgorithmsReadOnly />} />
           <Route path="pediatri" element={<AdminPediatricReadOnly />} />
           <Route path="dogum-ve-yenidogan" element={<AdminDogumReadOnly />} />
+          <Route path="ilaclar" element={<AdminIlaclarReadOnly />} />
           <Route path=":categorySlug" element={<CategoryTopics />} />
           <Route path=":categorySlug/yeni" element={<TopicForm />} />
           <Route path=":categorySlug/:topicSlug/duzenle" element={<TopicForm />} />

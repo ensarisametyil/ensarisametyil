@@ -1,11 +1,11 @@
 // Mirrors AciltimEKG/api/_lib/categories.ts (kept as a separate small constant
 // since the frontend build doesn't include the /api directory). EKG,
-// Yetişkin Algoritmalar, Pediatri Algoritmalar and Doğum ve Yenidoğan are
-// managed separately (static data, read-only in the admin) — see
-// src/data/rhythms.ts, src/data/algorithms.ts,
-// src/data/pediatricAlgorithms.ts and src/data/dogumVeYenidogan.ts.
+// Yetişkin Algoritmalar, Pediatri Algoritmalar, Doğum ve Yenidoğan and
+// İlaçlar are managed separately (static data, read-only in the admin) —
+// see src/data/rhythms.ts, src/data/algorithms.ts,
+// src/data/pediatricAlgorithms.ts, src/data/dogumVeYenidogan.ts and
+// src/data/ilaclar.ts.
 export const DYNAMIC_CATEGORIES = [
-  { slug: "ilaclar", label: "İlaçlar" },
   { slug: "toksikoloji", label: "Toksikoloji" },
   { slug: "makaleler", label: "Makaleler" },
 ] as const;

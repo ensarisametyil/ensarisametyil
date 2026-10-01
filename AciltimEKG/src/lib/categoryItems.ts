@@ -4,6 +4,7 @@ import { ekgTopics } from "../data/rhythms";
 import { acilYaklasimlarTopics } from "../data/algorithms";
 import { pediatriTopics } from "../data/pediatricAlgorithms";
 import { dogumVeYenidoganTopics } from "../data/dogumVeYenidogan";
+import { ilaclarTopics } from "../data/ilaclar";
 
 export interface CategoryCardItem {
   slug: string;
@@ -22,11 +23,11 @@ export interface CategoryCardItem {
  * surfaces that same real rhythm data so the category isn't a dead end.
  *
  * "Yetişkin Algoritmalar" (acil-yaklasimlar), "Pediatri Algoritmalar"
- * (pediatri) and "Doğum ve Yenidoğan" (dogum-ve-yenidogan) are likewise
- * static — their topics live in src/data/algorithms.ts,
- * src/data/pediatricAlgorithms.ts and src/data/dogumVeYenidogan.ts, not the
- * database, so these categories need no Postgres connection to display
- * content.
+ * (pediatri), "Doğum ve Yenidoğan" (dogum-ve-yenidogan) and "İlaçlar"
+ * (ilaclar) are likewise static — their topics live in
+ * src/data/algorithms.ts, src/data/pediatricAlgorithms.ts,
+ * src/data/dogumVeYenidogan.ts and src/data/ilaclar.ts, not the database,
+ * so these categories need no Postgres connection to display content.
  */
 export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[] {
   if (categorySlug === "ritimler") {
@@ -62,6 +63,15 @@ export function itemsForCategory(categorySlug: CategorySlug): CategoryCardItem[]
       title: t.title,
       href: `/kategori/dogum-ve-yenidogan/${t.slug}`,
       kindLabel: "Konu",
+      imageUrl: t.image,
+    }));
+  }
+  if (categorySlug === "ilaclar") {
+    return ilaclarTopics.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      href: `/kategori/ilaclar/${t.slug}`,
+      kindLabel: "İlaç Kartı",
       imageUrl: t.image,
     }));
   }

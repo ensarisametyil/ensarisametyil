@@ -8,6 +8,7 @@ import { AlgorithmDetail } from "./AlgorithmDetail";
 import { AlgorithmTopicDetail } from "./AlgorithmTopicDetail";
 import { PediatricTopicDetail } from "./PediatricTopicDetail";
 import { DogumTopicDetail } from "./DogumTopicDetail";
+import { IlacDetail } from "./IlacDetail";
 import { DrugDetail } from "./DrugDetail";
 import { DynamicTopicDetail } from "./DynamicTopicDetail";
 import { CategoryNotFound, TopicNotFound } from "./NotFound";
@@ -29,6 +30,10 @@ export function TopicDetail() {
 
   if (categorySlug === "dogum-ve-yenidogan") {
     return <DogumTopicDetail slug={slug} />;
+  }
+
+  if (categorySlug === "ilaclar") {
+    return <IlacDetail slug={slug} />;
   }
 
   return <StaticTopicDetail categorySlug={categorySlug} slug={slug} />;

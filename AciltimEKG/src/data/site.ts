@@ -5,7 +5,7 @@ export const site = {
   instructor: "Eğitmen Paramedik Mustafa Katırcı",
   audience: "Acil tıp profesyonelleri için",
   workspaceLabel: "Çalışma alanı",
-  heroKicker: "Sakin kal. Ritmi oku.",
+  heroKicker: "ACİLTİMEKG",
   heroLead: "Kritik anda ihtiyaç duyduğunuz bilgiye tek dokunuşla ulaşın.",
   emotionalLine: "Bir ambulansın sireni, bir ailenin umudu olabilir.",
   quickMenuLabel: "Hızlı menü",
