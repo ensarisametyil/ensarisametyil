@@ -143,12 +143,22 @@
     if (target) target.hidden = !expanded;
   }
 
-  /** data-disclosure taşıyan tüm aç/kapa düğmelerini bağlar (sabit bölümler için). */
+  /**
+   * data-disclosure taşıyan tüm aç/kapa düğmelerini bağlar (sabit bölümler için).
+   * Ayrıca data-opens="düğme-id" taşıyan bağlantılar, tıklanınca o bölümü açar
+   * (ör. tanıtımdaki "Süre nasıl hesaplanıyor?" bağlantısı).
+   */
   function bindDisclosures(root) {
     root.querySelectorAll('button[data-disclosure][aria-controls]').forEach(function (button) {
       setExpanded(button, button.getAttribute('aria-expanded') === 'true');
       button.addEventListener('click', function () {
         setExpanded(button, button.getAttribute('aria-expanded') !== 'true');
+      });
+    });
+    root.querySelectorAll('a[data-opens]').forEach(function (link) {
+      link.addEventListener('click', function () {
+        const button = document.getElementById(link.dataset.opens);
+        if (button) setExpanded(button, true);
       });
     });
   }

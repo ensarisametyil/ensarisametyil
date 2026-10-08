@@ -62,11 +62,19 @@
     hero: {
       eyebrow: 'Gebze ve çevresi',
       title: 'Yakınınızdaki acil servislerin tahmini yoğunluğunu ve toplam süresini tek bakışta karşılaştırın.',
-      lead: 'AcilRadar; yol, kayıt ve bekleme sürelerini birlikte tahmin eder. Sıralama tarafsızdır: ücretli ya da öne çıkarılmış hastane yoktur.'
+      lead: 'AcilRadar; yol, kayıt ve bekleme sürelerini birlikte tahmin eder. Sıralama tarafsızdır: ücretli ya da öne çıkarılmış hastane yoktur.',
+      ctaPrimary: 'Acil servisleri karşılaştır',
+      ctaSecondary: 'Süre nasıl hesaplanıyor?',
+      trust: [
+        'Tarafsız sıralama, sponsorlu hastane yok',
+        'Konumunuz cihazınızda kalır',
+        'Süreler her zaman tahmini aralık olarak'
+      ]
     },
 
     stats: {
       label: 'Özet',
+      panelTitle: 'Bölge özeti',
       hospitals: 'Hastane sayısı',
       hospitalsNote: 'Bu bölgede veri gelen',
       leastCrowded: 'En az yoğun',
@@ -306,6 +314,7 @@
 
     howto: {
       title: 'Nasıl kullanılır?',
+      lead: 'Üç adımda acil servislerin tahmini sürelerini karşılaştırın.',
       step1Title: 'Konumunuzu seçin',
       step1Body: 'İlçenizi listeden seçin ya da “Konumumu kullan” düğmesine basın.',
       step2Title: 'Zamanı ve filtreleri belirleyin',
@@ -341,6 +350,10 @@
     },
 
     footer: {
+      about: 'Gebze ve çevresindeki acil servislerin tahmini yoğunluğunu ve toplam süresini karşılaştırmanıza yardımcı olur. Resmî bir kurumla bağlantısı yoktur.',
+      navTitle: 'Sayfada',
+      emergencyTitle: 'Acil durumda',
+      emergencyBody: 'Hayati tehlike varsa beklemeyin; hemen 112’yi arayın.',
       copyright: '© {year} AcilRadar',
       mapData: 'Harita verisi: OpenStreetMap katkıda bulunanlar',
       backToTop: 'Başa dön'

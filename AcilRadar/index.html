@@ -121,32 +121,47 @@
   </header>
 
   <main id="main" class="js-only" tabindex="-1">
-    <!-- ===== 4. TANITIM: başlık, açıklama, üç özet kutusu ==================== -->
+    <!-- ===== 4. TANITIM: başlık, açıklama, eylemler, özet paneli ============== -->
+    <!-- NOT: Arka plandaki radar halkaları yalnızca süstür (aria-hidden). -->
     <section class="hero" aria-labelledby="hero-title">
-      <div class="container">
-        <p class="hero__eyebrow"><span data-icon="pin"></span><span data-text="hero.eyebrow"></span></p>
-        <h1 id="hero-title" class="hero__title" data-text="hero.title"></h1>
-        <p class="hero__lead" data-text="hero.lead"></p>
+      <div class="hero__radar" aria-hidden="true"></div>
+      <div class="container hero__grid">
+        <div class="hero__content">
+          <p class="hero__eyebrow"><span data-icon="pin"></span><span data-text="hero.eyebrow"></span></p>
+          <h1 id="hero-title" class="hero__title" data-text="hero.title"></h1>
+          <p class="hero__lead" data-text="hero.lead"></p>
+          <div class="hero__actions">
+            <a class="btn btn--light" href="#results-title">
+              <span data-icon="list"></span><span data-text="hero.ctaPrimary"></span>
+            </a>
+            <a class="btn btn--outline-light" href="#formula-title" data-opens="formula-toggle">
+              <span data-icon="calculator"></span><span data-text="hero.ctaSecondary"></span>
+            </a>
+          </div>
+          <ul class="hero__trust" data-text-list="hero.trust"></ul>
+        </div>
 
-        <ul class="stats" data-text-attr="aria-label:stats.label">
-          <li class="stat">
-            <span class="stat__label" data-text="stats.hospitals"></span>
-            <span class="stat__value" id="stat-hospitals-value"></span>
-            <span class="stat__note" id="stat-hospitals-note"></span>
-          </li>
-          <li class="stat">
-            <span class="stat__label" data-text="stats.leastCrowded"></span>
-            <span class="stat__value stat__value--name" id="stat-least-value"></span>
-            <span class="stat__note" id="stat-least-note"></span>
-          </li>
-          <li class="stat">
-            <span class="stat__label" data-text="stats.nearest"></span>
-            <span class="stat__value stat__value--name" id="stat-nearest-value"></span>
-            <span class="stat__note" id="stat-nearest-note"></span>
-          </li>
-        </ul>
-
-        <p class="disclaimer"><span data-icon="info"></span><span data-text="disclaimer.triage"></span></p>
+        <div class="hero__panel">
+          <p class="hero__panel-title"><span data-icon="clock"></span><span data-text="stats.panelTitle"></span></p>
+          <ul class="stats" data-text-attr="aria-label:stats.label">
+            <li class="stat">
+              <span class="stat__label" data-text="stats.hospitals"></span>
+              <span class="stat__value" id="stat-hospitals-value"></span>
+              <span class="stat__note" id="stat-hospitals-note"></span>
+            </li>
+            <li class="stat">
+              <span class="stat__label" data-text="stats.leastCrowded"></span>
+              <span class="stat__value stat__value--name" id="stat-least-value"></span>
+              <span class="stat__note" id="stat-least-note"></span>
+            </li>
+            <li class="stat">
+              <span class="stat__label" data-text="stats.nearest"></span>
+              <span class="stat__value stat__value--name" id="stat-nearest-value"></span>
+              <span class="stat__note" id="stat-nearest-note"></span>
+            </li>
+          </ul>
+          <p class="hero__disclaimer"><span data-icon="info"></span><span data-text="disclaimer.triage"></span></p>
+        </div>
       </div>
     </section>
 
@@ -295,7 +310,7 @@
     <section class="container section" aria-labelledby="formula-title">
       <div class="info-card">
         <h2 id="formula-title" class="info-card__title">
-          <button type="button" class="disclosure disclosure--heading" data-disclosure aria-expanded="false" aria-controls="formula-body">
+          <button type="button" id="formula-toggle" class="disclosure disclosure--heading" data-disclosure aria-expanded="false" aria-controls="formula-body">
             <span data-icon="calculator"></span><span data-text="formula.title"></span><span data-icon="chevron" class="disclosure__chevron"></span>
           </button>
         </h2>
@@ -315,40 +330,83 @@
 
     <!-- ===== 9. NASIL KULLANILIR · GİZLİLİK · SORUMLULUK REDDİ ================ -->
     <section class="container section" aria-labelledby="howto-title">
-      <h2 id="howto-title" class="section__title" data-text="howto.title"></h2>
+      <div class="section__head">
+        <h2 id="howto-title" class="section__title" data-text="howto.title"></h2>
+        <p class="section__lead" data-text="howto.lead"></p>
+      </div>
       <ol class="steps">
-        <li class="step"><span class="step__num" aria-hidden="true">1</span><div><h3 class="step__title" data-text="howto.step1Title"></h3><p data-text="howto.step1Body"></p></div></li>
-        <li class="step"><span class="step__num" aria-hidden="true">2</span><div><h3 class="step__title" data-text="howto.step2Title"></h3><p data-text="howto.step2Body"></p></div></li>
-        <li class="step"><span class="step__num" aria-hidden="true">3</span><div><h3 class="step__title" data-text="howto.step3Title"></h3><p data-text="howto.step3Body"></p></div></li>
+        <li class="step">
+          <span class="step__icon"><span data-icon="pin"></span></span>
+          <span class="step__num" aria-hidden="true">1</span>
+          <h3 class="step__title" data-text="howto.step1Title"></h3>
+          <p class="step__body" data-text="howto.step1Body"></p>
+        </li>
+        <li class="step">
+          <span class="step__icon"><span data-icon="sliders"></span></span>
+          <span class="step__num" aria-hidden="true">2</span>
+          <h3 class="step__title" data-text="howto.step2Title"></h3>
+          <p class="step__body" data-text="howto.step2Body"></p>
+        </li>
+        <li class="step">
+          <span class="step__icon"><span data-icon="directions"></span></span>
+          <span class="step__num" aria-hidden="true">3</span>
+          <h3 class="step__title" data-text="howto.step3Title"></h3>
+          <p class="step__body" data-text="howto.step3Body"></p>
+        </li>
       </ol>
     </section>
 
     <section class="container section info-grid">
-      <div class="info-card" aria-labelledby="privacy-title">
-        <h2 id="privacy-title" class="info-card__title"><span data-icon="shield"></span><span data-text="privacy.title"></span></h2>
-        <p data-text="privacy.location"></p>
-        <p data-text="privacy.cookies"></p>
-        <p data-text="privacy.storedTitle"></p>
-        <ul class="bullet-list" data-text-list="privacy.stored"></ul>
+      <div class="info-card info-card--privacy" aria-labelledby="privacy-title">
+        <h2 id="privacy-title" class="info-card__title"><span class="info-card__badge"><span data-icon="shield"></span></span><span data-text="privacy.title"></span></h2>
+        <ul class="check-list">
+          <li data-text="privacy.location"></li>
+          <li data-text="privacy.cookies"></li>
+        </ul>
+        <p class="info-card__subtitle" data-text="privacy.storedTitle"></p>
+        <ul class="pill-list" data-text-list="privacy.stored"></ul>
         <p class="field-hint" data-text="privacy.tiles"></p>
         <button type="button" id="privacy-clear" class="btn btn--secondary">
           <span data-icon="trash"></span><span data-text="privacy.clear"></span>
         </button>
       </div>
-      <div class="info-card" aria-labelledby="legal-title">
-        <h2 id="legal-title" class="info-card__title"><span data-icon="info"></span><span data-text="legal.title"></span></h2>
-        <ul class="bullet-list" data-text-list="legal.items"></ul>
+      <div class="info-card info-card--legal" aria-labelledby="legal-title">
+        <h2 id="legal-title" class="info-card__title"><span class="info-card__badge info-card__badge--warning"><span data-icon="info"></span></span><span data-text="legal.title"></span></h2>
+        <ul class="note-list" data-text-list="legal.items"></ul>
       </div>
     </section>
   </main>
 
   <!-- ===== 10. ALTBİLGİ ===================================================== -->
   <footer class="site-footer js-only">
-    <div class="container site-footer__inner">
-      <p id="footer-copyright"></p>
-      <p data-text="disclaimer.triage"></p>
-      <p data-text="footer.mapData"></p>
-      <a href="#top" data-text="footer.backToTop"></a>
+    <div class="container site-footer__grid">
+      <div class="site-footer__brand">
+        <p class="site-footer__name" data-text="app.name"></p>
+        <p class="site-footer__about" data-text="footer.about"></p>
+      </div>
+      <nav class="site-footer__nav" aria-labelledby="footer-nav-title">
+        <p class="site-footer__heading" id="footer-nav-title" data-text="footer.navTitle"></p>
+        <ul>
+          <li><a href="#controls-title" data-text="controls.title"></a></li>
+          <li><a href="#results-title" data-text="results.title"></a></li>
+          <li><a href="#formula-title" data-text="formula.title"></a></li>
+          <li><a href="#privacy-title" data-text="privacy.title"></a></li>
+          <li><a href="#legal-title" data-text="legal.title"></a></li>
+        </ul>
+      </nav>
+      <div class="site-footer__emergency">
+        <p class="site-footer__heading" data-text="footer.emergencyTitle"></p>
+        <p data-text="footer.emergencyBody"></p>
+        <a class="btn btn--danger" href="tel:112"><span data-icon="phone"></span><span data-text="emergency.call"></span></a>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <div class="container site-footer__bottom-inner">
+        <p id="footer-copyright"></p>
+        <p data-text="disclaimer.triage"></p>
+        <p data-text="footer.mapData"></p>
+        <a href="#top" data-text="footer.backToTop"></a>
+      </div>
     </div>
   </footer>
 
