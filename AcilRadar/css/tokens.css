@@ -1,0 +1,233 @@
+/* =============================================================================
+ * DOSYA ADI    : css/tokens.css
+ * NE İŞE YARAR : Tasarım jetonları: renkler, aralıklar, yarıçaplar, gölgeler,
+ *                yazı boyutları. Tema (açık/koyu) YALNIZCA burada tanımlanır.
+ * NEYİ ALIR    : <html data-theme="auto|light|dark" data-text-size="small|normal|large">
+ *                (js/ui/header.js yazar).
+ * NEYİ VERİR   : Diğer CSS dosyalarının kullandığı --değişkenler.
+ * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
+ *   - Marka/durum renkleri, koyu tema renkleri, köşe yuvarlaklığı, gölgeler.
+ *   - Yazı boyutu kademeleri: en alttaki [data-text-size] blokları.
+ * NOT: Koyu tema iki yerde aynı değerlerle tanımlıdır: (1) sistem koyu ve kullanıcı
+ *      "Açık" seçmemişse, (2) kullanıcı "Koyu" seçmişse. Birini değiştirirseniz
+ *      diğerini de değiştirin.
+ * NOT (ERİŞİLEBİLİRLİK): Yazı renkleri zemine karşı en az 4.5:1 (ana metin ≥ 7:1)
+ *      kontrast verecek şekilde seçildi. Değiştirirken bir kontrast aracıyla ölçün.
+ * ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Marka paleti */
+  --c-navy: #0F2F55;
+  --c-blue: #1565D8;
+  --c-teal: #12B5CB;
+
+  /* Zemin ve yüzeyler */
+  --c-bg: #F3F6FA;
+  --c-surface: #FFFFFF;
+  --c-surface-2: #EDF2F8;
+  --c-surface-raised: #FFFFFF;
+  --c-header-bg: rgba(255, 255, 255, 0.94);
+
+  /* Yazı */
+  --c-text: #0F1E33;
+  --c-text-muted: #44546A;
+  --c-heading: #0F2F55;
+  --c-link: #1059C0;
+
+  /* Kenarlıklar: --c-border süs, --c-border-strong form öğeleri (≥ 3:1) */
+  --c-border: #D6DEE8;
+  --c-border-strong: #6B7A90;
+
+  /* Düğmeler */
+  --c-primary: #1565D8;
+  --c-primary-hover: #0F52B5;
+  --c-on-primary: #FFFFFF;
+  --c-danger: #B3261E;
+  --c-danger-hover: #8F1D17;
+  --c-on-danger: #FFFFFF;
+  --c-accent: #12B5CB;
+  --c-selected-bg: #E3EEFD;
+  --c-selected-fg: #0B4AA6;
+
+  /* Durum renkleri: *-solid işaretçi/sıra rozeti (beyaz yazıyla), *-fg yazı, *-bg zemin */
+  --c-low-solid: #0B7A4B;
+  --c-low-fg: #08603B;
+  --c-low-bg: #E2F3EA;
+  --c-medium-solid: #9A5B00;
+  --c-medium-fg: #7A4800;
+  --c-medium-bg: #FDF0DA;
+  --c-high-solid: #B3261E;
+  --c-high-fg: #8F1D17;
+  --c-high-bg: #FBE6E4;
+  --c-stale-solid: #5B6676;
+  --c-stale-fg: #3E4856;
+  --c-stale-bg: #ECEFF3;
+
+  /* Doluluk halkası */
+  --c-ring-low: #0B7A4B;
+  --c-ring-medium: #9A5B00;
+  --c-ring-high: #B3261E;
+  --c-ring-track: #DCE3EC;
+
+  /* Bantlar */
+  --c-sim-bg: #FFE9A8;
+  --c-sim-fg: #3D2B00;
+  --c-sim-tag-bg: #3D2B00;
+  --c-sim-tag-fg: #FFE9A8;
+  --c-offline-bg: #263445;
+  --c-offline-fg: #FFFFFF;
+
+  /* Odak halkası */
+  --c-focus: #1565D8;
+  --focus-ring: 0 0 0 3px var(--c-surface), 0 0 0 6px var(--c-focus);
+
+  /* İskelet */
+  --c-skeleton: #E3E9F1;
+  --c-skeleton-shine: #F3F6FA;
+
+  /* Aralıklar (4'ün katları) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3.5rem;
+  --gutter: 16px;
+
+  /* Yarıçap */
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 18px;
+  --radius-pill: 999px;
+
+  /* Gölgeler (yumuşak, sakin) */
+  --shadow-1: 0 1px 2px rgba(15, 47, 85, 0.06), 0 1px 3px rgba(15, 47, 85, 0.08);
+  --shadow-2: 0 4px 12px rgba(15, 47, 85, 0.08), 0 2px 4px rgba(15, 47, 85, 0.05);
+  --shadow-3: 0 12px 32px rgba(15, 47, 85, 0.14);
+
+  /* Tipografi */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-size-root: 112.5%;   /* 18 px (tarayıcı varsayılanı 16 px ise) */
+  --line-height: 1.55;
+  --fs-xs: 0.8125rem;
+  --fs-s: 0.889rem;
+  --fs-m: 1rem;
+  --fs-l: 1.222rem;
+  --fs-xl: 1.5rem;
+  --fs-xxl: clamp(1.6rem, 1.2rem + 2vw, 2.4rem);
+
+  /* Dokunma alanı ve yerleşim */
+  --tap: 48px;
+  --container-max: 1180px;
+  --header-h: 64px;
+
+  /* Hareket */
+  --dur-fast: 150ms;
+  --dur: 240ms;
+  --dur-slow: 700ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ---- Koyu tema (1): sistem koyu + kullanıcı "Açık" seçmemiş ---------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --c-bg: #0A1322;
+    --c-surface: #111D31;
+    --c-surface-2: #172741;
+    --c-surface-raised: #15233A;
+    --c-header-bg: rgba(10, 19, 34, 0.94);
+    --c-text: #E9EFF7;
+    --c-text-muted: #AEBBD0;
+    --c-heading: #F2F6FC;
+    --c-link: #8DBBFF;
+    --c-border: #25385A;
+    --c-border-strong: #7F93B3;
+    --c-primary: #1565D8;
+    --c-primary-hover: #0F52B5;
+    --c-selected-bg: #17345F;
+    --c-selected-fg: #CFE1FF;
+    --c-low-fg: #7FDDAF;
+    --c-low-bg: #10372A;
+    --c-medium-fg: #F5C26B;
+    --c-medium-bg: #3A2A0C;
+    --c-high-fg: #FF9E96;
+    --c-high-bg: #431A1A;
+    --c-stale-fg: #C7CFDB;
+    --c-stale-bg: #232F42;
+    --c-ring-low: #4CC38A;
+    --c-ring-medium: #E0A43D;
+    --c-ring-high: #F06A5F;
+    --c-ring-track: #2A3B57;
+    --c-sim-bg: #4A3A0A;
+    --c-sim-fg: #FFE9A8;
+    --c-sim-tag-bg: #FFE9A8;
+    --c-sim-tag-fg: #3D2B00;
+    --c-offline-bg: #2E3D52;
+    --c-focus: #8DBBFF;
+    --c-skeleton: #1C2C47;
+    --c-skeleton-shine: #24375A;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.35);
+    --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ---- Koyu tema (2): kullanıcı "Koyu" seçmiş (değerler yukarıdakiyle AYNI) -- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg: #0A1322;
+  --c-surface: #111D31;
+  --c-surface-2: #172741;
+  --c-surface-raised: #15233A;
+  --c-header-bg: rgba(10, 19, 34, 0.94);
+  --c-text: #E9EFF7;
+  --c-text-muted: #AEBBD0;
+  --c-heading: #F2F6FC;
+  --c-link: #8DBBFF;
+  --c-border: #25385A;
+  --c-border-strong: #7F93B3;
+  --c-primary: #1565D8;
+  --c-primary-hover: #0F52B5;
+  --c-selected-bg: #17345F;
+  --c-selected-fg: #CFE1FF;
+  --c-low-fg: #7FDDAF;
+  --c-low-bg: #10372A;
+  --c-medium-fg: #F5C26B;
+  --c-medium-bg: #3A2A0C;
+  --c-high-fg: #FF9E96;
+  --c-high-bg: #431A1A;
+  --c-stale-fg: #C7CFDB;
+  --c-stale-bg: #232F42;
+  --c-ring-low: #4CC38A;
+  --c-ring-medium: #E0A43D;
+  --c-ring-high: #F06A5F;
+  --c-ring-track: #2A3B57;
+  --c-sim-bg: #4A3A0A;
+  --c-sim-fg: #FFE9A8;
+  --c-sim-tag-bg: #FFE9A8;
+  --c-sim-tag-fg: #3D2B00;
+  --c-offline-bg: #2E3D52;
+  --c-focus: #8DBBFF;
+  --c-skeleton: #1C2C47;
+  --c-skeleton-shine: #24375A;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Yazı boyutu kademeleri (A− / A / A+) -------------------------------- */
+:root[data-text-size="small"]  { --font-size-root: 100%; }      /* 16 px */
+:root[data-text-size="normal"] { --font-size-root: 112.5%; }    /* 18 px */
+:root[data-text-size="large"]  { --font-size-root: 131.25%; }   /* 21 px */
+
+/* Doluluk halkasının yumuşak dolması için animasyonlanabilir değişken. */
+@property --p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}

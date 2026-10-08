@@ -1,0 +1,277 @@
+/* =============================================================================
+ * DOSYA ADI    : css/base.css
+ * NE İŞE YARAR : Sıfırlama, tipografi ve her yerde kullanılan temel öğeler:
+ *                düğmeler, form alanları, odak halkası, "içeriğe atla", yardımcı sınıflar.
+ * NEYİ ALIR    : css/tokens.css değişkenleri.
+ * NEYİ VERİR   : .btn, .input, .icon, .visually-hidden, .skip-link, .container …
+ * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
+ *   - Düğme biçimleri (.btn--primary/secondary/ghost/danger)
+ *   - Genel yazı boyutu / satır aralığı: tokens.css (--font-size-root, --line-height)
+ * NOT: Tüm düğme ve dokunma alanları en az 48 px (--tap).
+ * ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size-root);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + var(--space-4));
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-m);
+  line-height: var(--line-height);
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--c-heading);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+p, ul, ol, dl, figure, fieldset {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--c-link);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---- Odak halkası: her zaman belirgin (klavye gezintisi) ----------------- */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-s);
+}
+
+/* ---- Yardımcılar ---------------------------------------------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.no-js .js-only {
+  display: none !important;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+.icon {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- İçeriğe atla ---------------------------------------------------------- */
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 2000;
+  padding: var(--space-3) var(--space-4);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  border-radius: var(--radius-s);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: calc(var(--space-2) + env(safe-area-inset-top));
+}
+
+/* ---- Düğmeler ------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-m);
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled,
+.btn[aria-busy="true"] {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.btn--primary {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.btn--primary:hover {
+  background: var(--c-primary-hover);
+}
+
+.btn--secondary {
+  background: var(--c-surface);
+  color: var(--c-text);
+  border-color: var(--c-border-strong);
+}
+
+.btn--secondary:hover {
+  background: var(--c-surface-2);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--c-text);
+  border-color: transparent;
+}
+
+.btn--ghost:hover {
+  background: var(--c-surface-2);
+}
+
+.btn--danger {
+  background: var(--c-danger);
+  color: var(--c-on-danger);
+}
+
+.btn--danger:hover {
+  background: var(--c-danger-hover);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--small {
+  padding-inline: var(--space-3);
+  font-size: var(--fs-s);
+}
+
+/* ---- Form alanları -------------------------------------------------------- */
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-weight: 650;
+  font-size: var(--fs-s);
+  color: var(--c-text);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 2px solid var(--c-border-strong);
+  border-radius: var(--radius-m);
+}
+
+.input::placeholder {
+  color: var(--c-text-muted);
+  opacity: 1;
+}
+
+select.input {
+  cursor: pointer;
+}
+
+.field-hint,
+.field-status {
+  font-size: var(--fs-s);
+  color: var(--c-text-muted);
+}
+
+.field-status--warning {
+  color: var(--c-medium-fg);
+  font-weight: 600;
+}
+
+/* ---- Hareketi azalt: animasyonları kapat --------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

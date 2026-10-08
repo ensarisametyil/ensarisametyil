@@ -1,0 +1,372 @@
+<!doctype html>
+<!--
+  DOSYA ADI    : index.html
+  NE İŞE YARAR : Sayfanın iskeleti. Bölümler aşağıda numaralıdır (0–11).
+  NEYİ ALIR    : css/*.css, js/*.js, Leaflet (CDN).
+  NEYİ VERİR   : Tarayıcıda açılan AcilRadar sayfası.
+  NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
+    - Sayfadaki metinler BURADA DEĞİL, js/strings.js içindedir. Bir öğedeki
+      data-text="anahtar" (ya da data-text-attr="aria-label:anahtar") strings.js'teki
+      anahtarı gösterir. Metni değiştirmek için strings.js'te o anahtarı bulun.
+    - Bölüm sırası / yeni bölüm eklemek: bu dosya.
+    - Dinamik içerik (kartlar, harita, seçenekler): js/ui/*.js
+  NOT: Tek istisna <noscript> metnidir: JavaScript kapalıyken strings.js
+       okunamayacağı için burada yazılıdır.
+-->
+<html lang="tr" class="no-js" data-theme="auto" data-text-size="normal">
+<head>
+  <!-- ===== 0. HEAD: karakter seti, ekran, güvenlik, stiller ================= -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- NOT: İçerik Güvenlik Politikası. Satır içi betik YOK; dış kaynak olarak yalnızca
+       Leaflet (unpkg) ve OpenStreetMap karoları izinli. Arka uç başka bir https
+       adresindeyse connect-src zaten https: ile izinlidir. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0F2F55">
+  <title>AcilRadar</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Bu küçük betikler ilk boyamadan ÖNCE yüklenir: kayıtlı tema ve yazı boyutu
+       hemen uygulanır (koyu tema seçen kullanıcı bir an beyaz ekran görmez). -->
+  <script src="js/config.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/ui/dom.js"></script>
+  <script src="js/ui/header.js"></script>
+</head>
+<body>
+  <!-- ===== 1. JAVASCRIPT KAPALIYSA ========================================== -->
+  <noscript>
+    <div class="noscript">
+      <p><strong>Hayati tehlike durumunda hemen 112’yi arayın.</strong></p>
+      <p>AcilRadar’ın çalışması için JavaScript gereklidir. Lütfen tarayıcınızda JavaScript’i açın.</p>
+      <p><a class="btn btn--danger" href="tel:112">112’yi ara</a></p>
+    </div>
+  </noscript>
+
+  <!-- ===== 2. İÇERİĞE ATLA + DURUM BANTLARI ================================ -->
+  <a class="skip-link" href="#main" data-text="a11y.skipLink"></a>
+
+  <div id="simulation-banner" class="banner banner--simulation" role="note" hidden>
+    <div class="container banner__inner">
+      <span class="banner__tag" data-text="banner.simulationTag"></span>
+      <span data-text="banner.simulation"></span>
+    </div>
+  </div>
+
+  <div id="offline-banner" class="banner banner--offline" role="status" hidden>
+    <div class="container banner__inner">
+      <span data-icon="offline"></span>
+      <span data-text="banner.offline"></span>
+    </div>
+  </div>
+
+  <!-- ===== 3. ÜST ÇUBUK (yapışkan) ========================================== -->
+  <header class="site-header" id="top">
+    <div class="container site-header__bar">
+      <a class="brand" href="#top" data-text-attr="aria-label:header.homeLabel">
+        <svg class="brand__logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="9" fill="#0F2F55"/>
+          <circle cx="16" cy="16" r="9.5" fill="none" stroke="#12B5CB" stroke-width="1.6" opacity=".55"/>
+          <circle cx="16" cy="16" r="5" fill="none" stroke="#12B5CB" stroke-width="1.6" opacity=".8"/>
+          <path d="M5 16.5h6l2-4 3 8 2.5-5H27" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand__text">
+          <span class="brand__name" data-text="app.name">AcilRadar</span>
+          <span class="brand__tagline js-only" data-text="app.tagline"></span>
+        </span>
+      </a>
+
+      <div class="site-header__actions">
+        <button type="button" id="appearance-toggle" class="btn btn--ghost appearance-toggle js-only"
+                aria-expanded="false" aria-controls="appearance-panel"
+                data-text-attr="aria-label:header.settingsToggleLabel">
+          <span data-icon="sliders"></span>
+          <span class="appearance-toggle__text" data-text="header.settingsToggle"></span>
+        </button>
+        <a class="btn btn--danger call-112" href="tel:112" data-text-attr="aria-label:header.callLabel">
+          <span data-icon="phone"></span>
+          <span data-text="header.call">112</span>
+        </a>
+      </div>
+
+      <div id="appearance-panel" class="appearance js-only">
+        <div class="appearance__group">
+          <span class="appearance__label" id="text-size-label" data-text="header.textSizeLabel"></span>
+          <div class="segmented-buttons" id="text-size-group" role="group" aria-labelledby="text-size-label">
+            <button type="button" class="seg-btn" data-text-size-value="small" aria-pressed="false" data-text-attr="aria-label:header.textSmallLabel"><span aria-hidden="true" data-text="header.textSmall"></span></button>
+            <button type="button" class="seg-btn" data-text-size-value="normal" aria-pressed="false" data-text-attr="aria-label:header.textNormalLabel"><span aria-hidden="true" data-text="header.textNormal"></span></button>
+            <button type="button" class="seg-btn" data-text-size-value="large" aria-pressed="false" data-text-attr="aria-label:header.textLargeLabel"><span aria-hidden="true" data-text="header.textLarge"></span></button>
+          </div>
+        </div>
+        <div class="appearance__group">
+          <span class="appearance__label" id="theme-label" data-text="header.themeLabel"></span>
+          <div class="segmented-buttons" id="theme-group" role="group" aria-labelledby="theme-label">
+            <button type="button" class="seg-btn" data-theme-value="auto" aria-pressed="false" data-text="header.themeAuto"></button>
+            <button type="button" class="seg-btn" data-theme-value="light" aria-pressed="false" data-text="header.themeLight"></button>
+            <button type="button" class="seg-btn" data-theme-value="dark" aria-pressed="false" data-text="header.themeDark"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="js-only" tabindex="-1">
+    <!-- ===== 4. TANITIM: başlık, açıklama, üç özet kutusu ==================== -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container">
+        <p class="hero__eyebrow"><span data-icon="pin"></span><span data-text="hero.eyebrow"></span></p>
+        <h1 id="hero-title" class="hero__title" data-text="hero.title"></h1>
+        <p class="hero__lead" data-text="hero.lead"></p>
+
+        <ul class="stats" data-text-attr="aria-label:stats.label">
+          <li class="stat">
+            <span class="stat__label" data-text="stats.hospitals"></span>
+            <span class="stat__value" id="stat-hospitals-value"></span>
+            <span class="stat__note" id="stat-hospitals-note"></span>
+          </li>
+          <li class="stat">
+            <span class="stat__label" data-text="stats.leastCrowded"></span>
+            <span class="stat__value stat__value--name" id="stat-least-value"></span>
+            <span class="stat__note" id="stat-least-note"></span>
+          </li>
+          <li class="stat">
+            <span class="stat__label" data-text="stats.nearest"></span>
+            <span class="stat__value stat__value--name" id="stat-nearest-value"></span>
+            <span class="stat__note" id="stat-nearest-note"></span>
+          </li>
+        </ul>
+
+        <p class="disclaimer"><span data-icon="info"></span><span data-text="disclaimer.triage"></span></p>
+      </div>
+    </section>
+
+    <!-- ===== 5. HAYATİ TEHLİKE KUTUSU (açılır/kapanır, ekranı ENGELLEMEZ) ===== -->
+    <section class="container" aria-labelledby="emergency-title">
+      <div class="emergency">
+        <div class="emergency__head">
+          <span data-icon="alert" class="emergency__icon"></span>
+          <h2 id="emergency-title" class="emergency__title" data-text="emergency.title"></h2>
+          <a class="btn btn--danger emergency__call" href="tel:112">
+            <span data-icon="phone"></span><span data-text="emergency.call"></span>
+          </a>
+        </div>
+        <button type="button" class="disclosure disclosure--emergency" data-disclosure
+                aria-expanded="false" aria-controls="emergency-body">
+          <span data-text="emergency.toggle"></span><span data-icon="chevron" class="disclosure__chevron"></span>
+        </button>
+        <div id="emergency-body" class="emergency__body" hidden>
+          <p data-text="emergency.intro"></p>
+          <ul class="emergency__list" data-text-list="emergency.symptoms"></ul>
+          <p class="emergency__note" data-text="emergency.note"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6. SEÇİMLER: konum, zaman, filtre, sıralama, yenileme =========== -->
+    <section class="container section" aria-labelledby="controls-title">
+      <h2 id="controls-title" class="section__title" data-text="controls.title"></h2>
+      <form class="controls" id="controls-form" novalidate>
+        <!-- 6a. Konum -->
+        <fieldset class="panel">
+          <legend class="panel__legend" data-text="controls.locationLegend"></legend>
+          <div class="field">
+            <label class="field__label" for="district-select" data-text="controls.districtLabel"></label>
+            <select id="district-select" class="input" aria-describedby="location-status"></select>
+          </div>
+          <button type="button" id="locate-button" class="btn btn--secondary btn--block">
+            <span data-icon="locate"></span><span data-text="controls.useLocation"></span>
+          </button>
+          <p id="location-status" class="field-status" role="status" aria-live="polite"></p>
+        </fieldset>
+
+        <!-- 6b. Zaman -->
+        <fieldset class="panel">
+          <legend class="panel__legend" data-text="controls.timeLegend"></legend>
+          <div id="time-group" class="segmented"></div>
+          <p id="time-forecast-note" class="field-hint" data-text="controls.timeForecastNote" hidden></p>
+
+          <!-- 6e. Güncelleme -->
+          <div class="refresh">
+            <div class="field" id="refresh-field">
+              <label class="field__label" for="refresh-select" data-text="controls.refreshLabel"></label>
+              <select id="refresh-select" class="input"></select>
+            </div>
+            <button type="button" id="refresh-now" class="btn btn--secondary">
+              <span data-icon="refresh"></span><span data-text="controls.refreshNow"></span>
+            </button>
+            <p class="field-hint refresh__status">
+              <span id="last-updated"></span>
+              <span id="refresh-indicator" class="refresh__indicator" hidden></span>
+            </p>
+          </div>
+        </fieldset>
+
+        <!-- 6c. Filtreler -->
+        <fieldset class="panel">
+          <legend class="panel__legend" data-text="controls.filtersLegend"></legend>
+          <div class="field" id="search-field">
+            <label class="field__label" for="search-input" data-text="controls.searchLabel"></label>
+            <div class="input-icon">
+              <span data-icon="search"></span>
+              <input id="search-input" class="input" type="search" autocomplete="off" spellcheck="false"
+                     data-text-attr="placeholder:controls.searchPlaceholder">
+            </div>
+          </div>
+          <div class="chips" role="group" aria-labelledby="crowding-label">
+            <span class="field__label" id="crowding-label" data-text="controls.crowdingLabel"></span>
+            <div id="crowding-group" class="chips__row"></div>
+          </div>
+          <div class="chips__row">
+            <button type="button" id="child-toggle" class="chip" aria-pressed="false">
+              <span data-icon="child"></span><span data-text="controls.childOnly"></span>
+            </button>
+            <button type="button" id="favorites-toggle" class="chip" aria-pressed="false">
+              <span data-icon="star"></span><span data-text="controls.favoritesOnly"></span>
+            </button>
+          </div>
+          <button type="button" id="clear-filters" class="btn btn--ghost" hidden>
+            <span data-text="controls.clearFilters"></span>
+          </button>
+        </fieldset>
+
+        <!-- 6d. Sıralama -->
+        <fieldset class="panel">
+          <legend class="panel__legend" data-text="controls.sortLegend"></legend>
+          <div id="sort-group" class="segmented segmented--stack"></div>
+          <p class="field-hint" data-text="controls.sortNote"></p>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- ===== 7. SONUÇLAR: öneri, harita, liste =============================== -->
+    <section class="container section" aria-labelledby="results-title">
+      <div class="results__header">
+        <h2 id="results-title" class="section__title" data-text="results.title"></h2>
+        <p id="results-status" class="results__status"></p>
+      </div>
+      <p class="disclaimer disclaimer--compact"><span data-icon="info"></span><span data-text="disclaimer.triage"></span></p>
+
+      <div id="error-region" class="error-region" role="alert" hidden></div>
+      <div id="recommendation" class="recommend" aria-live="off" hidden></div>
+
+      <div class="results">
+        <!-- 7a. Harita (geniş ekranda sağda ve yapışkan) -->
+        <aside class="results__map" aria-labelledby="map-title">
+          <div class="map-panel">
+            <div class="map-panel__head">
+              <h3 id="map-title" class="map-panel__title" data-text="map.title"></h3>
+              <button type="button" id="map-fit" class="btn btn--secondary btn--small">
+                <span data-icon="expand"></span><span data-text="map.showAll"></span>
+              </button>
+            </div>
+            <div id="map" class="map" role="region" data-text-attr="aria-label:map.label"></div>
+            <div class="legend">
+              <span class="legend__title" data-text="map.legendTitle"></span>
+              <ul class="legend__list">
+                <li><span class="legend__dot legend__dot--low" aria-hidden="true"></span><span data-text="crowding.low"></span></li>
+                <li><span class="legend__dot legend__dot--medium" aria-hidden="true"></span><span data-text="crowding.medium"></span></li>
+                <li><span class="legend__dot legend__dot--high" aria-hidden="true"></span><span data-text="crowding.high"></span></li>
+                <li><span class="legend__dot legend__dot--stale" aria-hidden="true"></span><span data-text="crowding.stale"></span></li>
+                <li><span class="legend__dot legend__dot--origin" aria-hidden="true"></span><span data-text="map.legendOrigin"></span></li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 7b. Liste -->
+        <div class="results__list">
+          <div id="results-message" hidden></div>
+          <ol id="results-list" class="card-list" aria-busy="true" data-text-attr="aria-label:results.listLabel"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8. SÜRE NASIL HESAPLANIYOR? (şeffaflık) ========================= -->
+    <section class="container section" aria-labelledby="formula-title">
+      <div class="info-card">
+        <h2 id="formula-title" class="info-card__title">
+          <button type="button" class="disclosure disclosure--heading" data-disclosure aria-expanded="false" aria-controls="formula-body">
+            <span data-icon="calculator"></span><span data-text="formula.title"></span><span data-icon="chevron" class="disclosure__chevron"></span>
+          </button>
+        </h2>
+        <div id="formula-body" class="info-card__body" hidden>
+          <p data-text="formula.intro"></p>
+          <ol class="formula-list">
+            <li id="formula-travel"></li>
+            <li id="formula-registration"></li>
+            <li data-text="formula.wait"></li>
+          </ol>
+          <p class="formula-total" data-text="formula.total"></p>
+          <p id="formula-stale"></p>
+          <p data-text="formula.crowding"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9. NASIL KULLANILIR · GİZLİLİK · SORUMLULUK REDDİ ================ -->
+    <section class="container section" aria-labelledby="howto-title">
+      <h2 id="howto-title" class="section__title" data-text="howto.title"></h2>
+      <ol class="steps">
+        <li class="step"><span class="step__num" aria-hidden="true">1</span><div><h3 class="step__title" data-text="howto.step1Title"></h3><p data-text="howto.step1Body"></p></div></li>
+        <li class="step"><span class="step__num" aria-hidden="true">2</span><div><h3 class="step__title" data-text="howto.step2Title"></h3><p data-text="howto.step2Body"></p></div></li>
+        <li class="step"><span class="step__num" aria-hidden="true">3</span><div><h3 class="step__title" data-text="howto.step3Title"></h3><p data-text="howto.step3Body"></p></div></li>
+      </ol>
+    </section>
+
+    <section class="container section info-grid">
+      <div class="info-card" aria-labelledby="privacy-title">
+        <h2 id="privacy-title" class="info-card__title"><span data-icon="shield"></span><span data-text="privacy.title"></span></h2>
+        <p data-text="privacy.location"></p>
+        <p data-text="privacy.cookies"></p>
+        <p data-text="privacy.storedTitle"></p>
+        <ul class="bullet-list" data-text-list="privacy.stored"></ul>
+        <p class="field-hint" data-text="privacy.tiles"></p>
+        <button type="button" id="privacy-clear" class="btn btn--secondary">
+          <span data-icon="trash"></span><span data-text="privacy.clear"></span>
+        </button>
+      </div>
+      <div class="info-card" aria-labelledby="legal-title">
+        <h2 id="legal-title" class="info-card__title"><span data-icon="info"></span><span data-text="legal.title"></span></h2>
+        <ul class="bullet-list" data-text-list="legal.items"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== 10. ALTBİLGİ ===================================================== -->
+  <footer class="site-footer js-only">
+    <div class="container site-footer__inner">
+      <p id="footer-copyright"></p>
+      <p data-text="disclaimer.triage"></p>
+      <p data-text="footer.mapData"></p>
+      <a href="#top" data-text="footer.backToTop"></a>
+    </div>
+  </footer>
+
+  <!-- Ekran okuyucu duyuruları ve kısa bildirimler -->
+  <div id="live-region" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ===== 11. BETİKLER (sıra önemlidir; type="module" KULLANILMAZ) ========= -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/ui/states.js"></script>
+  <script src="js/ui/summary.js"></script>
+  <script src="js/ui/controls.js"></script>
+  <script src="js/ui/cards.js"></script>
+  <script src="js/ui/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
