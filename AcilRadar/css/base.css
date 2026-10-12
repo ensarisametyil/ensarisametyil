@@ -1,13 +1,11 @@
 /* =============================================================================
- * DOSYA ADI    : css/base.css
- * NE İŞE YARAR : Sıfırlama, tipografi ve her yerde kullanılan temel öğeler:
- *                düğmeler, form alanları, odak halkası, "içeriğe atla", yardımcı sınıflar.
- * NEYİ ALIR    : css/tokens.css değişkenleri.
- * NEYİ VERİR   : .btn, .input, .icon, .visually-hidden, .skip-link, .container …
+ * css/base.css
+ * NE İŞE YARAR : Sıfırlama, tipografi, odak halkası, "içeriğe atla", düğmeler,
+ *                form alanları, yardımcı sınıflar ve yedek (fallback) içerik.
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Düğme biçimleri (.btn--primary/secondary/ghost/danger)
- *   - Genel yazı boyutu / satır aralığı: tokens.css (--font-size-root, --line-height)
- * NOT: Tüm düğme ve dokunma alanları en az 48 px (--tap).
+ *   - Düğme biçimleri: .btn--primary / --secondary / --ghost / --danger
+ *   - Renk ve ölçüler: css/tokens.css (burada sabit değer yoktur)
+ * NOT: Tüm etkileşimli öğeler en az 48 × 48 px (--tap).
  * ========================================================================== */
 
 *,
@@ -17,10 +15,10 @@
 }
 
 html {
-  font-size: var(--font-size-root);
+  font-size: var(--root-size);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--header-h) + var(--space-4));
+  scroll-padding-top: calc(var(--topbar-h) + var(--s-4));
 }
 
 body {
@@ -29,37 +27,34 @@ body {
   background: var(--c-bg);
   color: var(--c-text);
   font-family: var(--font-sans);
-  font-size: var(--fs-m);
-  line-height: var(--line-height);
+  font-size: var(--fs-18);
+  font-weight: 400;
+  line-height: var(--lh);
   overflow-wrap: break-word;
-  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, p, ul, ol, dl, dd, fieldset, legend {
   margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3 {
   color: var(--c-heading);
-  line-height: 1.25;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-p, ul, ol, dl, figure, fieldset {
-  margin: 0;
+  line-height: var(--lh-tight);
+  font-weight: 750;
 }
 
 ul, ol {
-  padding: 0;
+  list-style: none;
 }
 
 fieldset {
   border: 0;
-  padding: 0;
   min-width: 0;
 }
 
-img, svg {
+svg {
   display: block;
-  max-width: 100%;
 }
 
 a {
@@ -67,11 +62,7 @@ a {
   text-underline-offset: 0.18em;
 }
 
-a:hover {
-  text-decoration-thickness: 2px;
-}
-
-button, input, select, textarea {
+button, input, select {
   font: inherit;
   color: inherit;
 }
@@ -80,18 +71,17 @@ button, input, select, textarea {
   display: none !important;
 }
 
-/* ---- Odak halkası: her zaman belirgin (klavye gezintisi) ----------------- */
-:focus {
-  outline: none;
-}
-
+/* ---- Odak: her zaman belirgin -------------------------------------------- */
 :focus-visible {
   outline: 3px solid var(--c-focus);
   outline-offset: 3px;
-  border-radius: var(--radius-s);
 }
 
-/* ---- Yardımcılar ---------------------------------------------------------- */
+main:focus {
+  outline: none;
+}
+
+/* ---- Yardımcılar ----------------------------------------------------------- */
 .visually-hidden {
   position: absolute !important;
   width: 1px;
@@ -105,13 +95,17 @@ button, input, select, textarea {
   border: 0;
 }
 
+.nowrap {
+  white-space: nowrap;
+}
+
 .no-js .js-only {
   display: none !important;
 }
 
 .container {
   width: 100%;
-  max-width: var(--container-max);
+  max-width: calc(var(--content-max) + 2 * var(--gutter));
   margin-inline: auto;
   padding-left: max(var(--gutter), env(safe-area-inset-left));
   padding-right: max(var(--gutter), env(safe-area-inset-right));
@@ -128,22 +122,20 @@ button, input, select, textarea {
   stroke-linejoin: round;
 }
 
-/* ---- İçeriğe atla ---------------------------------------------------------- */
 .skip-link {
   position: absolute;
-  left: var(--space-4);
-  top: -100px;
-  z-index: 2000;
-  padding: var(--space-3) var(--space-4);
+  left: var(--s-4);
+  top: -200px;
+  z-index: var(--z-skip);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-1);
   background: var(--c-primary);
   color: var(--c-on-primary);
-  border-radius: var(--radius-s);
   font-weight: 700;
-  text-decoration: none;
 }
 
 .skip-link:focus {
-  top: calc(var(--space-2) + env(safe-area-inset-top));
+  top: calc(var(--s-2) + env(safe-area-inset-top));
 }
 
 /* ---- Düğmeler ------------------------------------------------------------- */
@@ -151,120 +143,120 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--s-2);
   min-height: var(--tap);
   min-width: var(--tap);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--s-2) var(--s-4);
   border: 2px solid transparent;
-  border-radius: var(--radius-m);
+  border-radius: var(--r-1);
   font-weight: 650;
   line-height: 1.2;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-
-.btn:active {
-  transform: translateY(1px);
+  transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
 }
 
 .btn:disabled,
 .btn[aria-busy="true"] {
-  opacity: 0.65;
-  cursor: progress;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.btn--primary {
-  background: var(--c-primary);
-  color: var(--c-on-primary);
-}
+.btn--primary { background: var(--c-primary); color: var(--c-on-primary); }
+.btn--primary:hover { background: var(--c-primary-hover); }
+.btn--primary:active { background: var(--c-primary-active); }
 
-.btn--primary:hover {
-  background: var(--c-primary-hover);
-}
+.btn--secondary { background: var(--c-surface); color: var(--c-text); border-color: var(--c-line-strong); }
+.btn--secondary:hover { background: var(--c-selected-bg); }
+.btn--secondary:active { border-color: var(--c-selected-line); }
 
-.btn--secondary {
-  background: var(--c-surface);
-  color: var(--c-text);
-  border-color: var(--c-border-strong);
-}
+.btn--ghost { background: transparent; color: var(--c-link); }
+.btn--ghost:hover { background: var(--c-selected-bg); }
 
-.btn--secondary:hover {
-  background: var(--c-surface-2);
-}
+.btn--danger { background: var(--c-danger); color: var(--c-on-danger); }
+.btn--danger:hover { background: var(--c-danger-hover); }
 
-.btn--ghost {
-  background: transparent;
-  color: var(--c-text);
-  border-color: transparent;
-}
+.btn--block { width: 100%; }
+.btn--compact { padding-inline: var(--s-3); font-size: var(--fs-16); }
 
-.btn--ghost:hover {
-  background: var(--c-surface-2);
-}
-
-.btn--danger {
-  background: var(--c-danger);
-  color: var(--c-on-danger);
-}
-
-.btn--danger:hover {
-  background: var(--c-danger-hover);
-}
-
-.btn--block {
-  width: 100%;
-}
-
-.btn--small {
-  padding-inline: var(--space-3);
-  font-size: var(--fs-s);
-}
-
-/* ---- Form alanları -------------------------------------------------------- */
+/* ---- Form alanları --------------------------------------------------------- */
 .field {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--s-1);
 }
 
 .field__label {
+  font-size: var(--fs-16);
   font-weight: 650;
-  font-size: var(--fs-s);
-  color: var(--c-text);
 }
 
 .input {
   width: 100%;
   min-height: var(--tap);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--s-2) var(--s-3);
   background: var(--c-surface);
   color: var(--c-text);
-  border: 2px solid var(--c-border-strong);
-  border-radius: var(--radius-m);
+  border: 2px solid var(--c-line-strong);
+  border-radius: var(--r-1);
 }
 
-.input::placeholder {
-  color: var(--c-text-muted);
-  opacity: 1;
-}
-
-select.input {
-  cursor: pointer;
+.input:hover {
+  border-color: var(--c-selected-line);
 }
 
 .field-hint,
 .field-status {
-  font-size: var(--fs-s);
-  color: var(--c-text-muted);
+  font-size: var(--fs-16);
+  color: var(--c-text-2);
+}
+
+.field-status:empty {
+  display: none;
 }
 
 .field-status--warning {
-  color: var(--c-medium-fg);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-1);
+  background: var(--c-warn-bg);
+  color: var(--c-warn-fg);
   font-weight: 600;
 }
 
-/* ---- Hareketi azalt: animasyonları kapat --------------------------------- */
+/* ---- Yedek içerik (JavaScript kapalı / tarayıcı desteklemiyor) ----------- */
+.fallback {
+  display: grid;
+  gap: var(--s-3);
+  margin: var(--s-4);
+  padding: var(--s-5);
+  border: 2px solid var(--c-danger-line);
+  border-radius: var(--r-2);
+  background: var(--c-warn-bg);
+  color: var(--c-text);
+}
+
+.fallback__title {
+  font-size: var(--fs-22);
+  font-weight: 750;
+  color: var(--c-warn-fg);
+}
+
+/* Eski tarayıcı yedeği: uygulama başlamazsa birkaç saniye sonra görünür. */
+.fallback--boot {
+  display: none;
+}
+
+.js:not(.app-ready) .fallback--boot {
+  display: grid;
+  visibility: hidden;
+  animation: reveal-fallback 0s 4s forwards;
+}
+
+@keyframes reveal-fallback {
+  to { visibility: visible; }
+}
+
+/* ---- Hareket azaltma ------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -273,5 +265,17 @@ select.input {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Zorunlu renkler (Windows yüksek karşıtlık) -------------------------- */
+@media (forced-colors: active) {
+  .btn,
+  .input {
+    border: 2px solid ButtonText;
+  }
+
+  :focus-visible {
+    outline-color: Highlight;
   }
 }

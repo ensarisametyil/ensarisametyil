@@ -1,19 +1,15 @@
 /* =============================================================================
- * DOSYA ADI    : js/calc.js
- * NE İŞE YARAR : Mesafe, süre, filtre, sıralama, öneri ve özet hesapları.
- *                Hepsi SAF fonksiyondur: DOM'a dokunmaz, ağa çıkmaz, saat okumaz
- *                (şimdiki zaman parametre olarak gelir). Bu yüzden
- *                tests/smoke-test.html ile kolayca sınanır.
- * NEYİ ALIR    : Hospital[] (js/api.js), başlangıç noktası, ayarlar (config).
- * NEYİ VERİR   : AcilRadar.calc → buildRows, filterRows, sortRows,
- *                pickRecommendation, summarize, haversineKm, … (aşağıda listesi var)
+ * js/calc.js
+ * NE İŞE YARAR : Mesafe, süre aralığı, veri yaşı, filtre, sıralama, en kısa süre
+ *                seçimi, özet ve zaman seçeneği hesapları. Hepsi SAF fonksiyondur:
+ *                DOM'a dokunmaz, ağa çıkmaz, saati kendisi okumaz (parametre alır).
+ * VERDİĞİ      : AcilRadar.Calc
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Formülün KATSAYILARI: js/config.js › TRAVEL, REGISTRATION_MINUTES (burayı değil!)
- *   - Formülün KENDİSİ: buildRow(). Değiştirirseniz strings.js › formula metnini de
- *     güncelleyin; sayfadaki "Süre nasıl hesaplanıyor?" bölümü oradan gelir.
- *   - Yeni sıralama ölçütü: COMPARATORS'a ekleyin + config.SORT_KEYS + strings.js › sort.
- * NOT: Sıralama yalnızca nesnel ölçütlerle yapılır. Eşitlikte hastane adına göre
- *      alfabetik sıralanır; hiçbir hastaneye öncelik/sponsorluk verilmez.
+ *   - Katsayılar: js/config.js › TRAVEL, REGISTRATION_MINUTES (burası değil).
+ *   - Formülün kendisi: buildRow(). Değiştirirseniz strings.js › info.formula*
+ *     metinlerini de güncelleyin.
+ * NOT: Sıralama yalnız nesnel ölçütlerle yapılır; eşitlikte ada göre alfabetik.
+ *      Hiçbir hastaneye öncelik verilmez.
  * ========================================================================== */
 (function (AR) {
   'use strict';
@@ -24,16 +20,17 @@
   const CROWDING_RANK = { low: 0, medium: 1, high: 2 };
 
   /**
-   * Bir hastanenin hesaplanmış görünümü (liste, harita ve öneri bunu kullanır).
+   * Bir hastanenin hesaplanmış görünümü.
    * @typedef {Object} Row
    * @property {string}   id
    * @property {Hospital} hospital
-   * @property {number}   distanceKm       Tahmini YOL mesafesi (kuş uçuşu × yol çarpanı)
-   * @property {number[]} travelMinutes    [alt, üst]
-   * @property {?number[]} waitMinutes     [alt, üst]; veri eskiyse null
-   * @property {?number[]} totalMinutes    [alt, üst]; veri eskiyse null
-   * @property {boolean}  isStale          Veri STALE_AFTER_MINUTES'tan eski mi
-   * @property {?number}  updatedAtMs      Son güncelleme (ms) ya da null
+   * @property {number}   distanceKm     Tahmini yol mesafesi
+   * @property {number[]} travelMinutes  [en az, en çok]
+   * @property {?number[]} waitMinutes   Bilgi eskiyse null
+   * @property {?number[]} totalMinutes  Bilgi eskiyse null
+   * @property {boolean}  isStale
+   * @property {?('age'|'future')} staleReason
+   * @property {number}   ageMinutes     Sunucu saatine göre bilginin yaşı
    */
 
   /* ---- Mesafe ve süre ---------------------------------------------------- */
@@ -42,76 +39,82 @@
     return (degrees * Math.PI) / 180;
   }
 
-  /** İki nokta arası kuş uçuşu mesafe (km). a, b: { lat, lng } */
+  /** Kuş uçuşu mesafe (km). a, b: { lat, lng } */
   function haversineKm(a, b) {
     const dLat = toRadians(b.lat - a.lat);
     const dLng = toRadians(b.lng - a.lng);
-    const h = Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRadians(a.lat)) * Math.cos(toRadians(b.lat)) * Math.sin(dLng / 2) ** 2;
+    const h = Math.pow(Math.sin(dLat / 2), 2) +
+      Math.cos(toRadians(a.lat)) * Math.cos(toRadians(b.lat)) * Math.pow(Math.sin(dLng / 2), 2);
     return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
   }
 
-  /** Kuş uçuşu mesafeyi tahmini yol mesafesine çevirir. */
-  function roadDistanceKm(straightKm, travelCfg) {
-    return straightKm * travelCfg.ROAD_FACTOR;
+  function roadDistanceKm(straightKm, travel) {
+    return straightKm * travel.ROAD_FACTOR;
   }
 
-  /** Yol mesafesinden yol süresi aralığı (dk.): [alt, üst] */
-  function estimateTravelMinutes(roadKm, travelCfg) {
-    const base = Math.max(travelCfg.MIN_TRAVEL_MINUTES, (roadKm / travelCfg.AVERAGE_SPEED_KMH) * MINUTES_PER_HOUR);
-    return [Math.round(base), Math.round(base * travelCfg.TRAFFIC_FACTOR_MAX)];
+  /** Yol süresi aralığı (dk.): [en az, en çok] */
+  function estimateTravelMinutes(roadKm, travel) {
+    const base = Math.max(travel.MIN_TRAVEL_MINUTES, (roadKm / travel.AVERAGE_SPEED_KMH) * MINUTES_PER_HOUR);
+    return [Math.round(base), Math.round(base * travel.TRAFFIC_FACTOR_MAX)];
   }
 
-  /** Aralıkları toplar: addRanges([1,2],[3,4]) → [4,6] */
+  /** addRanges([1,2],[3,4]) → [4,6] */
   function addRanges() {
     return Array.prototype.reduce.call(arguments, function (sum, range) {
       return [sum[0] + range[0], sum[1] + range[1]];
     }, [0, 0]);
   }
 
-  /** Veri eskimiş mi? Tarih okunamıyorsa da "eski" sayılır (güvenli taraf). */
-  function isStale(updatedAtMs, nowMs, staleAfterMinutes) {
-    if (updatedAtMs == null || Number.isNaN(updatedAtMs)) return true;
-    return nowMs - updatedAtMs > staleAfterMinutes * MS_PER_MINUTE;
-  }
+  /* ---- Veri yaşı (sunucu saatiyle) ---------------------------------------- */
 
   /**
-   * Tek hastane için Row üretir.
-   * @param {Hospital} hospital
-   * @param {{lat:number, lng:number}} origin
-   * @param {number} nowMs
-   * @param {Object} cfg  AcilRadar.config
-   * @returns {Row}
+   * Tarayıcı saati yanlış olsa bile doğru sonuç için yaş, sunucunun generatedAt
+   * değerine göre hesaplanır; yanıttan bu yana geçen süre tarayıcının kendi
+   * saat FARKIYLA eklenir (mutlak saat kullanılmaz).
+   * @param {{generatedAtMs:number, receivedAtMs:number}} timing
    */
-  function buildRow(hospital, origin, nowMs, cfg) {
+  function serverNowMs(timing, nowMs) {
+    return timing.generatedAtMs + Math.max(0, nowMs - timing.receivedAtMs);
+  }
+
+  /** @returns {{isStale:boolean, reason:?string, ageMinutes:number}} */
+  function freshness(updatedAtMs, timing, nowMs, cfg) {
+    const ageMinutes = (serverNowMs(timing, nowMs) - updatedAtMs) / MS_PER_MINUTE;
+    const futureMinutes = (updatedAtMs - timing.generatedAtMs) / MS_PER_MINUTE;
+    if (futureMinutes > cfg.FUTURE_TOLERANCE_MINUTES) return { isStale: true, reason: 'future', ageMinutes: 0 };
+    if (ageMinutes > cfg.STALE_AFTER_MINUTES) return { isStale: true, reason: 'age', ageMinutes: ageMinutes };
+    return { isStale: false, reason: null, ageMinutes: Math.max(0, ageMinutes) };
+  }
+
+  /** @returns {Row} */
+  function buildRow(hospital, origin, timing, nowMs, cfg) {
     const distanceKm = roadDistanceKm(haversineKm(origin, hospital), cfg.TRAVEL);
     const travelMinutes = estimateTravelMinutes(distanceKm, cfg.TRAVEL);
-    const parsed = Date.parse(hospital.updatedAt);
-    const updatedAtMs = Number.isNaN(parsed) ? null : parsed;
-    const stale = isStale(updatedAtMs, nowMs, cfg.STALE_AFTER_MINUTES);
-    const waitMinutes = stale ? null : hospital.estimatedGreenWaitMinutes.slice();
+    const fresh = freshness(hospital.updatedAtMs, timing, nowMs, cfg);
+    const waitMinutes = fresh.isStale ? null : hospital.nonUrgentWaitMinutes.slice();
     return {
-      id: hospital.hospitalId,
+      id: hospital.id,
       hospital: hospital,
       distanceKm: distanceKm,
       travelMinutes: travelMinutes,
       waitMinutes: waitMinutes,
-      totalMinutes: stale ? null : addRanges(travelMinutes, cfg.REGISTRATION_MINUTES, waitMinutes),
-      isStale: stale,
-      updatedAtMs: updatedAtMs
+      totalMinutes: fresh.isStale ? null : addRanges(travelMinutes, cfg.REGISTRATION_MINUTES, waitMinutes),
+      isStale: fresh.isStale,
+      staleReason: fresh.reason,
+      ageMinutes: fresh.ageMinutes
     };
   }
 
   /** @returns {Row[]} */
-  function buildRows(hospitals, origin, nowMs, cfg) {
-    return hospitals.map(function (hospital) { return buildRow(hospital, origin, nowMs, cfg); });
+  function buildRows(hospitals, origin, timing, nowMs, cfg) {
+    return hospitals.map(function (h) { return buildRow(h, origin, timing, nowMs, cfg); });
   }
 
   /* ---- Filtre ------------------------------------------------------------ */
 
   const TURKISH_FOLD = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u', â: 'a', î: 'i', û: 'u' };
 
-  /** Arama için sadeleştirir: "ÇAYIROVA" ve "cayirova" eşleşsin. */
+  /** "ÇAYIROVA" ile "cayirova" eşleşsin diye sadeleştirir. */
   function normalizeForSearch(value) {
     return String(value || '')
       .toLocaleLowerCase('tr-TR')
@@ -122,47 +125,41 @@
 
   /**
    * @param {Row[]} rows
-   * @param {{query:string, childOnly:boolean, levels:Set<string>, favoritesOnly:boolean}} filters
-   * @param {Set<string>} favoriteIds
-   * @returns {Row[]}
+   * @param {{query:string, childOnly:boolean, levels:Set<string>}} filters
    */
-  function filterRows(rows, filters, favoriteIds) {
+  function filterRows(rows, filters) {
     const query = normalizeForSearch(filters.query);
     return rows.filter(function (row) {
       const h = row.hospital;
       if (query && normalizeForSearch(h.name + ' ' + h.district).indexOf(query) === -1) return false;
       if (filters.childOnly && !h.childER) return false;
-      // Eski veride yoğunluk bilinmez; yoğunluk filtresi açıksa bu satır gösterilmez.
+      // Güncel bilgisi olmayanın yoğunluğu bilinmez; yoğunluk filtresinde gösterilmez.
       if (filters.levels.size > 0 && (row.isStale || !filters.levels.has(h.crowdingLevel))) return false;
-      if (filters.favoritesOnly && !favoriteIds.has(row.id)) return false;
       return true;
     });
   }
 
-  /** Hiç filtre açık mı? (Boş sonuç iletisini seçmek için.) */
   function hasActiveFilters(filters) {
-    return Boolean(normalizeForSearch(filters.query)) || filters.childOnly ||
-      filters.levels.size > 0 || filters.favoritesOnly;
+    return Boolean(normalizeForSearch(filters.query)) || filters.childOnly || filters.levels.size > 0;
   }
 
   /* ---- Sıralama ---------------------------------------------------------- */
 
   function compareNames(a, b) {
-    return a.hospital.name.localeCompare(b.hospital.name, 'tr-TR');
+    return a.hospital.name.localeCompare(b.hospital.name, 'tr-TR') || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   }
 
-  // Eski veri her zaman en sona gider (süresi/yoğunluğu bilinmediği için).
-  function compareStaleLast(a, b) {
+  function staleLast(a, b) {
     return Number(a.isStale) - Number(b.isStale);
   }
 
   function compareTotal(a, b) {
-    if (a.isStale || b.isStale) return compareStaleLast(a, b) || a.distanceKm - b.distanceKm;
+    if (a.isStale || b.isStale) return staleLast(a, b);
     return a.totalMinutes[0] - b.totalMinutes[0] || a.totalMinutes[1] - b.totalMinutes[1];
   }
 
   function compareCrowding(a, b) {
-    if (a.isStale || b.isStale) return compareStaleLast(a, b);
+    if (a.isStale || b.isStale) return staleLast(a, b);
     return CROWDING_RANK[a.hospital.crowdingLevel] - CROWDING_RANK[b.hospital.crowdingLevel] ||
       a.hospital.occupancyPercent - b.hospital.occupancyPercent;
   }
@@ -173,24 +170,20 @@
     crowding: function (a, b) { return compareCrowding(a, b) || compareTotal(a, b) || compareNames(a, b); }
   };
 
-  /** Yeni dizi döndürür; girdiyi değiştirmez. Bilinmeyen anahtarda 'total' kullanılır. */
+  /** Yeni dizi döndürür; girdi değişmez. Bilinmeyen anahtarda 'total'. */
   function sortRows(rows, sortKey) {
-    const comparator = COMPARATORS[sortKey] || COMPARATORS.total;
-    return rows.slice().sort(comparator);
+    return rows.slice().sort(COMPARATORS[sortKey] || COMPARATORS.total);
   }
 
-  /* ---- Öneri ve özet ----------------------------------------------------- */
+  /* ---- Seçim ve özet ----------------------------------------------------- */
 
-  /** Güncel veriler arasında tahmini toplam süresi en kısa olan satır (yoksa null). */
-  function pickRecommendation(rows) {
+  /** Güncel bilgisi olanlar içinde tahmini toplam süresi en kısa (yoksa null). */
+  function pickShortest(rows) {
     const fresh = rows.filter(function (row) { return !row.isStale; });
     return fresh.length > 0 ? sortRows(fresh, 'total')[0] : null;
   }
 
-  /**
-   * Tanıtım alanındaki üç özet kutusu için.
-   * @returns {{count:number, leastCrowded:?Row, nearest:?Row}}
-   */
+  /** @returns {{count:number, leastCrowded:?Row, nearest:?Row}} */
   function summarize(rows) {
     const fresh = rows.filter(function (row) { return !row.isStale; });
     return {
@@ -200,27 +193,52 @@
     };
   }
 
-  /** "Yol tarifi al" bağlantısı. Yalnızca hedef koordinat eklenir. */
+  /** Harici harita bağlantısı: yalnız hedef koordinat. */
   function buildDirectionsUrl(template, lat, lng) {
     return template
       .replace('{lat}', encodeURIComponent(String(lat)))
       .replace('{lng}', encodeURIComponent(String(lng)));
   }
 
-  AR.calc = Object.freeze({
+  /* ---- Zaman seçenekleri ------------------------------------------------- */
+
+  /** Verilen saat diliminde günün kaçıncı dakikası (0–1439). */
+  function minutesOfDay(ms, timeZone) {
+    const parts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: timeZone })
+      .formatToParts(new Date(ms));
+    const read = function (type) {
+      const part = parts.find(function (p) { return p.type === type; });
+      return part ? Number(part.value) : 0;
+    };
+    return read('hour') * MINUTES_PER_HOUR + read('minute');
+  }
+
+  /**
+   * Belirli saatli seçenek (ör. Akşam 20:00) bugün için geçti mi?
+   * NOT: Geçtiyse yarına kaydırılmaz; arayüz "bugün için geçti" yazar.
+   */
+  function isSlotPassed(slot, currentMinuteOfDay) {
+    if (slot.atHour == null) return false;
+    return currentMinuteOfDay >= slot.atHour * MINUTES_PER_HOUR + (slot.atMinute || 0);
+  }
+
+  AR.Calc = Object.freeze({
     haversineKm: haversineKm,
     roadDistanceKm: roadDistanceKm,
     estimateTravelMinutes: estimateTravelMinutes,
     addRanges: addRanges,
-    isStale: isStale,
+    serverNowMs: serverNowMs,
+    freshness: freshness,
     buildRow: buildRow,
     buildRows: buildRows,
     normalizeForSearch: normalizeForSearch,
     filterRows: filterRows,
     hasActiveFilters: hasActiveFilters,
     sortRows: sortRows,
-    pickRecommendation: pickRecommendation,
+    pickShortest: pickShortest,
     summarize: summarize,
-    buildDirectionsUrl: buildDirectionsUrl
+    buildDirectionsUrl: buildDirectionsUrl,
+    minutesOfDay: minutesOfDay,
+    isSlotPassed: isSlotPassed
   });
 })(window.AcilRadar = window.AcilRadar || {});

@@ -1,58 +1,104 @@
 /* =============================================================================
- * DOSYA ADI    : js/config.js
- * NE İŞE YARAR : Uygulamanın TÜM ayarlarını tek yerde toplar. Kodun başka hiçbir
- *                yerinde "sihirli sayı" yoktur; süreler, katsayılar, adresler ve
- *                özellik bayrakları buradan okunur.
- * NEYİ ALIR    : Hiçbir şey.
- * NEYİ VERİR   : window.AcilRadar.config (salt okunur nesne).
+ * js/config.js
+ * NE İŞE YARAR : Uygulamanın TÜM ayarları. Kodun başka hiçbir yerinde sihirli
+ *                sayı ya da adres yoktur.
+ * VERDİĞİ      : window.AcilRadar.Config (dondurulmuş nesne)
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Gerçek arka uca bağlanmak ............ API_URL ve USE_MOCK
- *   - Otomatik yenileme süresi .............. AUTO_REFRESH
- *   - "Veri güncel değil" eşiği ............. STALE_AFTER_MINUTES
- *   - Yol/kayıt süresi hesabı ............... TRAVEL ve REGISTRATION_MINUTES
- *   - İlçe listesi (konum seçimi) ........... DISTRICTS (adları js/strings.js › districts)
- *   - Özellikleri aç/kapat .................. FEATURES
- *   - Yol tarifi için kullanılan harita ..... DIRECTIONS_URL_TEMPLATE
- * NOT: Bu dosya yalnızca ayar içerir; kullanıcıya görünen metin YOKTUR
- *      (tüm metinler js/strings.js içindedir).
+ *   - Gerçek arka uca bağlanmak ........ ENVIRONMENT (tek satır) ve ENVIRONMENTS
+ *   - Zaman seçenekleri (?at=) ......... TIME_SLOTS  (etiket: strings.js › time)
+ *   - İlçe eklemek ...................... DISTRICTS   (ad: strings.js › districts)
+ *   - Bölge (?region=) .................. REGION_ID, REGIONS
+ *   - "Veri güncel değil" eşiği ......... STALE_AFTER_MINUTES
+ *   - Süre formülü katsayıları ......... TRAVEL, REGISTRATION_MINUTES
+ * NOT: Bu dosyada kullanıcıya görünen metin yoktur. Node araçları
+ *      (tools/mock-server.js, tests/) da bu dosyayı okur; tarayıcıya özgü
+ *      bir şey eklemeyin.
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  AR.config = Object.freeze({
-    /* ---- 1. Arka uç bağlantısı ------------------------------------------- */
+  function deepFreeze(value) {
+    Object.values(value).forEach(function (child) {
+      if (child && typeof child === 'object') deepFreeze(child);
+    });
+    return Object.freeze(value);
+  }
 
-    // Arka ucun adresi. Göreli (aynı sunucu) ya da tam adres olabilir.
-    // İstek şu biçimde gider: GET {API_URL}?at=now|2h|evening
-    API_URL: 'api/hospitals.php',
+  AR.Config = deepFreeze({
+    /* ---- 1. Ortam ve arka uç ---------------------------------------------- */
 
-    // true  → sahte veri (js/mock-data.js) kullanılır, ağa hiç çıkılmaz.
-    // false → API_URL adresine gerçek istek atılır.
-    USE_MOCK: true,
+    // 'mock'        → tarayıcı içi örnek veri (js/mock-data.js), ağa çıkılmaz.
+    // 'development' → tools/mock-server.js ya da yerel arka uç.
+    // 'production'  → canlı arka uç.
+    ENVIRONMENT: 'mock',
 
-    // Sahte verinin "sunucu gecikmesi" (yükleniyor iskeletini görmek için).
-    MOCK_DELAY_MS: 600,
+    // apiBaseUrl: '' ise sayfa hangi adresten sunuluyorsa API de oradadır (same-origin).
+    ENVIRONMENTS: {
+      mock: { apiBaseUrl: null },
+      development: { apiBaseUrl: 'http://localhost:8787' },
+      production: { apiBaseUrl: '' }
+    },
 
-    // Sahte veri senaryosu: normal | empty | error | invalid | legacy
-    // NOT: USE_MOCK açıkken adres çubuğuna ?mock=empty gibi yazarak da seçilebilir;
-    // böylece boş/hata durumlarını kodu değiştirmeden deneyebilirsiniz.
-    MOCK_SCENARIO: 'normal',
+    API_PATHS: {
+      hospitals: '/api/v1/hospitals'
+    },
 
-    // Tek isteğin en fazla bekleme süresi ve hata sonrası yeniden deneme sayısı.
-    REQUEST_TIMEOUT_MS: 8000,
-    REQUEST_RETRY_COUNT: 1,
-    REQUEST_RETRY_DELAY_MS: 800,
+    // Desteklenen sözleşme ana sürümü (docs/SOZLESME.md). Uyuşmazsa hata ekranı çıkar.
+    SCHEMA_MAJOR_VERSION: 1,
 
-    /* ---- 2. Zaman seçici -------------------------------------------------- */
+    REQUEST: {
+      TIMEOUT_MS: 8000,
+      MAX_RETRIES: 2,              // yalnız ağ hatası, zaman aşımı ve 5xx için
+      RETRY_BASE_DELAY_MS: 1000,   // üstel bekleme: 1 sn, 2 sn, …
+      RETRY_MAX_DELAY_MS: 8000,
+      MAX_RETRY_AFTER_SECONDS: 900 // 429 › Retry-After için üst sınır
+    },
 
-    // Sunucuya ?at= olarak giden değerler. Etiketleri: js/strings.js › time
-    TIME_SLOTS: ['now', '2h', 'evening'],
+    // Otomatik yenileme. Sekme gizliyken ve çevrimdışıyken durur.
+    AUTO_REFRESH_SECONDS: 60,
+
+    // "5 dakika önce" yazıları, veri eskimesi ve saat dilimi denetimi bu aralıkla tazelenir.
+    CLOCK_TICK_SECONDS: 30,
+
+    /* ---- 2. Veri geçerliliği ve sınırlar (js/schema.js, js/calc.js) ------ */
+
+    STALE_AFTER_MINUTES: 30,
+    // updatedAt, generatedAt'tan bu kadar ileride ise kayıt güvenilmez sayılır.
+    FUTURE_TOLERANCE_MINUTES: 5,
+
+    LIMITS: {
+      MAX_HOSPITALS: 500,
+      MAX_COUNT: 9999,          // bekleyen kişi, hekim sayısı üst sınırı
+      MAX_WAIT_MINUTES: 1440,   // tahmini bekleme üst sınırı (24 saat)
+      MAX_TEXT_LENGTH: 160,     // ad / ilçe
+      MAX_ID_LENGTH: 64,
+      MAX_NOTICE_LENGTH: 300
+    },
+
+    CROWDING_LEVELS: ['low', 'medium', 'high'],
+    DATA_SOURCES: ['simulated', 'hospital', 'official'],
+    NOTICE_LEVELS: ['info', 'warning'],
+
+    /* ---- 3. Zaman seçici (?at=) ------------------------------------------- */
+
+    // Yeni seçenek: bir satır ekleyin + strings.js › time içine etiketini yazın.
+    // atHour/atMinute: o saat geçtiyse seçenek "bugün için geçti" olur (yarına kaymaz).
+    TIME_SLOTS: [
+      { id: 'now' },
+      { id: '2h' },
+      { id: 'evening', atHour: 20, atMinute: 0 }
+    ],
     DEFAULT_TIME_SLOT: 'now',
+    // Saat hesapları ve gösterimi bu saat dilimine göre yapılır.
+    TIME_ZONE: 'Europe/Istanbul',
 
-    /* ---- 3. Konum --------------------------------------------------------- */
+    /* ---- 4. Bölge ve ilçeler ---------------------------------------------- */
 
-    // İlçe merkezleri (yaklaşık). Görünen adları: js/strings.js › districts
-    // Yeni ilçe eklemek için: buraya { id, lat, lng } ekleyin + strings.js'e adını yazın.
+    // İsteğe ?region= olarak eklenir. null yapılırsa parametre gönderilmez.
+    REGION_ID: 'gebze',
+    REGIONS: ['gebze', 'kocaeli', 'istanbul-anadolu'],
+
+    // İlçe merkezleri (yaklaşık, mesafe hesabının başlangıç noktası).
     DISTRICTS: [
       { id: 'gebze', lat: 40.8028, lng: 29.4307 },
       { id: 'darica', lat: 40.7694, lng: 29.3753 },
@@ -64,105 +110,67 @@
     ],
     DEFAULT_DISTRICT_ID: 'gebze',
 
-    // "Konumumu kullan" ayarları (tarayıcının Geolocation API'si).
-    // NOT: Konum yalnızca tarayıcıda kullanılır, hiçbir isteğe eklenmez, saklanmaz.
     GEOLOCATION: {
       TIMEOUT_MS: 10000,
       MAX_AGE_MS: 60000,
       HIGH_ACCURACY: false
     },
 
-    /* ---- 4. Süre hesabı (js/calc.js kullanır) ----------------------------- */
+    /* ---- 5. Süre formülü (js/calc.js) -------------------------------------- */
 
     TRAVEL: {
-      // Kuş uçuşu mesafeyi yaklaşık yol mesafesine çeviren çarpan.
-      ROAD_FACTOR: 1.3,
-      // Şehir içi ortalama hız (km/sa).
-      AVERAGE_SPEED_KMH: 35,
-      // Trafik payı: üst sınır, alt sınırın bu katı alınır.
-      TRAFFIC_FACTOR_MAX: 1.4,
-      // Çok yakın hastanelerde bile en az bu kadar dakika yol varsayılır.
+      ROAD_FACTOR: 1.3,          // kuş uçuşu → yaklaşık yol mesafesi
+      AVERAGE_SPEED_KMH: 35,     // şehir içi ortalama hız
+      TRAFFIC_FACTOR_MAX: 1.4,   // üst sınır = alt sınır × bu çarpan
       MIN_TRAVEL_MINUTES: 2
     },
-
-    // Kayıt (hasta kabul) için eklenen süre aralığı, dakika: [alt, üst]
     REGISTRATION_MINUTES: [5, 10],
 
-    // Bir hastanenin verisi bu kadar dakikadan eskiyse süre ve yoğunluk GİZLENİR.
-    // NOT: Yanıltıcı eski bilgi göstermemek için bilinçli bir güvenlik kuralıdır.
-    STALE_AFTER_MINUTES: 30,
+    /* ---- 6. Liste ve görünüm ---------------------------------------------- */
 
-    /* ---- 5. Yenileme ve zamanlayıcılar ----------------------------------- */
-
-    AUTO_REFRESH: {
-      DEFAULT_SECONDS: 60,
-      // 0 = kapalı. Seçenek etiketleri strings.js › refresh içinden üretilir.
-      OPTIONS_SECONDS: [0, 30, 60, 120, 300]
-    },
-
-    // "5 dakika önce" yazılarını ve veri eskime denetimini tazeleme aralığı.
-    CLOCK_TICK_SECONDS: 30,
-
-    // Arama kutusuna yazarken listeyi yeniden çizmeden önce beklenen süre.
-    SEARCH_DEBOUNCE_MS: 200,
-
-    // Kısa bildirimlerin (ör. "panoya kopyalandı") ekranda kalma süresi.
-    TOAST_DURATION_MS: 4000,
-
-    // Yüklenirken gösterilen iskelet kart sayısı.
-    SKELETON_CARD_COUNT: 4,
-
-    /* ---- 6. Görünüm ve sıralama ------------------------------------------ */
+    SORT_KEYS: ['total', 'distance', 'crowding'],
+    DEFAULT_SORT: 'total',
 
     TEXT_SIZES: ['small', 'normal', 'large'],
     DEFAULT_TEXT_SIZE: 'normal',
 
-    THEMES: ['auto', 'light', 'dark'],
-    DEFAULT_THEME: 'auto',
+    SEARCH_DEBOUNCE_MS: 200,
+    SKELETON_CARD_COUNT: 3,
+    MAX_ANIMATED_CARDS: 8,
 
-    // NOT: Sıralama yalnızca bu ölçütlerle yapılır; sponsorlu/öne çıkarılmış sıralama YOKTUR.
-    SORT_KEYS: ['total', 'distance', 'crowding'],
-    DEFAULT_SORT: 'total',
-
-    // Sunucunun gönderebileceği yoğunluk seviyeleri (azdan çoğa doğru).
-    CROWDING_LEVELS: ['low', 'medium', 'high'],
-
-    // Sunucunun gönderebileceği veri kaynakları.
-    DATA_SOURCES: ['simulated', 'hospital', 'official'],
-
-    /* ---- 7. Harita -------------------------------------------------------- */
+    /* ---- 7. Harita ---------------------------------------------------------- */
 
     MAP: {
+      // Yerel kopya (vendor/). Sürüm: Leaflet 1.9.4 — özet değeri docs/GUVENLIK.md'de.
+      LEAFLET_SCRIPT: 'vendor/leaflet/leaflet.js',
+      LEAFLET_STYLE: 'vendor/leaflet/leaflet.css',
       TILE_URL: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       MAX_ZOOM: 19,
       DEFAULT_ZOOM: 12,
       FOCUS_ZOOM: 15,
       MAX_FIT_ZOOM: 14,
-      FIT_PADDING_PX: 40
+      FIT_PADDING_PX: 40,
+      LOAD_TIMEOUT_MS: 10000,
+      IDLE_TIMEOUT_MS: 2000,
+      VISIBLE_MARGIN: '200px'
     },
 
-    // "Yol tarifi al" bağlantısı. YALNIZCA hedef koordinat eklenir;
-    // kullanıcının konumu bağlantıya EKLENMEZ (harita uygulaması kendisi sorar).
+    // Yalnız hedef koordinatı eklenir; kullanıcının konumu bağlantıya EKLENMEZ.
     DIRECTIONS_URL_TEMPLATE: 'https://www.google.com/maps/dir/?api=1&destination={lat},{lng}',
 
-    EMERGENCY_PHONE: '112',
+    /* ---- 8. Tarayıcı içi örnek veri (ENVIRONMENT: 'mock') ----------------- */
 
-    /* ---- 8. Özellik bayrakları -------------------------------------------- */
+    MOCK: {
+      SCRIPT: 'js/mock-data.js',
+      DELAY_MS: 500,
+      // normal | empty | stale | broken | many | error | ratelimit | unsupported
+      // Adres çubuğunda ?mock=empty gibi de seçilebilir (yalnız 'mock' ortamında).
+      SCENARIO: 'normal'
+    },
 
-    // false yapılan özellik arayüzden tamamen kalkar (düğmesi de görünmez).
-    FEATURES: Object.freeze({
-      favorites: true,
-      share: true,
-      autoRefresh: true,
-      search: true
-    }),
+    /* ---- 9. Genel ----------------------------------------------------------- */
 
-    /* ---- 9. Tarayıcı depolaması (js/storage.js kullanır) ----------------- */
-
-    STORAGE_KEY_PREFIX: 'acilradar.',
-    MAX_FAVORITES: 50,
-
-    // Tarih/sayı biçimleri için yerel ayar (Intl API).
-    LOCALE: 'tr-TR'
+    LOCALE: 'tr-TR',
+    STORAGE_KEY_PREFIX: 'acilradar.'
   });
 })(window.AcilRadar = window.AcilRadar || {});

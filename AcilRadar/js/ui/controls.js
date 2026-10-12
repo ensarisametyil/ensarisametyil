@@ -1,24 +1,21 @@
 /* =============================================================================
- * DOSYA ADI    : js/ui/controls.js
- * NE İŞE YARAR : "Seçimleriniz" bölümü: ilçe listesi + "Konumumu kullan",
- *                zaman seçici, arama, filtreler, sıralama ve otomatik yenileme.
- *                Seçenekleri config.js'ten üretir, kullanıcı bir şey değiştirince
- *                app.js'e haber verir. Durumu KENDİSİ tutmaz; sync() ile yansıtır.
- * NEYİ ALIR    : AcilRadar.config (listeler), app.js'ten olay işleyicileri ve görünüm durumu.
- * NEYİ VERİR   : AcilRadar.ui.controls → init, sync, setLocationStatus, setLocating,
- *                addDeviceOption, applyFeatures
+ * js/ui/controls.js
+ * NE İŞE YARAR : "Seçimleriniz" bölümü: (1) bulunduğunuz yer, (2) zaman,
+ *                (3) sıralama ve filtre. Seçenekleri config.js'ten üretir; değişiklikleri
+ *                app.js'e bildirir. Durumu kendisi TUTMAZ; sync() ile yansıtır.
+ * VERDİĞİ      : AcilRadar.UI.controls → init, sync, setSlotAvailability,
+ *                addDeviceOption, setLocationStatus, setLocating
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Seçeneklerin kendisi (ilçeler, zamanlar, sıralamalar): js/config.js
- *   - Etiketler: js/strings.js › controls, time, sort, crowding, refresh, districts
- *   - Yerleşim: index.html › "6. SEÇİMLER" ve css/layout.css › .controls
+ *   - Seçenekler: config.js (DISTRICTS, TIME_SLOTS, SORT_KEYS, CROWDING_LEVELS)
+ *   - Etiketler: strings.js › controls, districts, time, sort, crowding
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  const dom = AR.dom;
-  const text = AR.text;
-  const DEVICE_VALUE = '__device';
-  const SECONDS_PER_MINUTE = 60;
+  const dom = AR.UI.dom;
+  const t = AR.Strings.text;
+  const DEVICE_VALUE = 'device';
+  const LEVEL_ICONS = { low: 'check', medium: 'medium', high: 'alert' };
 
   function byId(id) {
     return document.getElementById(id);
@@ -26,111 +23,92 @@
 
   /* ---- Seçenekleri üret -------------------------------------------------- */
 
-  function renderDistrictOptions(select, districts) {
+  function renderDistricts(select, districts) {
     dom.clear(select);
     districts.forEach(function (district) {
-      select.appendChild(dom.el('option', { attrs: { value: district.id }, text: text('districts.' + district.id) }));
+      select.appendChild(dom.el('option', { attrs: { value: district.id }, text: t('districts.' + district.id) }));
     });
   }
 
-  /** Radyo düğmeli bölüm (zaman ve sıralama) üretir: görünüşte bölümlü düğme grubu. */
-  function renderRadioGroup(container, name, values, labelPrefix) {
+  /** Radyo düğmelerinden bölümlü seçici (görünüşte segment kontrol, davranışta radyo). */
+  function renderRadios(container, name, ids, labelPrefix) {
     dom.clear(container);
-    values.forEach(function (value) {
-      const id = 'radio-' + name + '-' + value;
-      container.appendChild(dom.el('div', { className: 'segmented__item' }, [
-        dom.el('input', { className: 'segmented__input', attrs: { type: 'radio', name: name, id: id, value: value } }),
-        dom.el('label', { className: 'segmented__label', attrs: { for: id }, text: text(labelPrefix + value) })
+    ids.forEach(function (id) {
+      const inputId = 'opt-' + name + '-' + id;
+      container.appendChild(dom.el('div', { className: 'segment__item' }, [
+        dom.el('input', { className: 'segment__input', attrs: { type: 'radio', name: name, id: inputId, value: id } }),
+        dom.el('label', { className: 'segment__label', attrs: { for: inputId }, data: { label: t(labelPrefix + id) }, text: t(labelPrefix + id) })
       ]));
     });
   }
 
-  function renderCrowdingButtons(container, levels) {
+  function renderLevelChips(container, levels) {
     dom.clear(container);
     levels.forEach(function (level) {
       container.appendChild(dom.el('button', {
         className: 'chip chip--' + level,
         attrs: { type: 'button', 'aria-pressed': 'false' },
         data: { level: level }
-      }, [dom.icon(level === 'low' ? 'check' : level === 'medium' ? 'medium' : 'alert'), dom.el('span', { text: text('crowding.' + level) })]));
+      }, [dom.icon(LEVEL_ICONS[level]), dom.el('span', { text: t('crowding.' + level) })]));
     });
   }
 
-  function refreshOptionLabel(seconds) {
-    if (seconds === 0) return text('refresh.off');
-    if (seconds < SECONDS_PER_MINUTE) return text('refresh.seconds', { value: AR.format.number(seconds) });
-    return text('refresh.minutes', { value: AR.format.number(seconds / SECONDS_PER_MINUTE, 1) });
-  }
+  /* ---- Olaylar ------------------------------------------------------------ */
 
-  function renderRefreshOptions(select, options) {
-    dom.clear(select);
-    options.forEach(function (seconds) {
-      select.appendChild(dom.el('option', { attrs: { value: String(seconds) }, text: refreshOptionLabel(seconds) }));
-    });
-  }
-
-  /* ---- Olayları bağla ---------------------------------------------------- */
-
-  function bindRadioGroup(container, handler) {
+  function onRadioChange(container, handler) {
     container.addEventListener('change', function (event) {
-      if (event.target.matches('input[type="radio"]')) handler(event.target.value);
+      if (event.target.type === 'radio') handler(event.target.value);
     });
   }
 
-  function bindSearch(input, handler) {
+  function bindSearch(input, handler, delayMs) {
     let timer = null;
     input.addEventListener('input', function () {
       clearTimeout(timer);
-      timer = setTimeout(function () { handler(input.value); }, AR.config.SEARCH_DEBOUNCE_MS);
+      timer = setTimeout(function () { handler(input.value); }, delayMs);
     });
-    // Enter ile formun gönderilmesini engelle (sayfa yenilenmesin).
-    if (input.form) input.form.addEventListener('submit', function (event) { event.preventDefault(); });
   }
 
-  function bindEvents(h) {
+  function bindEvents(h, cfg) {
+    byId('controls-form').addEventListener('submit', function (event) { event.preventDefault(); });
     byId('district-select').addEventListener('change', function (event) {
       if (event.target.value !== DEVICE_VALUE) h.onDistrict(event.target.value);
     });
     byId('locate-button').addEventListener('click', h.onUseLocation);
-    bindRadioGroup(byId('time-group'), h.onTimeSlot);
-    bindRadioGroup(byId('sort-group'), h.onSort);
-    bindSearch(byId('search-input'), h.onSearch);
+    onRadioChange(byId('time-group'), h.onTimeSlot);
+    onRadioChange(byId('sort-group'), h.onSort);
+    bindSearch(byId('search-input'), h.onSearch, cfg.SEARCH_DEBOUNCE_MS);
     byId('child-toggle').addEventListener('click', h.onToggleChild);
-    byId('favorites-toggle').addEventListener('click', h.onToggleFavorites);
     byId('crowding-group').addEventListener('click', function (event) {
-      const button = event.target.closest('[data-level]');
-      if (button) h.onToggleLevel(button.dataset.level);
+      const chip = event.target.closest('[data-level]');
+      if (chip) h.onToggleLevel(chip.dataset.level);
     });
     byId('clear-filters').addEventListener('click', h.onClearFilters);
-    byId('refresh-select').addEventListener('change', function (event) { h.onRefreshInterval(Number(event.target.value)); });
-    byId('refresh-now').addEventListener('click', h.onRefreshNow);
   }
 
   /**
-   * @param {Object} cfg       AcilRadar.config
-   * @param {Object} handlers  { onDistrict, onUseLocation, onTimeSlot, onSearch, onToggleChild,
-   *                             onToggleLevel, onToggleFavorites, onClearFilters, onSort,
-   *                             onRefreshInterval, onRefreshNow }
+   * @param {Object} cfg       AcilRadar.Config
+   * @param {Object} handlers  { onDistrict, onUseLocation, onTimeSlot, onSort, onSearch,
+   *                             onToggleChild, onToggleLevel, onClearFilters }
    */
   function init(cfg, handlers) {
-    renderDistrictOptions(byId('district-select'), cfg.DISTRICTS);
-    renderRadioGroup(byId('time-group'), 'time-slot', cfg.TIME_SLOTS, 'time.');
-    renderRadioGroup(byId('sort-group'), 'sort', cfg.SORT_KEYS, 'sort.');
-    renderCrowdingButtons(byId('crowding-group'), cfg.CROWDING_LEVELS);
-    renderRefreshOptions(byId('refresh-select'), cfg.AUTO_REFRESH.OPTIONS_SECONDS);
-    bindEvents(handlers);
+    renderDistricts(byId('district-select'), cfg.DISTRICTS);
+    renderRadios(byId('time-group'), 'time', cfg.TIME_SLOTS.map(function (slot) { return slot.id; }), 'time.');
+    renderRadios(byId('sort-group'), 'sort', cfg.SORT_KEYS, 'sort.');
+    renderLevelChips(byId('crowding-group'), cfg.CROWDING_LEVELS);
+    bindEvents(handlers, cfg);
   }
 
-  /* ---- Durumu yansıt ----------------------------------------------------- */
+  /* ---- Durumu yansıt ------------------------------------------------------ */
 
   function checkRadio(container, value) {
     container.querySelectorAll('input[type="radio"]').forEach(function (input) { input.checked = input.value === value; });
   }
 
   /**
-   * Görünümü uygulama durumuyla eşitler (tek yönlü: durum → arayüz).
+   * Durum → arayüz (tek yönlü).
    * @param {{districtId:string, originSource:string, timeSlot:string, sortKey:string,
-   *          refreshSeconds:number, filters:Object, hasActiveFilters:boolean}} view
+   *          filters:{query:string, childOnly:boolean, levels:Set<string>}, hasActiveFilters:boolean}} view
    */
   function sync(view) {
     byId('district-select').value = view.originSource === 'device' ? DEVICE_VALUE : view.districtId;
@@ -139,27 +117,34 @@
     const search = byId('search-input');
     if (search.value !== view.filters.query) search.value = view.filters.query;
     byId('child-toggle').setAttribute('aria-pressed', String(view.filters.childOnly));
-    byId('favorites-toggle').setAttribute('aria-pressed', String(view.filters.favoritesOnly));
-    byId('crowding-group').querySelectorAll('[data-level]').forEach(function (button) {
-      button.setAttribute('aria-pressed', String(view.filters.levels.has(button.dataset.level)));
+    byId('crowding-group').querySelectorAll('[data-level]').forEach(function (chip) {
+      chip.setAttribute('aria-pressed', String(view.filters.levels.has(chip.dataset.level)));
     });
     byId('clear-filters').hidden = !view.hasActiveFilters;
-    byId('refresh-select').value = String(view.refreshSeconds);
     byId('time-forecast-note').hidden = view.timeSlot === 'now';
   }
 
-  /** "Cihaz konumum" seçeneğini (bir kez) listeye ekler. */
+  /** Saati geçmiş seçenekler devre dışı ve "bugün için geçti" yazılı. */
+  function setSlotAvailability(passedIds) {
+    byId('time-group').querySelectorAll('.segment__input').forEach(function (input) {
+      const passed = passedIds.has(input.value);
+      const label = input.nextElementSibling;
+      input.disabled = passed;
+      label.textContent = passed ? t('controls.timePassed', { label: label.dataset.label }) : label.dataset.label;
+    });
+  }
+
   function addDeviceOption() {
     const select = byId('district-select');
     if (select.querySelector('option[value="' + DEVICE_VALUE + '"]')) return;
-    select.insertBefore(dom.el('option', { attrs: { value: DEVICE_VALUE }, text: text('controls.deviceOption') }), select.firstChild);
+    select.insertBefore(dom.el('option', { attrs: { value: DEVICE_VALUE }, text: t('controls.deviceOption') }), select.firstChild);
   }
 
   /** @param {'info'|'warning'} tone */
   function setLocationStatus(message, tone) {
     const node = byId('location-status');
     node.textContent = message;
-    node.className = 'field-status field-status--' + (tone || 'info');
+    node.className = 'field-status field-status--' + tone;
   }
 
   function setLocating(isLocating) {
@@ -168,20 +153,13 @@
     button.setAttribute('aria-busy', String(isLocating));
   }
 
-  /** config.FEATURES'ta kapalı olan özelliklerin denetimlerini gizler. */
-  function applyFeatures(features) {
-    byId('search-field').hidden = !features.search;
-    byId('favorites-toggle').hidden = !features.favorites;
-    byId('refresh-field').hidden = !features.autoRefresh;
-  }
-
-  AR.ui = AR.ui || {};
-  AR.ui.controls = Object.freeze({
+  AR.UI = AR.UI || {};
+  AR.UI.controls = Object.freeze({
     init: init,
     sync: sync,
+    setSlotAvailability: setSlotAvailability,
     addDeviceOption: addDeviceOption,
     setLocationStatus: setLocationStatus,
-    setLocating: setLocating,
-    applyFeatures: applyFeatures
+    setLocating: setLocating
   });
 })(window.AcilRadar = window.AcilRadar || {});

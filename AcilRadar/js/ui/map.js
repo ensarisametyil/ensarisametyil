@@ -1,193 +1,261 @@
 /* =============================================================================
- * DOSYA ADI    : js/ui/map.js
- * NE İŞE YARAR : Leaflet + OpenStreetMap haritası: listedeki sırayla aynı numaralı,
- *                yoğunluğa göre renkli işaretçiler, hesaplamada kullanılan nokta,
- *                "Hepsini göster" ve kart ↔ işaretçi karşılıklı vurgulama.
- * NEYİ ALIR    : Row[] (js/calc.js), başlangıç noktası, app.js'ten olay işleyicileri.
- *                Veri GETİRMEZ.
- * NEYİ VERİR   : AcilRadar.ui.map → init, isAvailable, update, highlight,
- *                focusHospital, fitAll
+ * js/ui/map.js
+ * NE İŞE YARAR : Leaflet + OpenStreetMap haritası. Harita alanı görünür olunca ve
+ *                tarayıcı boştayken yüklenir (ilk açılışı yavaşlatmaz). Numaralı,
+ *                durum renkli işaretçiler; başlangıç noktası; "Hepsini göster";
+ *                kart ↔ işaretçi vurgusu; mobilde daraltılabilir.
+ * VERDİĞİ      : AcilRadar.UI.map → init, update, highlight, focusHospital, fitAll,
+ *                refreshSize, isAvailable
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Karo adresi, yakınlaştırma düzeyleri: js/config.js › MAP
- *   - İşaretçi renkleri/boyutu: css/components.css › .map-marker
- *   - Açılır kutu (popup) içeriği: buildPopup()
- * NOT: Leaflet (CDN) yüklenemezse harita alanında nazik bir ileti çıkar; liste
- *      ve hesaplar haritadan bağımsız çalışmaya devam eder.
- * NOT (GİZLİLİK): Kullanıcının konumu yalnızca haritada nokta olarak çizilir;
- *      hiçbir isteğe eklenmez.
+ *   - Leaflet dosya yolları, karo adresi, yakınlaştırma: config.js › MAP
+ *   - İşaretçi görünümü: css/components.css › .marker
+ * NOT: Leaflet yüklenemezse (ağ, engelleyici) harita yerine bilgi kutusu çıkar;
+ *      liste ve hesaplar haritadan bağımsız çalışır.
+ * NOT: İşaretçiler klavye sekme sırasına alınmaz (200 hastanede 200 durak olurdu);
+ *      klavye kullanıcısı karttaki "Haritada göster" düğmesini kullanır.
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  const dom = AR.dom;
-  const text = AR.text;
-  const format = AR.format;
-  const cfg = AR.config;
-  const MARKER_SIZE_PX = 36;
-  const ORIGIN_SIZE_PX = 22;
-  const HIGHLIGHT_Z_OFFSET = 1000;
+  const dom = AR.UI.dom;
+  const t = AR.Strings.text;
+  const format = AR.Strings.format;
+  const cfg = AR.Config;
+  const M = cfg.MAP;
+  const MARKER_PX = 36;
+  const ORIGIN_PX = 22;
+  const HIGHLIGHT_Z = 1000;
 
-  let map = null;
-  let markerLayer = null;
-  let originMarker = null;
-  let handlers = { onMarkerSelect: function () {}, onMarkerHover: function () {} };
-  const markersById = new Map();
+  const view = {
+    status: 'idle',           // idle | loading | ready | failed
+    map: null,
+    layer: null,
+    markers: new Map(),
+    origin: null,
+    pending: null,            // { rows, origin, fit } — harita hazır olunca çizilir
+    pendingFocusId: null,
+    container: null,
+    handlers: null
+  };
 
   function isAvailable() {
-    return map !== null;
+    return view.status !== 'failed';
   }
 
-  function showUnavailable(container) {
-    dom.clear(container);
-    container.classList.add('map--unavailable');
-    container.appendChild(dom.el('p', { className: 'map__fallback' }, [dom.icon('info'), dom.el('span', { text: text('map.unavailable') })]));
+  /* ---- Yükleme ------------------------------------------------------------ */
+
+  function showUnavailable() {
+    view.status = 'failed';
+    dom.clear(view.container);
+    view.container.classList.add('map--unavailable');
+    view.container.appendChild(dom.el('div', { className: 'state state--neutral' }, [
+      dom.el('span', { className: 'state__icon' }, [dom.icon('map')]),
+      dom.el('div', { className: 'state__content' }, [dom.el('p', { className: 'state__body', text: t('map.unavailable') })])
+    ]));
+    document.getElementById('map-fit').hidden = true;
+    console.warn(t('dev.prefix') + ' ' + t('dev.leafletFailed'));
+    view.handlers.onAvailabilityChange();
+  }
+
+  function loadLeaflet() {
+    return new Promise(function (resolve, reject) {
+      if (window.L) { resolve(); return; }
+      const style = dom.el('link', { attrs: { rel: 'stylesheet', href: M.LEAFLET_STYLE } });
+      const script = dom.el('script', { attrs: { src: M.LEAFLET_SCRIPT } });
+      const timer = setTimeout(function () { reject(new Error('timeout')); }, M.LOAD_TIMEOUT_MS);
+      script.addEventListener('load', function () { clearTimeout(timer); if (window.L) resolve(); else reject(new Error('no-L')); });
+      script.addEventListener('error', function () { clearTimeout(timer); reject(new Error('error')); });
+      document.head.appendChild(style);
+      document.head.appendChild(script);
+    });
+  }
+
+  function createMap(center) {
+    dom.clear(view.container);
+    view.map = window.L.map(view.container, { scrollWheelZoom: false, keyboard: true });
+    window.L.tileLayer(M.TILE_URL, { maxZoom: M.MAX_ZOOM, attribution: t('map.attribution') }).addTo(view.map);
+    view.map.setView([center.lat, center.lng], M.DEFAULT_ZOOM);
+    view.layer = window.L.layerGroup().addTo(view.map);
+    view.status = 'ready';
+    if (view.pending) {
+      draw(view.pending);
+      view.pending.fit = false;
+    }
+    if (view.pendingFocusId) focusHospital(view.pendingFocusId);
+  }
+
+  function start(center) {
+    if (view.status !== 'idle') return;
+    view.status = 'loading';
+    loadLeaflet().then(function () { createMap(center); }).catch(showUnavailable);
+  }
+
+  /** Görünür olunca + tarayıcı boştayken başlat. */
+  function whenVisibleAndIdle(callback) {
+    const idle = function () {
+      if (window.requestIdleCallback) window.requestIdleCallback(callback, { timeout: M.IDLE_TIMEOUT_MS });
+      else setTimeout(callback, 0);
+    };
+    if (!('IntersectionObserver' in window)) { idle(); return; }
+    const observer = new IntersectionObserver(function (entries) {
+      if (entries.some(function (entry) { return entry.isIntersecting; })) {
+        observer.disconnect();
+        idle();
+      }
+    }, { rootMargin: M.VISIBLE_MARGIN });
+    observer.observe(view.container);
+  }
+
+  /** Mobilde harita daraltılabilir (≥900 px'te düğme gizlidir, harita hep açıktır). */
+  function setExpanded(expanded) {
+    const toggle = document.getElementById('map-toggle');
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.querySelector('[data-role="label"]').textContent = t(expanded ? 'map.hide' : 'map.show');
+    document.getElementById('map-panel').classList.toggle('is-collapsed', !expanded);
+    if (expanded) refreshSize();
+  }
+
+  function bindToggle() {
+    const toggle = document.getElementById('map-toggle');
+    toggle.addEventListener('click', function () {
+      setExpanded(toggle.getAttribute('aria-expanded') !== 'true');
+    });
   }
 
   /**
    * @param {HTMLElement} container
    * @param {{lat:number, lng:number}} center
-   * @param {{onMarkerSelect:function(string), onMarkerHover:function(?string)}} h
-   * @returns {boolean} harita kurulabildi mi
+   * @param {{onSelect:function(string, boolean), onHover:function(?string), onAvailabilityChange:function()}} handlers
    */
-  function init(container, center, h) {
-    handlers = h;
-    if (typeof window.L === 'undefined') {
-      console.warn(text('dev.leafletMissing'));
-      showUnavailable(container);
-      return false;
-    }
-    map = window.L.map(container, { scrollWheelZoom: false, keyboard: true });
-    window.L.tileLayer(cfg.MAP.TILE_URL, { maxZoom: cfg.MAP.MAX_ZOOM, attribution: text('map.attribution') }).addTo(map);
-    map.setView([center.lat, center.lng], cfg.MAP.DEFAULT_ZOOM);
-    markerLayer = window.L.layerGroup().addTo(map);
-    return true;
+  function init(container, center, handlers) {
+    view.container = container;
+    view.handlers = handlers;
+    bindToggle();
+    document.getElementById('map-fit').addEventListener('click', fitAll);
+    whenVisibleAndIdle(function () { start(center); });
   }
 
-  /* ---- İşaretçiler ------------------------------------------------------- */
+  /* ---- Çizim -------------------------------------------------------------- */
 
-  function buildMarkerElement(rank, level) {
-    return dom.el('span', { className: 'map-marker map-marker--' + level }, [
-      dom.el('span', { className: 'map-marker__number', text: format.number(rank) })
-    ]);
-  }
-
-  function buildPopup(row, rank) {
-    const status = AR.ui.cards.statusOf(row);
-    const goToCard = dom.el('button', { className: 'btn btn--secondary btn--small', attrs: { type: 'button' }, text: text('map.popupGoToCard') });
-    goToCard.addEventListener('click', function () { handlers.onMarkerSelect(row.id, { focusCard: true }); });
-    return dom.el('div', { className: 'map-popup' }, [
-      dom.el('p', { className: 'map-popup__title', text: format.number(rank) + '. ' + row.hospital.name }),
-      dom.el('p', { className: 'map-popup__line', text: status.label }),
-      row.totalMinutes ? dom.el('p', { className: 'map-popup__line', text: text('map.popupTotal', { range: format.minutesRange(row.totalMinutes) }) }) : null,
+  function popupContent(row, rank) {
+    const status = AR.UI.cards.statusOf(row);
+    const goToCard = dom.el('button', { className: 'btn btn--secondary btn--compact', attrs: { type: 'button' }, text: t('map.popupGoToCard') });
+    goToCard.addEventListener('click', function () { view.handlers.onSelect(row.id, true); });
+    return dom.el('div', { className: 'popup' }, [
+      dom.el('p', { className: 'popup__title', text: format.number(rank) + '. ' + row.hospital.name }),
+      dom.el('p', { text: status.label }),
+      row.totalMinutes ? dom.el('p', { text: t('map.popupTotal', { range: format.minutesRange(row.totalMinutes) }) }) : null,
       goToCard
     ]);
   }
 
-  function addHospitalMarker(row, rank) {
-    const status = AR.ui.cards.statusOf(row);
-    const label = text('map.markerLabel', { rank: format.number(rank), name: row.hospital.name, status: status.label });
+  function addMarker(row, rank) {
+    const status = AR.UI.cards.statusOf(row);
+    const label = t('map.markerLabel', { rank: format.number(rank), name: row.hospital.name, status: status.label });
     const marker = window.L.marker([row.hospital.lat, row.hospital.lng], {
       icon: window.L.divIcon({
-        className: 'map-marker-host',
-        html: buildMarkerElement(rank, status.level),
-        iconSize: [MARKER_SIZE_PX, MARKER_SIZE_PX],
-        iconAnchor: [MARKER_SIZE_PX / 2, MARKER_SIZE_PX / 2],
-        popupAnchor: [0, -MARKER_SIZE_PX / 2]
-      }),
-      title: label,
-      keyboard: true,
-      riseOnHover: true
-    });
-    marker.bindPopup(function () { return buildPopup(row, rank); });
-    marker.on('click', function () { handlers.onMarkerSelect(row.id, { focusCard: false }); });
-    marker.on('mouseover', function () { handlers.onMarkerHover(row.id); });
-    marker.on('mouseout', function () { handlers.onMarkerHover(null); });
-    marker.addTo(markerLayer);
-    const element = marker.getElement();
-    if (element) element.setAttribute('aria-label', label);
-    markersById.set(row.id, marker);
-  }
-
-  function drawOrigin(origin) {
-    const label = origin.source === 'device'
-      ? text('map.originDevice')
-      : text('map.originDistrict', { district: text('districts.' + origin.districtId) });
-    originMarker = window.L.marker([origin.lat, origin.lng], {
-      icon: window.L.divIcon({
-        className: 'map-origin-host',
-        html: dom.el('span', { className: 'map-origin' }),
-        iconSize: [ORIGIN_SIZE_PX, ORIGIN_SIZE_PX],
-        iconAnchor: [ORIGIN_SIZE_PX / 2, ORIGIN_SIZE_PX / 2]
+        className: 'marker-host',
+        html: dom.el('span', { className: 'marker marker--' + status.level, text: format.number(rank) }),
+        iconSize: [MARKER_PX, MARKER_PX],
+        iconAnchor: [MARKER_PX / 2, MARKER_PX / 2],
+        popupAnchor: [0, -MARKER_PX / 2]
       }),
       title: label,
       keyboard: false,
-      interactive: true
-    }).bindTooltip(label).addTo(markerLayer);
+      riseOnHover: true
+    });
+    marker.bindPopup(function () { return popupContent(row, rank); });
+    marker.on('click', function () { view.handlers.onSelect(row.id, false); });
+    marker.on('mouseover', function () { view.handlers.onHover(row.id); });
+    marker.on('mouseout', function () { view.handlers.onHover(null); });
+    marker.addTo(view.layer);
+    view.markers.set(row.id, marker);
+  }
+
+  function addOrigin(origin) {
+    const label = origin.source === 'device' ? t('map.originDevice') : t('map.originDistrict', { district: t('districts.' + origin.districtId) });
+    view.origin = window.L.marker([origin.lat, origin.lng], {
+      icon: window.L.divIcon({ className: 'marker-host', html: dom.el('span', { className: 'origin' }), iconSize: [ORIGIN_PX, ORIGIN_PX], iconAnchor: [ORIGIN_PX / 2, ORIGIN_PX / 2] }),
+      title: label,
+      keyboard: false
+    }).bindTooltip(label).addTo(view.layer);
+  }
+
+  function draw(job) {
+    view.layer.clearLayers();
+    view.markers.clear();
+    job.rows.forEach(function (row, index) { addMarker(row, index + 1); });
+    addOrigin(job.origin);
+    if (job.fit) fitAll();
   }
 
   /**
-   * İşaretçileri baştan çizer.
-   * @param {Row[]} rows  Listede görünen sırayla
+   * İşaretçileri listedeki sırayla çizer (harita henüz yüklenmediyse bekletir).
+   * @param {Row[]} rows
    * @param {{lat:number, lng:number, source:string, districtId:string}} origin
-   * @param {{fit:boolean}} options  fit=true ise tüm noktalar ekrana sığdırılır
+   * @param {{fit:boolean}} options
    */
   function update(rows, origin, options) {
-    if (!map) return;
-    markerLayer.clearLayers();
-    markersById.clear();
-    rows.forEach(function (row, index) { addHospitalMarker(row, index + 1); });
-    drawOrigin(origin);
-    if (options && options.fit) fitAll();
+    // Harita henüz hazır değilse "sığdır" isteği ilk çizime kadar korunur.
+    const carriedFit = view.pending ? view.pending.fit : false;
+    view.pending = { rows: rows, origin: origin, fit: Boolean(options.fit) || carriedFit };
+    if (view.status === 'ready') {
+      draw(view.pending);
+      view.pending.fit = false;
+    }
   }
 
-  /* ---- Vurgulama ve odak ------------------------------------------------- */
+  /* ---- Vurgu ve odak ------------------------------------------------------ */
 
   function highlight(id) {
-    markersById.forEach(function (marker, markerId) {
+    view.markers.forEach(function (marker, markerId) {
       const element = marker.getElement();
       const active = markerId === id;
       if (element) element.classList.toggle('is-highlighted', active);
-      marker.setZIndexOffset(active ? HIGHLIGHT_Z_OFFSET : 0);
+      marker.setZIndexOffset(active ? HIGHLIGHT_Z : 0);
     });
   }
 
-  /** Bir hastaneye yakınlaşır, açılır kutusunu açar ve vurgular. */
   function focusHospital(id) {
-    const marker = markersById.get(id);
-    if (!map || !marker) return;
-    map.setView(marker.getLatLng(), Math.max(map.getZoom(), cfg.MAP.FOCUS_ZOOM), { animate: !dom.prefersReducedMotion() });
+    setExpanded(true);
+    if (view.status !== 'ready') {
+      view.pendingFocusId = id;
+      if (view.status === 'idle') start(view.pending ? view.pending.origin : cfg.DISTRICTS[0]);
+      return;
+    }
+    view.pendingFocusId = null;
+    const marker = view.markers.get(id);
+    if (!marker) return;
+    view.map.setView(marker.getLatLng(), Math.max(view.map.getZoom(), M.FOCUS_ZOOM), { animate: !dom.prefersReducedMotion() });
     marker.openPopup();
     highlight(id);
   }
 
-  /** Tüm hastaneleri ve başlangıç noktasını ekrana sığdırır. */
   function fitAll() {
-    if (!map) return;
+    if (view.status !== 'ready') return;
     const points = [];
-    markersById.forEach(function (marker) { points.push(marker.getLatLng()); });
-    if (originMarker) points.push(originMarker.getLatLng());
+    view.markers.forEach(function (marker) { points.push(marker.getLatLng()); });
+    if (view.origin) points.push(view.origin.getLatLng());
     if (points.length === 0) return;
-    const padding = cfg.MAP.FIT_PADDING_PX;
-    map.fitBounds(window.L.latLngBounds(points), {
-      padding: [padding, padding],
-      maxZoom: cfg.MAP.MAX_FIT_ZOOM,
+    view.map.fitBounds(window.L.latLngBounds(points), {
+      padding: [M.FIT_PADDING_PX, M.FIT_PADDING_PX],
+      maxZoom: M.MAX_FIT_ZOOM,
       animate: !dom.prefersReducedMotion()
     });
   }
 
-  /** Kapsayıcının boyu değiştiğinde (ör. yazı boyutu) haritayı yeniden ölçer. */
   function refreshSize() {
-    if (map) map.invalidateSize();
+    if (view.status === 'ready') view.map.invalidateSize();
   }
 
-  AR.ui = AR.ui || {};
-  AR.ui.map = Object.freeze({
+  AR.UI = AR.UI || {};
+  AR.UI.map = Object.freeze({
     init: init,
-    isAvailable: isAvailable,
     update: update,
     highlight: highlight,
     focusHospital: focusHospital,
     fitAll: fitAll,
-    refreshSize: refreshSize
+    refreshSize: refreshSize,
+    isAvailable: isAvailable
   });
 })(window.AcilRadar = window.AcilRadar || {});

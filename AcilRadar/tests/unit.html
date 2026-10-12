@@ -1,0 +1,36 @@
+<!doctype html>
+<!--
+  tests/unit.html
+  NE İŞE YARAR : tests/unit/cases.js'teki TÜM vakaları (çizim/XSS vakaları dahil)
+                 gerçek tarayıcıda çalıştırır. file:// ile ya da mock-server ile açılır.
+  NOT: Geliştirici sayfasıdır; metinleri bilerek burada yazılıdır.
+-->
+<html lang="tr" data-text-size="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AcilRadar · Birim testleri</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <main class="container section">
+    <h1>AcilRadar · Birim testleri</h1>
+    <p id="summary" class="field-hint">Çalışıyor…</p>
+    <ol id="results" class="bullets"></ol>
+  </main>
+  <script src="../js/config.js"></script>
+  <script src="../js/strings.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/ui/dom.js"></script>
+  <script src="../js/schema.js"></script>
+  <script src="../js/mock-data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/calc.js"></script>
+  <script src="../js/ui/states.js"></script>
+  <script src="../js/ui/cards.js"></script>
+  <script src="unit/cases.js"></script>
+  <script src="unit/browser-runner.js"></script>
+</body>
+</html>

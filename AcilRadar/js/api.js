@@ -1,289 +1,209 @@
 /* =============================================================================
- * DOSYA ADI    : js/api.js
- * NE İŞE YARAR : Sunucuyla konuşan TEK dosya. İsteği atar, zaman aşımı ve bir
- *                kez yeniden deneme uygular, yanıtı doğrular ve uygulamanın geri
- *                kalanının kullandığı temiz biçime (ApiResponse) çevirir.
- *                Başka hiçbir dosya sunucunun JSON biçimini bilmez.
- * NEYİ ALIR    : AcilRadar.config (API_URL, USE_MOCK, süreler), AcilRadar.mock,
- *                AcilRadar.text (hata metinleri).
- * NEYİ VERİR   : AcilRadar.api → fetchHospitals(timeSlot), parseResponse(raw), ApiError
+ * js/api.js
+ * NE İŞE YARAR : Sunucuyla konuşan TEK dosya. Tüm istekler request() çekirdeğinden
+ *                geçer: zaman aşımı, üstel beklemeli yeniden deneme, 429/Retry-After,
+ *                ETag/If-None-Match, "en son istek kazanır" iptali, istek kancası.
+ *                Yanıtı yorumlamaz; biçim işi js/schema.js'tedir.
+ * VERDİĞİ      : AcilRadar.Api → getHospitals({ at, region }), setRequestHook(fn),
+ *                buildUrl(path, params), ApiError
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Sunucu yeni bir alan gönderiyor ve arayüzde göstermek istiyorsunuz:
- *       1) aşağıdaki normalizeHospital() içine alanı ekleyin (varsayılanıyla),
- *       2) js/ui/cards.js içinde ilgili yere yazdırın (metni js/strings.js'e ekleyin).
- *   - Zorunlu alan listesini değiştirmek: REQUIRED_CHECKS.
- *   - Adres / zaman aşımı / yeniden deneme: js/config.js.
- * NOT: Bu dosya isteğe konum, kimlik ya da çerez EKLEMEZ (credentials: 'omit').
+ *   - Arka uç adresi / ortam: js/config.js (ENVIRONMENT, ENVIRONMENTS) — burası değil.
+ *   - Kimlik doğrulama (ileride): setRequestHook(function (init) { … return init; })
+ *     ile Authorization başlığı ya da credentials: 'include' eklenir. Tek nokta budur.
+ * NOT (GİZLİLİK): İsteğe konum, kimlik ya da çerez EKLENMEZ.
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  const cfg = AR.config;
-  const text = AR.text;
-  const HTTP_SERVER_ERROR_MIN = 500;
+  const cfg = AR.Config;
+  const Schema = AR.Schema;
+  const HTTP_NOT_MODIFIED = 304;
+  const MS_PER_SECOND = 1000;
+  const RETRYABLE_CODES = ['NETWORK', 'TIMEOUT', 'INTERNAL', 'UNAVAILABLE'];
 
   /**
-   * Sunucudan gelen tek bir hastane (doğrulanmış ve varsayılanları doldurulmuş).
-   * @typedef {Object} Hospital
-   * @property {string}   hospitalId
-   * @property {string}   name
-   * @property {string}   district
-   * @property {number}   lat
-   * @property {number}   lng
-   * @property {boolean}  childER                     Çocuk acili var mı
-   * @property {number}   occupancyPercent            0–100
-   * @property {'low'|'medium'|'high'} crowdingLevel
-   * @property {?number}  greenWaiting                Yeşil alanda bekleyen hasta (yoksa null)
-   * @property {?number}  yellowWaiting
-   * @property {?number}  activePhysicians
-   * @property {number[]} estimatedGreenWaitMinutes   [alt, üst]
-   * @property {?number[]} estimatedYellowWaitMinutes [alt, üst] ya da null
-   * @property {string}   updatedAt                   ISO 8601
-   * @property {boolean}  isForecast                  İleri saat öngörüsü mü
-   * @property {'simulated'|'hospital'|'official'|'unknown'} dataSource
+   * Arayüzün anladığı hata. code → strings.js › errors.codes
+   * (ABORTED: daha yeni bir istek başladı; arayüz bunu yok sayar.)
    */
-
-  /**
-   * api.js'in uygulamaya verdiği yanıt.
-   * @typedef {Object} ApiResponse
-   * @property {?string}    generatedAt   Sunucunun verdiği üretim zamanı (ISO) ya da null
-   * @property {string}     dataSource    Genel kaynak (meta'dan ya da kayıtlardan)
-   * @property {boolean}    isSimulated   Kayıtlardan biri bile simülasyonsa true
-   * @property {Hospital[]} hospitals
-   * @property {number}     receivedAt    Tarayıcının yanıtı aldığı an (ms)
-   */
-
-  /** Kullanıcıya gösterilebilir Türkçe iletili hata. */
   class ApiError extends Error {
-    /**
-     * @param {string} message      Kullanıcıya gösterilecek Türkçe ileti
-     * @param {{retryable?: boolean, detail?: string, status?: number}} [info]
-     */
-    constructor(message, info) {
-      super(message);
+    constructor(code, info) {
+      super(code);
       this.name = 'ApiError';
-      this.retryable = Boolean(info && info.retryable);
-      this.detail = (info && info.detail) || '';
+      this.code = code;
       this.status = (info && info.status) || 0;
+      this.retryAfterMs = (info && info.retryAfterMs) || 0;
     }
   }
 
-  /* ---- 1. İstek ---------------------------------------------------------- */
+  let requestHook = null;
+  let activeController = null;
+  const etagCache = new Map();
 
-  function buildUrl(timeSlot) {
-    const url = new URL(cfg.API_URL, window.location.href);
-    url.searchParams.set('at', timeSlot);
+  /** İleride kimlik doğrulama için tek kanca: fn(init, url) → init */
+  function setRequestHook(fn) {
+    requestHook = typeof fn === 'function' ? fn : null;
+  }
+
+  function buildUrl(path, params) {
+    const base = cfg.ENVIRONMENTS[cfg.ENVIRONMENT].apiBaseUrl || '';
+    const url = new URL(base + path, window.location.href);
+    Object.keys(params || {}).forEach(function (name) {
+      if (params[name] != null) url.searchParams.set(name, params[name]);
+    });
     return url.toString();
   }
 
-  function wait(ms) {
-    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  /** Retry-After: saniye ya da HTTP tarihi → ms (üst sınırlı). */
+  function parseRetryAfter(value) {
+    if (!value) return 0;
+    const seconds = /^\d+$/.test(value.trim()) ? Number(value) : (Date.parse(value) - Date.now()) / MS_PER_SECOND;
+    if (!Number.isFinite(seconds) || seconds <= 0) return 0;
+    return Math.min(seconds, cfg.REQUEST.MAX_RETRY_AFTER_SECONDS) * MS_PER_SECOND;
   }
 
-  async function readErrorDetail(response) {
-    try {
-      const body = await response.json();
-      return body && typeof body.error === 'string' ? body.error : '';
-    } catch (error) {
-      return '';
-    }
-  }
-
-  /** Tek bir istek: zaman aşımı + HTTP durum + JSON çözümleme. */
-  async function fetchOnce(url) {
-    const controller = new AbortController();
-    const timer = setTimeout(function () { controller.abort(); }, cfg.REQUEST_TIMEOUT_MS);
-    let response;
-    try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        credentials: 'omit',          // çerez/kimlik GÖNDERME
-        cache: 'no-store',
-        referrerPolicy: 'no-referrer',
-        signal: controller.signal
-      });
-    } catch (error) {
-      const timedOut = error && error.name === 'AbortError';
-      throw new ApiError(text(timedOut ? 'error.timeout' : 'error.network'), { retryable: true });
-    } finally {
-      clearTimeout(timer);
-    }
-    if (!response.ok) {
-      const detail = await readErrorDetail(response);
-      throw new ApiError(text('error.server', { status: response.status }), {
-        retryable: response.status >= HTTP_SERVER_ERROR_MIN,
-        status: response.status,
-        detail: detail
-      });
-    }
-    try {
-      return await response.json();
-    } catch (error) {
-      throw new ApiError(text('error.invalidJson'));
-    }
-  }
-
-  /** Ağ hatası, zaman aşımı ya da 5xx durumunda REQUEST_RETRY_COUNT kez yeniden dener. */
-  async function fetchWithRetry(url) {
-    for (let attempt = 0; ; attempt += 1) {
-      try {
-        return await fetchOnce(url);
-      } catch (error) {
-        if (!error.retryable || attempt >= cfg.REQUEST_RETRY_COUNT) throw error;
-        await wait(cfg.REQUEST_RETRY_DELAY_MS);
-      }
-    }
-  }
-
-  /* ---- 2. Doğrulama ve dönüştürme ---------------------------------------- */
-
-  function isFiniteNumber(value) {
-    return typeof value === 'number' && Number.isFinite(value);
-  }
-
-  function isNonEmptyString(value) {
-    return typeof value === 'string' && value.trim() !== '';
-  }
-
-  function isMinuteRange(value) {
-    return Array.isArray(value) && value.length === 2 &&
-      isFiniteNumber(value[0]) && isFiniteNumber(value[1]) && value[0] >= 0 && value[0] <= value[1];
-  }
-
-  function isValidDate(value) {
-    return typeof value === 'string' && !Number.isNaN(Date.parse(value));
-  }
-
-  // Zorunlu alanlar ve denetimleri. Biri tutmazsa kayıt atlanır ve konsola yazılır.
-  const REQUIRED_CHECKS = {
-    hospitalId: function (v) { return isNonEmptyString(v) || isFiniteNumber(v); },
-    name: isNonEmptyString,
-    district: isNonEmptyString,
-    lat: function (v) { return isFiniteNumber(v) && Math.abs(v) <= 90; },
-    lng: function (v) { return isFiniteNumber(v) && Math.abs(v) <= 180; },
-    occupancyPercent: function (v) { return isFiniteNumber(v) && v >= 0 && v <= 100; },
-    crowdingLevel: function (v) { return cfg.CROWDING_LEVELS.indexOf(v) !== -1; },
-    estimatedGreenWaitMinutes: isMinuteRange,
-    updatedAt: isValidDate
-  };
-
-  function findInvalidFields(item) {
-    return Object.keys(REQUIRED_CHECKS).filter(function (field) {
-      return !REQUIRED_CHECKS[field](item[field]);
+  function wait(ms, signal) {
+    return new Promise(function (resolve, reject) {
+      const timer = setTimeout(resolve, ms);
+      if (signal) signal.addEventListener('abort', function () {
+        clearTimeout(timer);
+        reject(new ApiError('ABORTED'));
+      }, { once: true });
     });
   }
 
-  function optionalCount(value) {
-    return isFiniteNumber(value) && value >= 0 ? Math.round(value) : null;
+  /* ---- 1. Tek istek ------------------------------------------------------- */
+
+  function buildInit(url, signal) {
+    const headers = { Accept: 'application/json' };
+    const cached = etagCache.get(url);
+    if (cached) headers['If-None-Match'] = cached.etag;
+    const init = { method: 'GET', headers: headers, credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer', signal: signal };
+    return requestHook ? requestHook(init, url) : init;
   }
 
-  function normalizeSource(value, fallback) {
-    return cfg.DATA_SOURCES.indexOf(value) !== -1 ? value : fallback;
+  async function readJson(response) {
+    const type = response.headers.get('Content-Type') || '';
+    const body = await response.text();
+    if (type.indexOf('json') === -1) return { ok: false };
+    try {
+      return { ok: true, value: JSON.parse(body) };
+    } catch (error) {
+      return { ok: false };
+    }
   }
+
+  async function handleResponse(response, url) {
+    if (response.status === HTTP_NOT_MODIFIED && etagCache.has(url)) return etagCache.get(url).body;
+    const parsed = await readJson(response);
+    if (!response.ok) {
+      const code = Schema.normalizeErrorBody(response.status, parsed.ok ? parsed.value : null);
+      throw new ApiError(code, { status: response.status, retryAfterMs: parseRetryAfter(response.headers.get('Retry-After')) });
+    }
+    if (!parsed.ok) throw new ApiError('INVALID_RESPONSE', { status: response.status });
+    const etag = response.headers.get('ETag');
+    if (etag) etagCache.set(url, { etag: etag, body: parsed.value });
+    return parsed.value;
+  }
+
+  /** Tek deneme: zaman aşımı, dış iptal sinyali ve ağ hatası ayrımı. */
+  async function attempt(url, outerSignal) {
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(function () { timedOut = true; controller.abort(); }, cfg.REQUEST.TIMEOUT_MS);
+    const onOuterAbort = function () { controller.abort(); };
+    outerSignal.addEventListener('abort', onOuterAbort, { once: true });
+    try {
+      const response = await fetch(url, buildInit(url, controller.signal));
+      return await handleResponse(response, url);
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      if (outerSignal.aborted) throw new ApiError('ABORTED');
+      throw new ApiError(timedOut ? 'TIMEOUT' : 'NETWORK');
+    } finally {
+      clearTimeout(timer);
+      outerSignal.removeEventListener('abort', onOuterAbort);
+    }
+  }
+
+  /* ---- 2. İstek çekirdeği: yeniden deneme -------------------------------- */
 
   /**
-   * Ham kaydı Hospital biçimine çevirir; geçersizse null döndürür.
-   * Bilinmeyen (gelecekte eklenecek) alanlar bilerek yok sayılır.
-   * @returns {?Hospital}
+   * Tüm istekler buradan geçer.
+   * @param {string} path    ör. '/api/v1/hospitals'
+   * @param {{params?:Object, signal:AbortSignal}} options
+   * @returns {Promise<*>} çözümlenmiş JSON
    */
-  function normalizeHospital(item, index, defaultSource) {
-    const record = item && typeof item === 'object' ? item : {};
-    const invalid = findInvalidFields(record);
-    if (invalid.length > 0) {
-      console.warn(text('dev.skippedHospital', {
-        index: index + 1,
-        id: record.hospitalId != null ? String(record.hospitalId) : '?',
-        fields: invalid.join(', ')
-      }));
-      return null;
+  async function request(path, options) {
+    const url = buildUrl(path, options.params);
+    const r = cfg.REQUEST;
+    for (let tryIndex = 0; ; tryIndex += 1) {
+      if (navigator.onLine === false) throw new ApiError('OFFLINE');
+      try {
+        return await attempt(url, options.signal);
+      } catch (error) {
+        const retryable = RETRYABLE_CODES.indexOf(error.code) !== -1;
+        if (!retryable || tryIndex >= r.MAX_RETRIES) throw error;
+        await wait(Math.min(r.RETRY_BASE_DELAY_MS * Math.pow(2, tryIndex), r.RETRY_MAX_DELAY_MS), options.signal);
+      }
     }
-    return {
-      hospitalId: String(record.hospitalId),
-      name: record.name.trim(),
-      district: record.district.trim(),
-      lat: record.lat,
-      lng: record.lng,
-      childER: record.childER === true,
-      occupancyPercent: Math.round(record.occupancyPercent),
-      crowdingLevel: record.crowdingLevel,
-      greenWaiting: optionalCount(record.greenWaiting),
-      yellowWaiting: optionalCount(record.yellowWaiting),
-      activePhysicians: optionalCount(record.activePhysicians),
-      estimatedGreenWaitMinutes: [record.estimatedGreenWaitMinutes[0], record.estimatedGreenWaitMinutes[1]],
-      estimatedYellowWaitMinutes: isMinuteRange(record.estimatedYellowWaitMinutes)
-        ? [record.estimatedYellowWaitMinutes[0], record.estimatedYellowWaitMinutes[1]] : null,
-      updatedAt: record.updatedAt,
-      isForecast: record.isForecast === true,
-      dataSource: normalizeSource(record.dataSource, defaultSource)
-    };
   }
 
-  function readMeta(raw) {
-    if (raw.meta == null) return {};
-    if (typeof raw.meta !== 'object') {
-      console.warn(text('dev.badMeta'));
-      return {};
+  /* ---- 3. Uç noktalar ----------------------------------------------------- */
+
+  /** Örnek veri dosyası yalnız 'mock' ortamında ve ilk istekte yüklenir (canlıda hiç inmez). */
+  function ensureMock() {
+    if (AR.Mock) return Promise.resolve(AR.Mock);
+    return new Promise(function (resolve, reject) {
+      const script = document.createElement('script');
+      script.src = cfg.MOCK.SCRIPT;
+      script.addEventListener('load', function () { if (AR.Mock) resolve(AR.Mock); else reject(new ApiError('UNKNOWN')); });
+      script.addEventListener('error', function () { reject(new ApiError('NETWORK')); });
+      document.head.appendChild(script);
+    });
+  }
+
+  /** 'mock' ortamında sunucu yerine js/mock-data.js yanıt verir (aynı biçim, aynı doğrulama). */
+  async function mockRequest(query, signal) {
+    const mock = await ensureMock();
+    const res = await mock.respond(query, signal);
+    if (signal.aborted) throw new ApiError('ABORTED');
+    if (res.status >= 400) {
+      const retryAfter = res.headers && res.headers['Retry-After'];
+      throw new ApiError(Schema.normalizeErrorBody(res.status, res.body), { status: res.status, retryAfterMs: parseRetryAfter(retryAfter) });
     }
-    return raw.meta;
+    return res.body;
+  }
+
+  function toApiError(error) {
+    if (error instanceof ApiError) return error;
+    if (error instanceof Schema.SchemaError) return new ApiError(error.code);
+    return new ApiError('UNKNOWN');
   }
 
   /**
-   * Sunucu yanıtını doğrular ve ApiResponse'a çevirir.
-   * Yeni biçim { meta, hospitals } ve eski biçim { hospitals } desteklenir.
-   * @param {*} raw  JSON.parse sonucu
-   * @returns {ApiResponse}
-   */
-  function parseResponse(raw) {
-    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.hospitals)) {
-      console.error(text('dev.missingHospitals'), raw);
-      throw new ApiError(text('error.invalidShape'));
-    }
-    const meta = readMeta(raw);
-    const metaSource = normalizeSource(meta.dataSource, 'unknown');
-    const hospitals = raw.hospitals
-      .map(function (item, index) { return normalizeHospital(item, index, metaSource); })
-      .filter(Boolean);
-    if (raw.hospitals.length > 0 && hospitals.length === 0) {
-      throw new ApiError(text('error.noValidHospital'));
-    }
-    const isSimulated = metaSource === 'simulated' ||
-      hospitals.some(function (hospital) { return hospital.dataSource === 'simulated'; });
-    return {
-      generatedAt: isValidDate(meta.generatedAt) ? meta.generatedAt : null,
-      dataSource: metaSource !== 'unknown' ? metaSource : (hospitals[0] ? hospitals[0].dataSource : 'unknown'),
-      isSimulated: isSimulated,
-      hospitals: hospitals,
-      receivedAt: Date.now()
-    };
-  }
-
-  /* ---- 3. Dışarıya açılan tek fonksiyon ---------------------------------- */
-
-  /**
-   * Hastaneleri getirir. USE_MOCK açıksa ağa çıkmadan sahte veri kullanır,
-   * ama sahte veri de AYNI doğrulamadan geçer (arka uç sözleşmesi sınansın diye).
-   * @param {string} timeSlot  'now' | '2h' | 'evening'
+   * Hastaneleri getirir. Yeni çağrı, sürmekte olan eskisini iptal eder.
+   * @param {{at:string, region:?string}} query
    * @returns {Promise<ApiResponse>}
    */
-  async function fetchHospitals(timeSlot) {
-    const slot = cfg.TIME_SLOTS.indexOf(timeSlot) !== -1 ? timeSlot : cfg.DEFAULT_TIME_SLOT;
-    let raw;
-    if (cfg.USE_MOCK) {
-      try {
-        raw = await AR.mock.respond(slot);
-      } catch (error) {
-        throw new ApiError(text('error.mock'), { retryable: false });
-      }
-    } else {
-      raw = await fetchWithRetry(buildUrl(slot));
+  async function getHospitals(query) {
+    if (activeController) activeController.abort();
+    const controller = new AbortController();
+    activeController = controller;
+    try {
+      const raw = cfg.ENVIRONMENT === 'mock'
+        ? await mockRequest(query, controller.signal)
+        : await request(cfg.API_PATHS.hospitals, { params: { at: query.at, region: query.region }, signal: controller.signal });
+      return Schema.normalizeResponse(raw, Date.now());
+    } catch (error) {
+      throw toApiError(error);
+    } finally {
+      if (activeController === controller) activeController = null;
     }
-    return parseResponse(raw);
   }
 
-  AR.api = Object.freeze({
-    fetchHospitals: fetchHospitals,
-    parseResponse: parseResponse,
+  AR.Api = Object.freeze({
+    getHospitals: getHospitals,
+    setRequestHook: setRequestHook,
     buildUrl: buildUrl,
     ApiError: ApiError
   });

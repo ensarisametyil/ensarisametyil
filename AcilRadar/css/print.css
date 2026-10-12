@@ -1,0 +1,75 @@
+/* =============================================================================
+ * css/print.css
+ * NE İŞE YARAR : Yazdırma görünümü: harita, seçimler ve düğmeler gizlenir; kartlar
+ *                tek sütun ve sayfa arasında bölünmeden basılır; uyarı metni kalır.
+ * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: yazdırmada gizlenecek/gösterilecek bölümler.
+ * NOT: index.html'de media="print" ile yüklenir; ekran görünümünü etkilemez.
+ * ========================================================================== */
+
+@page {
+  margin: 14mm;
+}
+
+:root {
+  --root-size: 100%;
+}
+
+body {
+  background: #FFFFFF;
+  color: #000000;
+}
+
+.topbar,
+.banners,
+.skip-link,
+.size-group,
+.controls,
+#controls-title,
+.results__map,
+.card__actions,
+.pick__actions,
+.disclosure,
+#refresh-button,
+.footer__grid,
+.emergency__body {
+  display: none !important;
+}
+
+.section {
+  margin-top: 8mm;
+}
+
+.results {
+  display: block;
+}
+
+.card-list {
+  display: block;
+}
+
+.card,
+.pick,
+.state,
+.stat {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  box-shadow: none;
+}
+
+.card-item {
+  margin-bottom: 4mm;
+}
+
+.card__details[hidden] {
+  display: none !important;
+}
+
+.footer {
+  background: none;
+  color: #000000;
+}
+
+.footer__bottom-inner {
+  border-top: 1px solid #000000;
+  color: #000000;
+}

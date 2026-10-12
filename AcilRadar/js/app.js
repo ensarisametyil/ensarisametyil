@@ -1,89 +1,75 @@
 /* =============================================================================
- * DOSYA ADI    : js/app.js
- * NE İŞE YARAR : Uygulamanın "beyni": durumu (state) tutar, olayları dinler,
- *                veriyi api.js'ten ister, calc.js ile hesaplatır ve ui/* dosyalarına
- *                çizdirir. Başlatma (init) buradadır.
- * NEYİ ALIR    : Diğer tüm modüller (config, strings, storage, api, calc, ui/*).
- * NEYİ VERİR   : AcilRadar.app → { init, state } (hata ayıklama için konsoldan erişilebilir)
+ * js/app.js
+ * NE İŞE YARAR : Uygulamanın akışı: tek state nesnesi, olaylar, veri yükleme,
+ *                otomatik yenileme ve bölüm bölüm çizim. Başlatma buradadır.
+ * VERDİĞİ      : AcilRadar.App → { state } (hata ayıklama için konsoldan okunabilir)
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Akış: init() → load() → recompute() → render()
- *   - Yeni bir filtre eklemek: 4 yer değişir:
- *       1) aşağıdaki state.filters'a alanı ekleyin (+ clearFilters),
- *       2) js/calc.js › filterRows() ve hasActiveFilters(),
- *       3) js/ui/controls.js › bindEvents() ve sync(),
- *       4) index.html'e denetimi, js/strings.js'e etiketini ekleyin.
- * NOT: Akış tek yönlüdür: olay → state değişir → render(). Çizim dosyaları
- *      state'i değiştirmez, veri getirmez.
+ *   - Akış: init() → load() → recompute() → render*()
+ *   - Hangi değişiklik neyi yeniden çizer: bölüm 7'deki işleyiciler.
+ *   - Yeni filtre (4 yer): state.filters + Calc.filterRows/hasActiveFilters +
+ *     UI.controls (bindEvents, sync) + index.html denetimi ve strings.js etiketi.
+ * NOT: Akış tek yönlüdür: olay → state → render. Çizim dosyaları state'i değiştirmez.
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  const cfg = AR.config;
-  const calc = AR.calc;
-  const ui = AR.ui;
-  const text = AR.text;
+  const cfg = AR.Config;
+  const Calc = AR.Calc;
+  const UI = AR.UI;
+  const t = AR.Strings.text;
+  const format = AR.Strings.format;
   const MS_PER_SECOND = 1000;
-  const MAX_STAGGER_CARDS = 8;
 
-  /* ---- 1. Durum (state) -------------------------------------------------- */
+  /* ---- 1. Durum ------------------------------------------------------------ */
+
+  function emptyFilters() {
+    return { query: '', childOnly: false, levels: new Set() };
+  }
 
   const state = {
-    prefs: null,                       // { textSize, theme, districtId } (storage.js)
-    favorites: new Set(),              // favori hastane kimlikleri
-    origin: null,                      // { lat, lng, source: 'district'|'device', districtId }
+    textSize: cfg.DEFAULT_TEXT_SIZE,
+    districtId: cfg.DEFAULT_DISTRICT_ID,
+    origin: null,                 // { lat, lng, source: 'district'|'device', districtId } — YALNIZ bellekte
     timeSlot: cfg.DEFAULT_TIME_SLOT,
-    filters: { query: '', childOnly: false, levels: new Set(), favoritesOnly: false },
     sortKey: cfg.DEFAULT_SORT,
-    refreshSeconds: cfg.FEATURES.autoRefresh ? cfg.AUTO_REFRESH.DEFAULT_SECONDS : 0,
-    response: null,                    // ApiResponse (api.js)
-    error: null,                       // { message, detail }
+    filters: emptyFilters(),
+    response: null,               // ApiResponse (js/schema.js)
+    errorCode: null,
+    retryAfterMs: 0,
     isLoading: false,
-    rows: [],                          // Row[] (tümü)
-    visibleRows: [],                   // Row[] (süzülmüş + sıralı)
-    expandedIds: new Set(),            // ayrıntısı açık kartlar
-    highlightedId: null,               // şu an vurgulanan (fare/odak ya da seçim)
-    selectedId: null,                  // işaretçiye/"Haritada göster"e tıklanarak seçilen
-    requestSeq: 0,                     // eski isteklerin yanıtını yok saymak için
-    lastLoadAt: 0,
-    staleSignature: ''
+    requestSeq: 0,
+    rows: [],                     // Row[] (tümü)
+    visibleRows: [],              // süzülmüş + sıralı
+    shortest: null,               // en kısa toplam süreli satır
+    staleSignature: '',
+    passedSlots: new Set(),
+    expandedIds: new Set(),
+    highlightedId: null,
+    selectedId: null,
+    isLocating: false
   };
 
   const timers = { refresh: null, tick: null };
   const els = {};
 
-  /* ---- 2. Başlatma ------------------------------------------------------- */
+  /* ---- 2. Başlatma --------------------------------------------------------- */
 
   function cacheElements() {
-    ['results-list', 'recommendation', 'results-message', 'error-region', 'results-status', 'map', 'map-fit', 'privacy-clear', 'footer-copyright']
+    ['results-list', 'results-message', 'error-region', 'pick', 'results-status', 'last-updated', 'refresh-button', 'map', 'footer-copyright', 'search-input']
       .forEach(function (id) { els[id] = document.getElementById(id); });
   }
 
-  function applyDocumentStrings() {
-    AR.dom.applyStaticStrings(document);
-    AR.dom.hydrateIcons(document);
-    document.title = text('app.documentTitle');
-    const description = document.querySelector('meta[name="description"]');
-    if (description) description.setAttribute('content', text('app.metaDescription'));
-    els['footer-copyright'].textContent = text('footer.copyright', { year: new Date().getFullYear() });
-    renderFormula();
-  }
-
-  /** "Süre nasıl hesaplanıyor?" metinlerini config'teki gerçek katsayılarla doldurur. */
-  function renderFormula() {
-    const t = cfg.TRAVEL;
-    const fill = {
-      'formula-travel': text('formula.travel', { roadFactor: AR.format.number(t.ROAD_FACTOR, 2), speed: AR.format.number(t.AVERAGE_SPEED_KMH), traffic: AR.format.number(t.TRAFFIC_FACTOR_MAX, 2), minTravel: AR.format.number(t.MIN_TRAVEL_MINUTES) }),
-      'formula-registration': text('formula.registration', { min: cfg.REGISTRATION_MINUTES[0], max: cfg.REGISTRATION_MINUTES[1] }),
-      'formula-stale': text('formula.stale', { minutes: AR.format.number(cfg.STALE_AFTER_MINUTES) })
-    };
-    Object.keys(fill).forEach(function (id) {
-      const node = document.getElementById(id);
-      if (node) node.textContent = fill[id];
-    });
+  function applyStaticContent() {
+    UI.dom.applyStaticStrings(document);
+    UI.dom.hydrateIcons(document);
+    document.title = t('app.documentTitle');
+    els['footer-copyright'].textContent = t('footer.copyright', { year: new Date().getFullYear() });
+    UI.info.renderFormula(cfg);
+    UI.info.renderDataSource('none');
   }
 
   function districtById(id) {
-    return cfg.DISTRICTS.find(function (district) { return district.id === id; }) || cfg.DISTRICTS[0];
+    return cfg.DISTRICTS.find(function (d) { return d.id === id; }) || cfg.DISTRICTS[0];
   }
 
   function originFromDistrict(id) {
@@ -91,184 +77,221 @@
     return { lat: district.lat, lng: district.lng, source: 'district', districtId: district.id };
   }
 
-  function loadPreferences() {
-    state.prefs = AR.storage.getPrefs();
-    state.favorites = cfg.FEATURES.favorites ? AR.storage.getFavorites() : new Set();
-    state.origin = originFromDistrict(state.prefs.districtId);
-  }
-
   function init() {
     cacheElements();
-    applyDocumentStrings();
-    loadPreferences();
-    ui.header.init(state.prefs, { onTextSize: handleTextSize, onTheme: handleTheme });
-    ui.controls.init(cfg, controlHandlers);
-    ui.controls.applyFeatures(cfg.FEATURES);
-    ui.cards.bind([els['results-list'], els.recommendation], { onAction: handleCardAction, onHover: handleHover });
-    ui.map.init(els.map, state.origin, { onMarkerSelect: handleMarkerSelect, onMarkerHover: handleHover });
-    AR.dom.bindDisclosures(document);
+    applyStaticContent();
+    const prefs = AR.Storage.getPrefs();
+    state.textSize = prefs.textSize;
+    state.districtId = prefs.districtId;
+    state.origin = originFromDistrict(prefs.districtId);
+    UI.topbar.init(state.textSize, handleTextSize);
+    UI.controls.init(cfg, controlHandlers);
+    UI.dom.bindDisclosures(document);
+    UI.cards.bind([els['results-list']], { onAction: handleCardAction, onHover: handleHover });
+    UI.map.init(els.map, state.origin, { onSelect: handleMapSelect, onHover: handleHover, onAvailabilityChange: renderResults });
     bindGlobalEvents();
+    updateSlotAvailability(Date.now());
     syncControls();
     updateLocationStatus();
-    updateOnlineState();
-    load({ userInitiated: false });
+    UI.states.setOfflineBanner(navigator.onLine === false);
+    UI.hero.render(null);
+    load({ announce: true });
     timers.tick = setInterval(handleClockTick, cfg.CLOCK_TICK_SECONDS * MS_PER_SECOND);
+    document.documentElement.classList.add('app-ready');
   }
 
-  /* ---- 3. Veri yükleme ve otomatik yenileme ----------------------------- */
+  /* ---- 3. Veri yükleme ve otomatik yenileme ------------------------------ */
 
   /**
-   * Veriyi getirir. İlk yüklemede iskelet gösterir; sonrakilerde eski liste
-   * yerinde kalır ve yalnızca "Güncelleniyor…" görünür.
-   * @param {{userInitiated:boolean}} options
+   * Veriyi getirir. İlk yüklemede iskelet gösterir; sonrakilerde mevcut liste
+   * yerinde kalır. Yeni çağrı eskisini iptal eder (en son istek kazanır).
+   * @param {{announce:boolean}} options
    */
   async function load(options) {
-    const seq = ++state.requestSeq;
-    const firstLoad = !state.response;
-    state.isLoading = true;
     clearTimeout(timers.refresh);
-    if (firstLoad) showLoading(); else ui.summary.setRefreshing(true);
+    const seq = ++state.requestSeq;
+    const firstData = !state.response;
+    state.isLoading = true;
+    if (firstData) showLoading(); else setRefreshing(true);
     try {
-      const response = await AR.api.fetchHospitals(state.timeSlot);
-      if (seq !== state.requestSeq) return;          // daha yeni bir istek başladı
-      state.response = response;
-      state.error = null;
-      state.lastLoadAt = Date.now();
-    } catch (error) {
+      const response = await AR.Api.getHospitals({ at: state.timeSlot, region: cfg.REGION_ID });
       if (seq !== state.requestSeq) return;
-      state.error = { message: error.message || text('error.network'), detail: error.detail || '' };
+      state.response = response;
+      state.errorCode = null;
+      state.retryAfterMs = 0;
+    } catch (error) {
+      if (error.code === 'ABORTED' || seq !== state.requestSeq) return;
+      state.errorCode = error.code;
+      state.retryAfterMs = error.retryAfterMs || 0;
+      console.warn(t('dev.prefix') + ' ' + t('dev.requestFailed', { code: error.code, status: error.status || '-' }));
     }
     state.isLoading = false;
-    ui.summary.setRefreshing(false);
+    setRefreshing(false);
     recompute();
-    render({ animate: firstLoad, fitMap: firstLoad, announce: options.userInitiated || firstLoad });
+    renderAll({ animate: firstData, fit: firstData, announce: options.announce || firstData });
     scheduleRefresh();
   }
 
   function showLoading() {
-    ui.states.setBusy(els['results-list'], true);
-    ui.states.showSkeleton(els['results-list'], cfg.SKELETON_CARD_COUNT);
-    els['results-message'].hidden = true;
-    ui.summary.render(null);
-    ui.states.announce(text('a11y.loading'));
+    UI.states.showSkeleton(els['results-list'], cfg.SKELETON_CARD_COUNT);
+    UI.states.hide(els['results-message']);
+    UI.states.announce(t('a11y.loading'));
   }
 
+  function setRefreshing(isRefreshing) {
+    els['refresh-button'].disabled = isRefreshing;
+    els['refresh-button'].setAttribute('aria-busy', String(isRefreshing));
+  }
+
+  /** Sekme gizliyken / çevrimdışıyken yenilenmez; 429'da Retry-After beklenir. */
   function scheduleRefresh() {
     clearTimeout(timers.refresh);
-    if (!cfg.FEATURES.autoRefresh || state.refreshSeconds <= 0) return;
-    if (document.hidden || !navigator.onLine) return;   // gizli sekmede/çevrimdışıyken durur
-    timers.refresh = setTimeout(function () { load({ userInitiated: false }); }, state.refreshSeconds * MS_PER_SECOND);
+    if (document.hidden || navigator.onLine === false) return;
+    const delay = Math.max(cfg.AUTO_REFRESH_SECONDS * MS_PER_SECOND, state.retryAfterMs);
+    timers.refresh = setTimeout(function () { load({ announce: false }); }, delay);
   }
 
-  /** Sekme yeniden görünür olunca: süre dolduysa hemen yenile, yoksa kalan süreyi bekle. */
+  function dataAgeMs() {
+    return state.response ? Date.now() - state.response.receivedAtMs : Infinity;
+  }
+
   function handleVisibilityChange() {
     if (document.hidden) {
       clearTimeout(timers.refresh);
       return;
     }
-    const due = state.refreshSeconds > 0 && Date.now() - state.lastLoadAt >= state.refreshSeconds * MS_PER_SECOND;
-    if (due && cfg.FEATURES.autoRefresh && !state.isLoading) load({ userInitiated: false });
+    if (dataAgeMs() >= cfg.AUTO_REFRESH_SECONDS * MS_PER_SECOND && !state.isLoading) load({ announce: false });
     else scheduleRefresh();
   }
 
-  /** Her CLOCK_TICK_SECONDS'ta: "5 dakika önce" yazılarını ve veri eskimesini yenile. */
+  /** Saat tıkı: göreli zaman yazıları, veri eskimesi, saati geçen zaman seçeneği. */
   function handleClockTick() {
-    ui.summary.renderLastUpdated(lastUpdatedMs(), Date.now());
+    const nowMs = Date.now();
+    renderLastUpdated(nowMs);
+    if (updateSlotAvailability(nowMs)) return;
     if (!state.response) return;
     const previous = state.staleSignature;
     recompute();
-    if (state.staleSignature !== previous) render({ animate: false, fitMap: false, announce: false });
+    if (state.staleSignature !== previous) {
+      renderHero();
+      renderResults({ animate: false, fit: false, announce: false });
+    }
   }
 
-  /* ---- 4. Hesap ---------------------------------------------------------- */
+  /* ---- 4. Hesap ------------------------------------------------------------ */
 
   function recompute() {
     const hospitals = state.response ? state.response.hospitals : [];
-    state.rows = calc.buildRows(hospitals, state.origin, Date.now(), cfg);
-    state.visibleRows = calc.sortRows(calc.filterRows(state.rows, state.filters, state.favorites), state.sortKey);
-    state.staleSignature = state.rows.filter(function (row) { return row.isStale; }).map(function (row) { return row.id; }).join('|');
+    const timing = state.response || { generatedAtMs: Date.now(), receivedAtMs: Date.now() };
+    state.rows = Calc.buildRows(hospitals, state.origin, timing, Date.now(), cfg);
+    state.visibleRows = Calc.sortRows(Calc.filterRows(state.rows, state.filters), state.sortKey);
+    state.shortest = Calc.pickShortest(state.visibleRows);
+    state.staleSignature = state.rows.filter(function (r) { return r.isStale; }).map(function (r) { return r.id; }).join('|');
   }
 
-  function lastUpdatedMs() {
-    if (!state.response) return 0;
-    return state.response.generatedAt ? Date.parse(state.response.generatedAt) : state.response.receivedAt;
-  }
-
-  /* ---- 5. Çizim ---------------------------------------------------------- */
-
-  function cardContext(animate) {
-    return {
-      favorites: state.favorites,
-      expandedIds: state.expandedIds,
-      features: cfg.FEATURES,
-      nowMs: Date.now(),
-      highlightedId: state.highlightedId,
-      directionsTemplate: cfg.DIRECTIONS_URL_TEMPLATE,
-      registrationMinutes: cfg.REGISTRATION_MINUTES,
-      mapAvailable: ui.map.isAvailable(),
-      animate: animate,
-      maxStagger: MAX_STAGGER_CARDS
-    };
+  /** Şimdiki an: yanıt varsa sunucu saatine göre (yanlış cihaz saatine karşı). */
+  function referenceNowMs(nowMs) {
+    return state.response ? Calc.serverNowMs(state.response, nowMs) : nowMs;
   }
 
   /**
-   * Tüm sonuç alanını durumdan yeniden çizer. Odaktaki düğme korunur.
-   * @param {{animate:boolean, fitMap:boolean, announce:boolean}} options
+   * Saati geçen seçenekleri işaretler. Seçili seçenek geçtiyse "Şimdi"ye döner.
+   * @returns {boolean} yeniden yükleme başlatıldıysa true
    */
-  function render(options) {
+  function updateSlotAvailability(nowMs) {
+    const minute = Calc.minutesOfDay(referenceNowMs(nowMs), cfg.TIME_ZONE);
+    state.passedSlots = new Set(cfg.TIME_SLOTS.filter(function (slot) { return Calc.isSlotPassed(slot, minute); }).map(function (slot) { return slot.id; }));
+    UI.controls.setSlotAvailability(state.passedSlots);
+    if (!state.passedSlots.has(state.timeSlot)) return false;
+    UI.states.announce(t('controls.timeSlotExpired', { label: t('time.' + state.timeSlot) }));
+    state.timeSlot = cfg.DEFAULT_TIME_SLOT;
+    syncControls();
+    load({ announce: false });
+    return true;
+  }
+
+  /* ---- 5. Çizim (bölüm bölüm) --------------------------------------------- */
+
+  function renderAll(options) {
+    const response = state.response;
+    UI.states.setSimulationBanner(Boolean(response && response.isSimulated));
+    UI.states.setNotice(response ? response.notice : null);
+    UI.info.renderDataSource(response ? response.dataSource : 'none');
+    renderHero();
+    renderResults(options);
+  }
+
+  function renderHero() {
+    UI.hero.render(state.response ? Calc.summarize(state.rows) : null);
+  }
+
+  function renderLastUpdated(nowMs) {
+    const r = state.response;
+    els['last-updated'].textContent = r
+      ? t('results.lastUpdated', { time: format.clock(r.generatedAtMs), relative: format.ago(format.minutesBetween(r.receivedAtMs, nowMs)) })
+      : t('results.notUpdated');
+  }
+
+  function cardContext(animate) {
+    return {
+      expandedIds: state.expandedIds,
+      highlightedId: state.highlightedId,
+      shortestId: state.shortest ? state.shortest.id : null,
+      mapAvailable: UI.map.isAvailable(),
+      directionsTemplate: cfg.DIRECTIONS_URL_TEMPLATE,
+      registrationMinutes: cfg.REGISTRATION_MINUTES,
+      animate: animate,
+      maxAnimated: cfg.MAX_ANIMATED_CARDS
+    };
+  }
+
+  /** Sonuç alanı: hata, boş durum, öneri, liste, harita, sayı. Odak korunur. */
+  function renderResults(options) {
+    const opts = options || { animate: false, fit: false, announce: false };
     const focusKey = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.focusKey : null;
-    ui.states.setBanner('simulation', Boolean(state.response && state.response.isSimulated));
-    ui.states.setBusy(els['results-list'], false);
-    renderErrorRegion();
+    if (state.errorCode) UI.states.renderError(els['error-region'], state.errorCode, Boolean(state.response), handleRetry);
+    else UI.states.hide(els['error-region']);
+    renderLastUpdated(Date.now());
     if (!state.response) {
-      AR.dom.clear(els['results-list']);
-      AR.dom.clear(els.recommendation);
-      els.recommendation.hidden = true;
+      UI.dom.clear(els['results-list']);
+      els['results-list'].setAttribute('aria-busy', 'false');
+      UI.pick.hide(els.pick);
+      els['results-status'].textContent = '';
       return;
     }
-    ui.summary.render(calc.summarize(state.rows));
-    ui.summary.renderLastUpdated(lastUpdatedMs(), Date.now());
-    renderResults(options);
-    syncControls();
-    restoreFocus(focusKey);
-    if (options.announce) ui.states.announce(resultStatusText());
-  }
-
-  function renderErrorRegion() {
-    if (state.error) ui.states.renderError(els['error-region'], state.error, Boolean(state.response), handleRetry);
-    else ui.states.clearError(els['error-region']);
-  }
-
-  function renderResults(options) {
-    const ctx = cardContext(options.animate);
-    const rows = state.visibleRows;
     renderEmptyState();
-    ui.cards.renderList(els['results-list'], rows, ctx);
-    const recommended = calc.pickRecommendation(rows);
-    els.recommendation.hidden = rows.length === 0;
-    ui.cards.renderRecommendation(els.recommendation, recommended, rows.indexOf(recommended) + 1, ctx);
-    ui.map.update(rows, state.origin, { fit: options.fitMap });
-    ui.map.highlight(state.highlightedId);
-    els['results-status'].textContent = resultStatusText();
+    UI.cards.renderList(els['results-list'], state.visibleRows, cardContext(opts.animate));
+    renderPick();
+    UI.map.update(state.visibleRows, state.origin, { fit: opts.fit });
+    UI.map.highlight(state.highlightedId);
+    els['results-status'].textContent = resultCountText();
+    restoreFocus(focusKey);
+    if (opts.announce) UI.states.announce(resultCountText());
+  }
+
+  function renderPick() {
+    if (state.rows.length === 0) {
+      UI.pick.hide(els.pick);
+      return;
+    }
+    UI.pick.render(els.pick, state.shortest, state.visibleRows.indexOf(state.shortest) + 1, cfg.DIRECTIONS_URL_TEMPLATE);
   }
 
   function renderEmptyState() {
-    const message = els['results-message'];
     if (state.visibleRows.length > 0) {
-      message.hidden = true;
+      UI.states.hide(els['results-message']);
       return;
     }
-    message.hidden = false;
-    if (state.rows.length === 0) ui.states.renderEmpty(message, 'noData', null);
-    else ui.states.renderEmpty(message, 'noMatch', calc.hasActiveFilters(state.filters) ? handleClearFilters : null);
+    if (state.rows.length === 0) UI.states.renderEmpty(els['results-message'], 'noData', null);
+    else UI.states.renderEmpty(els['results-message'], 'noMatch', Calc.hasActiveFilters(state.filters) ? handleClearFilters : null);
   }
 
-  function resultStatusText() {
-    if (state.visibleRows.length === 0) return text('status.resultCountZero');
-    return text('status.resultCount', { count: AR.format.number(state.visibleRows.length), sort: text('sort.' + state.sortKey) });
+  function resultCountText() {
+    if (state.visibleRows.length === 0) return t('results.countZero');
+    return t('results.count', { count: format.number(state.visibleRows.length), sort: t('sort.' + state.sortKey) });
   }
 
-  /** Yeniden çizimden sonra klavye odağını aynı düğmeye geri verir. */
+  /** Yeniden çizimden sonra klavye odağı aynı düğmeye döner. */
   function restoreFocus(focusKey) {
     if (!focusKey || (document.activeElement && document.activeElement !== document.body)) return;
     const target = document.querySelector('[data-focus-key="' + CSS.escape(focusKey) + '"]');
@@ -276,252 +299,187 @@
   }
 
   function syncControls() {
-    ui.controls.sync({
-      districtId: state.prefs.districtId,
+    UI.controls.sync({
+      districtId: state.districtId,
       originSource: state.origin.source,
       timeSlot: state.timeSlot,
       sortKey: state.sortKey,
-      refreshSeconds: state.refreshSeconds,
       filters: state.filters,
-      hasActiveFilters: calc.hasActiveFilters(state.filters)
+      hasActiveFilters: Calc.hasActiveFilters(state.filters)
     });
   }
 
-  /** Yalnızca filtre/sıralama/konum değiştiğinde: veri yeniden getirilmez. */
-  function rerender(fitMap) {
+  /* ---- 6. Seçim değişiklikleri: yalnız ilgili bölümler -------------------- */
+
+  /** Filtre/sıralama: özet değişmez; yalnız sonuç alanı yeniden çizilir. */
+  function applyListChange() {
     recompute();
-    render({ animate: false, fitMap: Boolean(fitMap), announce: true });
+    syncControls();
+    renderResults({ animate: false, fit: false, announce: true });
   }
 
-  /* ---- 6. Olay işleyicileri: görünüm ------------------------------------ */
+  /** Başlangıç noktası: mesafeler değişir → özet + sonuçlar. */
+  function applyOriginChange() {
+    recompute();
+    syncControls();
+    updateLocationStatus();
+    renderHero();
+    renderResults({ animate: false, fit: true, announce: true });
+  }
 
   function handleTextSize(size) {
-    state.prefs.textSize = size;
-    AR.storage.savePrefs({ textSize: size });
-    ui.header.setTextSize(size);
-    ui.map.refreshSize();
+    state.textSize = size;
+    AR.Storage.savePrefs({ textSize: size });
+    UI.topbar.setTextSize(size);
+    UI.map.refreshSize();
   }
-
-  function handleTheme(theme) {
-    state.prefs.theme = theme;
-    AR.storage.savePrefs({ theme: theme });
-    ui.header.setTheme(theme);
-  }
-
-  /* ---- 7. Olay işleyicileri: seçimler ----------------------------------- */
 
   function handleDistrict(id) {
-    state.prefs.districtId = districtById(id).id;
-    state.origin = originFromDistrict(state.prefs.districtId);
-    AR.storage.savePrefs({ districtId: state.prefs.districtId });
-    updateLocationStatus();
-    rerender(true);
+    state.districtId = districtById(id).id;
+    state.origin = originFromDistrict(state.districtId);
+    AR.Storage.savePrefs({ districtId: state.districtId });
+    applyOriginChange();
   }
 
   function updateLocationStatus() {
-    if (state.origin.source === 'device') ui.controls.setLocationStatus(text('controls.locationDevice'), 'info');
-    else ui.controls.setLocationStatus(text('controls.locationDistrict', { district: text('districts.' + state.origin.districtId) }), 'info');
+    if (state.origin.source === 'device') UI.controls.setLocationStatus(t('controls.locationDevice') + ' ' + t('controls.locationPrivacy'), 'info');
+    else UI.controls.setLocationStatus(t('controls.locationDistrict', { district: t('districts.' + state.origin.districtId) }), 'info');
   }
 
   const GEO_ERROR_KEYS = { 1: 'controls.locationDenied', 2: 'controls.locationUnavailable', 3: 'controls.locationTimeout' };
 
-  /** "Konumumu kullan": konum YALNIZCA bellekte tutulur; saklanmaz, gönderilmez. */
+  function onLocationFailed(key) {
+    state.isLocating = false;
+    UI.controls.setLocating(false);
+    UI.controls.setLocationStatus(t(key), 'warning');
+  }
+
+  /** "Konumumu kullan": konum YALNIZ bellekte tutulur; saklanmaz, gönderilmez. */
   function handleUseLocation() {
+    if (state.isLocating) return;
     if (!('geolocation' in navigator)) {
-      ui.controls.setLocationStatus(text('controls.locationUnsupported'), 'warning');
+      onLocationFailed('controls.locationUnsupported');
       return;
     }
-    ui.controls.setLocating(true);
-    ui.controls.setLocationStatus(text('controls.locationLocating'), 'info');
+    state.isLocating = true;
+    UI.controls.setLocating(true);
+    UI.controls.setLocationStatus(t('controls.locating'), 'info');
     navigator.geolocation.getCurrentPosition(function (position) {
-      ui.controls.setLocating(false);
-      state.origin = { lat: position.coords.latitude, lng: position.coords.longitude, source: 'device', districtId: state.prefs.districtId };
-      ui.controls.addDeviceOption();
-      updateLocationStatus();
-      rerender(true);
+      state.isLocating = false;
+      UI.controls.setLocating(false);
+      state.origin = { lat: position.coords.latitude, lng: position.coords.longitude, source: 'device', districtId: state.districtId };
+      UI.controls.addDeviceOption();
+      applyOriginChange();
     }, function (error) {
-      ui.controls.setLocating(false);
-      ui.controls.setLocationStatus(text(GEO_ERROR_KEYS[error.code] || 'controls.locationUnavailable'), 'warning');
+      onLocationFailed(GEO_ERROR_KEYS[error.code] || 'controls.locationUnavailable');
     }, { enableHighAccuracy: cfg.GEOLOCATION.HIGH_ACCURACY, timeout: cfg.GEOLOCATION.TIMEOUT_MS, maximumAge: cfg.GEOLOCATION.MAX_AGE_MS });
   }
 
-  function handleTimeSlot(slot) {
-    if (slot === state.timeSlot) return;
-    state.timeSlot = slot;
+  function handleTimeSlot(id) {
+    if (id === state.timeSlot || state.passedSlots.has(id)) return;
+    state.timeSlot = id;
     syncControls();
-    load({ userInitiated: true });
+    load({ announce: true });
+  }
+
+  function handleSort(key) {
+    state.sortKey = cfg.SORT_KEYS.indexOf(key) !== -1 ? key : cfg.DEFAULT_SORT;
+    applyListChange();
   }
 
   function handleSearch(query) {
     state.filters.query = query;
-    rerender(false);
+    applyListChange();
   }
 
-  function toggleFilter(name) {
-    state.filters[name] = !state.filters[name];
-    rerender(false);
+  function handleToggleChild() {
+    state.filters.childOnly = !state.filters.childOnly;
+    applyListChange();
   }
 
   function handleToggleLevel(level) {
     if (state.filters.levels.has(level)) state.filters.levels.delete(level);
     else state.filters.levels.add(level);
-    rerender(false);
+    applyListChange();
   }
 
   function handleClearFilters() {
-    state.filters = { query: '', childOnly: false, levels: new Set(), favoritesOnly: false };
-    rerender(false);
-    document.getElementById('search-input').focus();
-  }
-
-  function handleSort(key) {
-    state.sortKey = cfg.SORT_KEYS.indexOf(key) !== -1 ? key : cfg.DEFAULT_SORT;
-    rerender(false);
-  }
-
-  function handleRefreshInterval(seconds) {
-    state.refreshSeconds = cfg.AUTO_REFRESH.OPTIONS_SECONDS.indexOf(seconds) !== -1 ? seconds : 0;
-    scheduleRefresh();
+    state.filters = emptyFilters();
+    applyListChange();
+    els['search-input'].focus();
   }
 
   function handleRetry() {
-    load({ userInitiated: true });
+    if (!state.isLoading) load({ announce: true });
   }
 
   const controlHandlers = {
     onDistrict: handleDistrict,
     onUseLocation: handleUseLocation,
     onTimeSlot: handleTimeSlot,
-    onSearch: handleSearch,
-    onToggleChild: function () { toggleFilter('childOnly'); },
-    onToggleFavorites: function () { toggleFilter('favoritesOnly'); },
-    onToggleLevel: handleToggleLevel,
-    onClearFilters: handleClearFilters,
     onSort: handleSort,
-    onRefreshInterval: handleRefreshInterval,
-    onRefreshNow: handleRetry
+    onSearch: handleSearch,
+    onToggleChild: handleToggleChild,
+    onToggleLevel: handleToggleLevel,
+    onClearFilters: handleClearFilters
   };
 
-  /* ---- 8. Olay işleyicileri: kartlar ve harita -------------------------- */
-
-  function rowById(id) {
-    return state.rows.find(function (row) { return row.id === id; }) || null;
-  }
+  /* ---- 7. Kart ↔ harita --------------------------------------------------- */
 
   function handleCardAction(action, id, button) {
-    const row = rowById(id);
-    if (!row) return;
-    if (action === 'favorite') toggleFavorite(row);
-    else if (action === 'toggle-details') toggleDetails(row, button);
-    else if (action === 'show-on-map') showOnMap(row);
-    else if (action === 'share') shareRow(row);
+    if (action === 'details') {
+      const open = !state.expandedIds.has(id);
+      if (open) state.expandedIds.add(id); else state.expandedIds.delete(id);
+      UI.dom.setExpanded(button, open);
+    } else if (action === 'map') {
+      state.selectedId = id;
+      setHighlight(id);
+      document.getElementById('map-panel').scrollIntoView({ behavior: UI.dom.scrollBehavior(), block: 'nearest' });
+      UI.map.focusHospital(id);
+    }
   }
 
-  function toggleFavorite(row) {
-    const adding = !state.favorites.has(row.id);
-    if (adding) state.favorites.add(row.id); else state.favorites.delete(row.id);
-    AR.storage.saveFavorites(state.favorites);
-    ui.states.toast(text(adding ? 'favorite.added' : 'favorite.removed', { name: row.hospital.name }));
-    recompute();
-    render({ animate: false, fitMap: false, announce: false });
+  function setHighlight(id) {
+    state.highlightedId = id;
+    UI.cards.setHighlight(els['results-list'], id);
+    UI.map.highlight(id);
   }
 
-  /** Ayrıntıları yeniden çizmeden aç/kapa (odak ve kaydırma yerinde kalsın). */
-  function toggleDetails(row, button) {
-    const expanded = !state.expandedIds.has(row.id);
-    if (expanded) state.expandedIds.add(row.id); else state.expandedIds.delete(row.id);
-    AR.dom.setExpanded(button, expanded);
-  }
-
-  function showOnMap(row) {
-    state.selectedId = row.id;
-    state.highlightedId = row.id;
-    ui.cards.setHighlight(els['results-list'], row.id);
-    els.map.scrollIntoView({ behavior: AR.dom.prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
-    ui.map.focusHospital(row.id);
-  }
-
-  /** Fare/odak bir karttan ya da işaretçiden ayrılınca seçili hastaneye geri dönülür. */
+  /** Fare/odak ayrılınca seçili hastaneye dönülür. */
   function handleHover(id) {
     const target = id || state.selectedId;
-    if (target === state.highlightedId) return;
-    state.highlightedId = target;
-    ui.cards.setHighlight(els['results-list'], target);
-    ui.map.highlight(target);
+    if (target !== state.highlightedId) setHighlight(target);
   }
 
-  /** İşaretçiye tıklanınca ilgili kartı vurgula ve görünür yap. */
-  function handleMarkerSelect(id, options) {
+  function handleMapSelect(id, focusCard) {
     state.selectedId = id;
-    state.highlightedId = id;
-    ui.map.highlight(id);
-    const card = ui.cards.setHighlight(els['results-list'], id);
+    setHighlight(id);
+    const card = UI.cards.setHighlight(els['results-list'], id);
     if (!card) return;
-    card.scrollIntoView({ behavior: AR.dom.prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
-    if (options && options.focusCard) card.focus({ preventScroll: true });
+    card.scrollIntoView({ behavior: UI.dom.scrollBehavior(), block: 'nearest' });
+    if (focusCard) card.focus({ preventScroll: true });
   }
 
-  /** Web Share API; yoksa panoya kopyala. Konum paylaşılmaz. */
-  async function shareRow(row) {
-    const h = row.hospital;
-    const message = row.totalMinutes
-      ? text('share.text', { name: h.name, district: h.district, range: AR.format.minutesRange(row.totalMinutes) })
-      : text('share.textStale', { name: h.name, district: h.district });
-    const url = calc.buildDirectionsUrl(cfg.DIRECTIONS_URL_TEMPLATE, h.lat, h.lng);
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: text('share.title', { name: h.name }), text: message, url: url });
-        return;
-      } catch (error) {
-        if (error && error.name === 'AbortError') return;     // kullanıcı vazgeçti
-      }
-    }
-    await copyToClipboard(message + ' ' + url);
-  }
-
-  async function copyToClipboard(value) {
-    try {
-      await navigator.clipboard.writeText(value);
-      ui.states.toast(text('share.copied'));
-    } catch (error) {
-      ui.states.toast(text('share.failed'));
-    }
-  }
-
-  /* ---- 9. Genel olaylar -------------------------------------------------- */
-
-  function updateOnlineState() {
-    ui.states.setBanner('offline', !navigator.onLine);
-  }
-
-  function handleOnline() {
-    updateOnlineState();
-    load({ userInitiated: false });
-  }
-
-  function handleOffline() {
-    updateOnlineState();
-    clearTimeout(timers.refresh);
-  }
-
-  function handlePrivacyClear() {
-    AR.storage.clearAll();
-    state.favorites = new Set();
-    ui.states.toast(text('privacy.cleared'));
-    recompute();
-    render({ animate: false, fitMap: false, announce: false });
-  }
+  /* ---- 8. Genel olaylar ---------------------------------------------------- */
 
   function bindGlobalEvents() {
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', function () {
+      UI.states.setOfflineBanner(false);
+      load({ announce: false });
+    });
+    window.addEventListener('offline', function () {
+      UI.states.setOfflineBanner(true);
+      clearTimeout(timers.refresh);
+    });
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    els['map-fit'].addEventListener('click', function () { ui.map.fitAll(); });
-    els['map-fit'].hidden = !ui.map.isAvailable();
-    els['privacy-clear'].addEventListener('click', handlePrivacyClear);
+    // Geri/ileri tuşuyla önbellekten dönülürse bilgiler tazelenir.
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) load({ announce: false });
+    });
+    els['refresh-button'].addEventListener('click', handleRetry);
   }
 
-  AR.app = Object.freeze({ init: init, state: state });
+  AR.App = Object.freeze({ state: state });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

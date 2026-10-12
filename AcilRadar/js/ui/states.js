@@ -1,23 +1,25 @@
 /* =============================================================================
- * DOSYA ADI    : js/ui/states.js
- * NE İŞE YARAR : Liste dışındaki "durum" görünümleri: yükleniyor iskeletleri,
- *                boş sonuç, hata + "Tekrar dene", çevrimdışı ve simülasyon bantları,
- *                ekran okuyucu duyuruları ve kısa bildirimler (toast).
- * NEYİ ALIR    : Çizilecek durum bilgisi (app.js'ten). Veri GETİRMEZ.
- * NEYİ VERİR   : AcilRadar.ui.states → showSkeleton, renderEmpty, renderError,
- *                clearError, setBanner, announce, toast, setBusy
+ * js/ui/states.js
+ * NE İŞE YARAR : Durum görünümleri: yükleniyor iskeletleri, sonuç yok, hata +
+ *                "Tekrar dene", bantlar (örnek veri, çevrimdışı, sunucu duyurusu),
+ *                ekran okuyucu duyurusu ve sonuç sayısı satırı.
+ * VERDİĞİ      : AcilRadar.UI.states
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Durum metinleri: js/strings.js › empty, error, banner
- *   - İskelet kartın görünümü: css/components.css › .skeleton
+ *   - Durum metinleri: strings.js › empty, errors, banner
+ *   - Görünüm: css/components.css › .state, .banner, .skeleton
+ * NOT: Veri getirmez, durum (state) değiştirmez; yalnız kendisine verileni çizer.
  * ========================================================================== */
 (function (AR) {
   'use strict';
 
-  const dom = AR.dom;
-  const text = AR.text;
-  let toastTimer = null;
+  const dom = AR.UI.dom;
+  const t = AR.Strings.text;
 
-  /** Yükleniyor iskeletleri (ekran okuyucudan gizli; yerine tek bir duyuru yapılır). */
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  /** İskelet kartlar: gerçek kartla aynı yüksekliği ayırır (düzen kayması olmaz). */
   function showSkeleton(listEl, count) {
     dom.clear(listEl);
     for (let i = 0; i < count; i += 1) {
@@ -28,96 +30,93 @@
         dom.el('div', { className: 'skeleton__line skeleton__line--meta' })
       ]));
     }
+    listEl.setAttribute('aria-busy', 'true');
   }
 
-  function setBusy(listEl, busy) {
-    listEl.setAttribute('aria-busy', String(busy));
+  function stateBox(variant, iconName, title, body, action) {
+    return dom.el('div', { className: 'state state--' + variant }, [
+      dom.el('span', { className: 'state__icon' }, [dom.icon(iconName)]),
+      dom.el('div', { className: 'state__content' }, [
+        dom.el('p', { className: 'state__title', text: title }),
+        body ? dom.el('p', { className: 'state__body', text: body }) : null,
+        action || null
+      ])
+    ]);
+  }
+
+  function actionButton(label, iconName, onClick) {
+    const button = dom.el('button', { className: 'btn btn--secondary', attrs: { type: 'button' } }, [
+      iconName ? dom.icon(iconName) : null,
+      dom.el('span', { text: label })
+    ]);
+    button.addEventListener('click', onClick);
+    return button;
   }
 
   /**
-   * Boş sonuç.
-   * @param {HTMLElement} container
+   * Sonuç yok.
    * @param {'noData'|'noMatch'} kind
-   * @param {?function} onClearFilters  yalnızca 'noMatch' için düğme gösterilir
+   * @param {?function} onClearFilters  noMatch'te "Filtreleri temizle" düğmesi
    */
   function renderEmpty(container, kind, onClearFilters) {
     dom.clear(container);
-    const box = dom.el('div', { className: 'state-box' }, [
-      dom.icon(kind === 'noMatch' ? 'search' : 'info', 'state-box__icon'),
-      dom.el('h3', { className: 'state-box__title', text: text('empty.' + kind + 'Title') }),
-      dom.el('p', { text: text('empty.' + kind + 'Body') })
-    ]);
-    if (kind === 'noMatch' && onClearFilters) {
-      const button = dom.el('button', { className: 'btn btn--secondary', attrs: { type: 'button' }, text: text('controls.clearFilters') });
-      button.addEventListener('click', onClearFilters);
-      box.appendChild(button);
-    }
-    container.appendChild(box);
-  }
-
-  /**
-   * Hata kutusu. compact=true ise eski veri hâlâ gösteriliyordur (kısa uyarı).
-   * @param {HTMLElement} container
-   * @param {{message:string, detail?:string}} error
-   * @param {boolean} compact
-   * @param {function} onRetry
-   */
-  function renderError(container, error, compact, onRetry) {
-    dom.clear(container);
-    const retry = dom.el('button', { className: 'btn btn--primary', attrs: { type: 'button' } }, [
-      dom.icon('refresh'), dom.el('span', { text: text('error.retry') })
-    ]);
-    retry.addEventListener('click', onRetry);
-    const children = [
-      dom.icon('alert', 'state-box__icon'),
-      dom.el('h3', { className: 'state-box__title', text: compact ? text('error.keptOld') : text('error.title') }),
-      dom.el('p', { text: error.message })
-    ];
-    if (error.detail) children.push(dom.el('p', { className: 'state-box__detail', text: text('error.serverDetail', { message: error.detail }) }));
-    children.push(retry);
-    container.appendChild(dom.el('div', { className: 'state-box state-box--error' + (compact ? ' state-box--compact' : '') }, children));
+    const action = kind === 'noMatch' && onClearFilters ? actionButton(t('controls.clearFilters'), null, onClearFilters) : null;
+    container.appendChild(stateBox('neutral', kind === 'noMatch' ? 'search' : 'info', t('empty.' + kind + 'Title'), t('empty.' + kind + 'Body'), action));
     container.hidden = false;
   }
 
-  function clearError(container) {
+  /**
+   * Hata. Eski bilgi hâlâ gösteriliyorsa (hasData) kısa uyarı biçimindedir.
+   * @param {string} code  strings.js › errors.codes anahtarı
+   */
+  function renderError(container, code, hasData, onRetry) {
+    dom.clear(container);
+    const message = AR.Strings.has('errors.codes.' + code) ? t('errors.codes.' + code) : t('errors.codes.UNKNOWN');
+    const title = hasData ? t('errors.keptOld') : t('errors.title');
+    container.appendChild(stateBox(hasData ? 'warning' : 'error', 'alert', title, message, actionButton(t('errors.retry'), 'refresh', onRetry)));
+    container.hidden = false;
+  }
+
+  function hide(container) {
     dom.clear(container);
     container.hidden = true;
   }
 
-  /** Sayfa üstündeki bantlar: 'offline' ya da 'simulation'. */
-  function setBanner(name, visible) {
-    const banner = document.getElementById(name + '-banner');
-    if (banner) banner.hidden = !visible;
+  /** Örnek veri bandı: yalnız veri simülasyonsa görünür. */
+  function setSimulationBanner(visible) {
+    byId('simulation-banner').hidden = !visible;
   }
 
-  /** Ekran okuyuculara kibarca duyurur (aria-live="polite" bölgesi). */
+  function setOfflineBanner(visible) {
+    byId('offline-banner').hidden = !visible;
+  }
+
+  /** Sunucu duyurusu (metin textContent ile yazılır). */
+  function setNotice(notice) {
+    const banner = byId('notice-banner');
+    banner.hidden = !notice;
+    if (!notice) return;
+    banner.className = 'banner banner--notice banner--' + notice.level;
+    byId('notice-label').textContent = t(notice.level === 'warning' ? 'banner.noticeWarning' : 'banner.noticeInfo');
+    byId('notice-text').textContent = notice.text;
+  }
+
+  /** Ekran okuyuculara kibar duyuru (aria-live="polite"). */
   function announce(message) {
-    const region = document.getElementById('live-region');
-    if (!region) return;
+    const region = byId('live-region');
     region.textContent = '';
-    // NOT: Aynı ileti art arda gelse de okunması için içerik bir sonraki karede yazılır.
-    window.requestAnimationFrame(function () { region.textContent = message; });
+    window.setTimeout(function () { region.textContent = message; }, 0);
   }
 
-  /** Kısa bildirim (ör. "Bağlantı panoya kopyalandı"). Hem görünür hem duyurulur. */
-  function toast(message) {
-    const node = document.getElementById('toast');
-    if (!node) return;
-    node.textContent = message;
-    node.classList.add('is-visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { node.classList.remove('is-visible'); }, AR.config.TOAST_DURATION_MS);
-  }
-
-  AR.ui = AR.ui || {};
-  AR.ui.states = Object.freeze({
+  AR.UI = AR.UI || {};
+  AR.UI.states = Object.freeze({
     showSkeleton: showSkeleton,
-    setBusy: setBusy,
     renderEmpty: renderEmpty,
     renderError: renderError,
-    clearError: clearError,
-    setBanner: setBanner,
-    announce: announce,
-    toast: toast
+    hide: hide,
+    setSimulationBanner: setSimulationBanner,
+    setOfflineBanner: setOfflineBanner,
+    setNotice: setNotice,
+    announce: announce
   });
 })(window.AcilRadar = window.AcilRadar || {});

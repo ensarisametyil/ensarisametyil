@@ -1,0 +1,46 @@
+<!doctype html>
+<!--
+  404.html
+  NE İŞE YARAR : Bulunamayan adresler için sade sayfa. JavaScript kullanmaz;
+                 bu yüzden metinleri burada yazılıdır (strings.js okunmaz).
+  NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: Sunucu yapılandırmasında 404 yanıtı bu
+                 dosyaya yönlendirilmelidir (docs/README.md › Yayına alma).
+-->
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sayfa bulunamadı · AcilRadar</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="./" aria-label="AcilRadar ana sayfa">
+        <svg class="brand__logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="8" fill="#0F2F55"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity=".35"/>
+          <path d="M6 16.5h5l2-4.5 3 9 2.5-5H26" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand__text"><span class="brand__name">AcilRadar</span></span>
+      </a>
+      <a class="btn btn--danger call" href="tel:112" aria-label="112 Acil Çağrı Merkezini ara"><span class="call__long">112’yi Ara</span><span class="call__short" aria-hidden="true">112</span></a>
+    </div>
+  </header>
+  <main class="container section">
+    <div class="state state--neutral">
+      <div class="state__content">
+        <h1 class="state__title">Aradığınız sayfa bulunamadı.</h1>
+        <p class="state__body">Hayati tehlike varsa beklemeyin; hemen 112’yi arayın.</p>
+        <p><a class="btn btn--primary" href="./">Ana sayfaya dön</a></p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

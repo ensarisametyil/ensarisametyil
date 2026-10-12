@@ -1,307 +1,160 @@
 /* =============================================================================
- * DOSYA ADI    : css/layout.css
- * NE İŞE YARAR : Sayfa yerleşimi: üst çubuk, bölümler, ızgaralar ve kırılımlar.
- *                Önce mobil yazılmıştır; kırılımlar:
- *                  ≥ 640 px  tablet: seçimler 2 sütun, kartlar 2 sütun
- *                  ≥ 900 px  liste + yapışkan harita yan yana
- *                  ≥ 1200 px geniş ekran: daha geniş kapsayıcı, kartlar yine 2 sütun
- * NEYİ ALIR    : css/tokens.css değişkenleri.
- * NEYİ VERİR   : .site-header, .hero, .controls, .results, .info-grid, .site-footer …
+ * css/layout.css
+ * NE İŞE YARAR : Yerleşim ve kırılımlar. Önce mobil:
+ *                  ≥ 640 px  seçimler 2 sütun, bilgi kutuları 2 sütun
+ *                  ≥ 900 px  solda kartlar, sağda yapışkan harita
+ *                  ≥ 1200 px seçimler 3 sütun, daha geniş harita
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
- *   - Sütun sayıları ve harita genişliği: aşağıdaki @media blokları.
- * NOT: 320 px'te bile yatay kaydırma çıkmasın diye ızgaralarda minmax(0, 1fr) kullanılır.
+ *   - Sütun sayıları ve harita genişliği: aşağıdaki @media blokları
+ *   - İçerik genişliği: tokens.css › --content-max
+ * NOT: Izgaralarda minmax(0, 1fr) kullanılır; 320 px'te bile yatay kaydırma olmaz.
  * ========================================================================== */
 
-/* ---- Bantlar (simülasyon, çevrimdışı) ------------------------------------ */
-.banner {
-  font-size: var(--fs-s);
-  font-weight: 600;
-}
-
-.banner__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  padding-block: var(--space-2);
-}
-
-.banner--simulation {
-  background: var(--c-sim-bg);
-  color: var(--c-sim-fg);
+/* ---- Bantlar ve üst çubuk --------------------------------------------------- */
+.banners {
   padding-top: env(safe-area-inset-top);
 }
 
-.banner__tag {
-  padding: 0.1em 0.6em;
-  border-radius: var(--radius-s);
-  background: var(--c-sim-tag-bg);
-  color: var(--c-sim-tag-fg);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.banner--offline {
-  background: var(--c-offline-bg);
-  color: var(--c-offline-fg);
-}
-
-/* ---- Üst çubuk (yapışkan) ------------------------------------------------- */
-.site-header {
+.topbar {
   position: sticky;
   top: 0;
-  z-index: 1000;
-  background: var(--c-header-bg);
-  border-bottom: 1px solid var(--c-border);
-  backdrop-filter: saturate(1.4) blur(10px);
-  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  z-index: var(--z-sticky);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-line);
 }
 
-.site-header__bar {
+.topbar__inner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-3);
-  min-height: var(--header-h);
-  padding-block: var(--space-2);
+  gap: var(--s-2);
+  min-height: var(--topbar-h);
+  padding-block: var(--s-2);
 }
 
-.site-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.topbar__size {
   margin-left: auto;
 }
 
-/* ---- Bölümler -------------------------------------------------------------- */
+/* ---- Bölümler ---------------------------------------------------------------- */
 main {
   display: block;
-  padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
-}
-
-main:focus {
-  outline: none;
+  padding-bottom: var(--s-7);
 }
 
 .section {
-  margin-top: var(--space-7);
+  margin-top: var(--s-7);
+}
+
+.section--tight {
+  margin-top: var(--s-5);
 }
 
 .section__title {
-  font-size: var(--fs-xl);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--s-4);
+  font-size: var(--fs-28);
 }
 
-/* ---- Tanıtım (koyu lacivert, radar süslemeli) ---------------------------- */
 .hero {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  padding-block: var(--space-7) var(--space-7);
-  background:
-    radial-gradient(70% 90% at 95% 10%, rgba(18, 181, 203, 0.22), transparent 60%),
-    radial-gradient(60% 80% at 0% 100%, rgba(21, 101, 216, 0.28), transparent 65%),
-    linear-gradient(160deg, var(--c-hero-bg) 0%, var(--c-hero-bg-2) 100%);
-  color: var(--c-on-hero);
-}
-
-.hero__grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  align-items: center;
+  padding-block: var(--s-6) var(--s-5);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-line);
 }
 
 .stats {
-  list-style: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-2);
+  gap: var(--s-3);
+  margin-top: var(--s-5);
 }
 
-/* ---- Seçimler -------------------------------------------------------------- */
 .controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--s-4);
 }
 
-/* ---- Sonuçlar -------------------------------------------------------------- */
-.results__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-}
-
-.results__header .section__title {
-  margin-bottom: 0;
-}
-
+/* ---- Sonuçlar: mobilde harita listenin üstünde ------------------------------ */
 .results {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-5);
-  margin-top: var(--space-4);
+  gap: var(--s-5);
+  margin-top: var(--s-5);
 }
 
 .card-list {
-  list-style: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--s-4);
 }
 
-/* ---- Bilgi alanları ve altbilgi ------------------------------------------- */
 .info-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--s-4);
 }
 
-.steps {
-  list-style: none;
+.howto {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--s-4);
 }
 
-/* Altbilgi: koyu lacivert, üç sütun + alt şerit */
-.site-footer {
+/* ---- Altbilgi ------------------------------------------------------------------ */
+.footer {
   background: var(--c-footer-bg);
   color: var(--c-footer-fg);
 }
 
-.site-footer__grid {
+.footer__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  padding-block: var(--space-7) var(--space-6);
+  gap: var(--s-6);
+  padding-block: var(--s-7) var(--s-6);
 }
 
-.site-footer__bottom {
-  background: var(--c-footer-bottom);
-  color: var(--c-footer-muted);
-  font-size: var(--fs-s);
-}
-
-.site-footer__bottom-inner {
+.footer__bottom-inner {
   display: grid;
-  gap: var(--space-1);
-  padding-block: var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+  gap: var(--s-1);
+  padding-block: var(--s-4) calc(var(--s-4) + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--c-footer-fg-2);
+  font-size: var(--fs-16);
 }
 
-/* ====================== ≥ 640 px: tablet ================================== */
+/* ======================= ≥ 640 px =========================================== */
 @media (min-width: 640px) {
-  :root {
-    --gutter: 24px;
-  }
-
-  .stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .site-footer__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .site-footer__brand {
-    grid-column: 1 / -1;
-  }
-
-  .card-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .steps {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .info-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .controls > .step:last-child { grid-column: 1 / -1; }
+  .howto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info-grid > .panel--wide { grid-column: 1 / -1; }
+  .footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* ====================== ≥ 900 px: liste + yapışkan harita ================= */
+/* ======================= ≥ 900 px: kartlar solda, harita sağda ============== */
 @media (min-width: 900px) {
-  .site-header__bar {
-    flex-wrap: nowrap;
-  }
-
-  .site-header__actions {
-    order: 3;
-    margin-left: 0;
-  }
-
-  .hero {
-    padding-block: var(--space-8);
-  }
-
-  .hero__grid {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: var(--space-7);
-  }
-
-  /* Geniş ekranda panel dar olduğundan özet kutuları alt alta durur */
-  .stats {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .site-footer__grid {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .site-footer__brand {
-    grid-column: auto;
-  }
-
   .results {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     grid-template-areas: "list map";
     align-items: start;
   }
 
-  .results__list {
-    grid-area: list;
-  }
+  .results__list { grid-area: list; }
 
   .results__map {
     grid-area: map;
     position: sticky;
-    top: calc(var(--header-h) + var(--space-4));
+    top: calc(var(--topbar-h) + var(--s-4));
   }
 
-  .card-list {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .footer__grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); }
 }
 
-/* ====================== ≥ 1200 px: geniş ================================== */
+/* ======================= ≥ 1200 px ============================================= */
 @media (min-width: 1200px) {
-  :root {
-    --container-max: 1360px;
-    --gutter: 32px;
-  }
-
-  .controls {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .results {
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  }
-
-  .card-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .controls > .step:last-child { grid-column: auto; }
+  .info-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .info-grid > .panel--wide { grid-column: auto; }
 }
