@@ -2,7 +2,8 @@
  * js/mock-data.js
  * NE İŞE YARAR : Arka uç hazır olana kadar SÖZLEŞMEYE BİREBİR UYAN örnek yanıtlar
  *                üretir. Hem tarayıcıdaki 'mock' ortamı hem tools/mock-server.js
- *                bu dosyayı kullanır (tek kaynak). Hastaneler gerçek DEĞİLDİR.
+ *                bu dosyayı kullanır (tek kaynak). Hastaneler gerçek DEĞİLDİR; hepsi
+ *                devlet hastanesi örneğidir (ownership: 'public').
  * VERDİĞİ      : AcilRadar.Mock → build(scenario, query, nowMs), respond(query, signal),
  *                SCENARIOS
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
@@ -16,19 +17,19 @@
   const cfg = AR.Config;
   const MS_PER_MINUTE = 60000;
   const TURKEY_UTC_OFFSET_MINUTES = 180;   // Türkiye 2016'dan beri sabit UTC+3
-  const SCHEMA_VERSION = '1.0';
+  const SCHEMA_VERSION = '1.1';
 
   // Örnek hastaneler. regions: hangi ?region= değerlerinde listelenir.
   // baseLoad: 0–1 arası olağan doluluk; physicians: hekim sayısı.
   const SAMPLES = [
-    { id: 'ornek-01', name: 'Örnek Hastane Gebze Merkez', district: 'Gebze', lat: 40.7968, lng: 29.4415, childER: true, baseLoad: 0.72, physicians: 8, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-02', name: 'Örnek Hastane Gebze Kuzey', district: 'Gebze', lat: 40.8231, lng: 29.4198, childER: false, baseLoad: 0.48, physicians: 5, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-03', name: 'Örnek Hastane Darıca Sahil', district: 'Darıca', lat: 40.7631, lng: 29.3862, childER: true, baseLoad: 0.61, physicians: 6, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-04', name: 'Örnek Hastane Çayırova', district: 'Çayırova', lat: 40.8322, lng: 29.3816, childER: false, baseLoad: 0.38, physicians: 4, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-05', name: 'Örnek Eğitim ve Araştırma Hastanesi Dilovası Ek Hizmet Binası Acil Servisi', district: 'Dilovası', lat: 40.7852, lng: 29.5361, childER: false, baseLoad: 0.30, physicians: 3, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-06', name: 'Örnek Hastane Körfez', district: 'Körfez', lat: 40.7712, lng: 29.7245, childER: true, baseLoad: 0.55, physicians: 6, regions: ['gebze', 'kocaeli'] },
-    { id: 'ornek-07', name: 'Örnek Hastane Tuzla', district: 'Tuzla', lat: 40.8227, lng: 29.3113, childER: true, baseLoad: 0.86, physicians: 9, regions: ['gebze', 'istanbul-anadolu'] },
-    { id: 'ornek-08', name: 'Örnek Hastane Pendik', district: 'Pendik', lat: 40.8851, lng: 29.2461, childER: false, baseLoad: 0.66, physicians: 7, regions: ['gebze', 'istanbul-anadolu'] }
+    { id: 'ornek-01', name: 'Örnek Devlet Hastanesi Gebze Merkez', district: 'Gebze', lat: 40.7968, lng: 29.4415, childER: true, baseLoad: 0.72, physicians: 8, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-02', name: 'Örnek Devlet Hastanesi Gebze Kuzey', district: 'Gebze', lat: 40.8231, lng: 29.4198, childER: false, baseLoad: 0.48, physicians: 5, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-03', name: 'Örnek Devlet Hastanesi Darıca', district: 'Darıca', lat: 40.7631, lng: 29.3862, childER: true, baseLoad: 0.61, physicians: 6, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-04', name: 'Örnek Devlet Hastanesi Çayırova', district: 'Çayırova', lat: 40.8322, lng: 29.3816, childER: false, baseLoad: 0.38, physicians: 4, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-05', name: 'Örnek Devlet Hastanesi Dilovası Ek Hizmet Binası Acil Servisi', district: 'Dilovası', lat: 40.7852, lng: 29.5361, childER: false, baseLoad: 0.30, physicians: 3, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-06', name: 'Örnek Devlet Hastanesi Körfez', district: 'Körfez', lat: 40.7712, lng: 29.7245, childER: true, baseLoad: 0.55, physicians: 6, regions: ['gebze', 'kocaeli'] },
+    { id: 'ornek-07', name: 'Örnek Devlet Hastanesi Tuzla', district: 'Tuzla', lat: 40.8227, lng: 29.3113, childER: true, baseLoad: 0.86, physicians: 9, regions: ['gebze', 'istanbul-anadolu'] },
+    { id: 'ornek-08', name: 'Örnek Devlet Hastanesi Pendik', district: 'Pendik', lat: 40.8851, lng: 29.2461, childER: false, baseLoad: 0.66, physicians: 7, regions: ['gebze', 'istanbul-anadolu'] }
   ];
 
   const SLOT_LOAD_FACTOR = { now: 1, '2h': 1.08, evening: 1.2 };
@@ -101,7 +102,8 @@
       estimatedYellowWaitMinutes: URGENT_WAIT.slice(),
       updatedAt: istanbulIso(nowMs - age * MS_PER_MINUTE),
       isForecast: at !== 'now',
-      dataSource: 'simulated'
+      dataSource: 'simulated',
+      ownership: 'public'
     };
   }
 
@@ -141,7 +143,7 @@
       const base = SAMPLES[i % SAMPLES.length];
       const sample = Object.assign({}, base, {
         id: 'ornek-' + String(i + 1).padStart(3, '0'),
-        name: 'Örnek Hastane ' + String(i + 1).padStart(3, '0'),
+        name: 'Örnek Devlet Hastanesi ' + String(i + 1).padStart(3, '0'),
         lat: base.lat + (random() - 0.5) * MANY_SPREAD_DEG,
         lng: base.lng + (random() - 0.5) * MANY_SPREAD_DEG
       });
@@ -162,6 +164,7 @@
     list[5].crowdingLevel = 'critical';                     // bilinmeyen değer → atlanır
     list.push(Object.assign({}, list[6]));                  // yinelenen kimlik → atlanır
     list.push(null, 'metin', 42);                           // nesne olmayan kayıtlar → atlanır
+    list.push(Object.assign({}, list[7], { hospitalId: 'ornek-ozel', name: 'Örnek Özel Hastane', ownership: 'private' })); // özel → gösterilmez
     list.push(Object.assign({}, list[7], { hospitalId: 'ornek-99', updatedAt: istanbulIso(nowMs + FUTURE_SAMPLE_MINUTES * MS_PER_MINUTE) })); // gelecekteki tarih
     return list;
   }

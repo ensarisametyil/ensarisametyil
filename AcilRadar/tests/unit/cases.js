@@ -23,18 +23,18 @@
 
   function hospital(over) {
     return Object.assign({
-      id: 'h1', name: 'Örnek Hastane A', district: 'Gebze', lat: 40.80, lng: 29.43, childER: false,
+      id: 'h1', name: 'Örnek Devlet Hastanesi A', district: 'Gebze', lat: 40.80, lng: 29.43, childER: false,
       occupancyPercent: 50, crowdingLevel: 'medium', nonUrgentWaiting: 10, urgentWaiting: 2, activePhysicians: 4,
-      nonUrgentWaitMinutes: [20, 30], urgentWaitMinutes: [5, 10], updatedAtMs: T - 5 * MIN, isForecast: false, dataSource: 'simulated'
+      nonUrgentWaitMinutes: [20, 30], urgentWaitMinutes: [5, 10], updatedAtMs: T - 5 * MIN, isForecast: false, dataSource: 'simulated', ownership: 'public'
     }, over || {});
   }
 
   function raw(over) {
     return Object.assign({
-      hospitalId: 'h1', name: 'Örnek Hastane A', district: 'Gebze', lat: 40.8, lng: 29.43, childER: true,
+      hospitalId: 'h1', name: 'Örnek Devlet Hastanesi A', district: 'Gebze', lat: 40.8, lng: 29.43, childER: true,
       occupancyPercent: 62, crowdingLevel: 'medium', greenWaiting: 34, yellowWaiting: 9, activePhysicians: 6,
       estimatedGreenWaitMinutes: [58, 82], estimatedYellowWaitMinutes: [7, 15],
-      updatedAt: '2026-10-12T21:55:00+03:00', isForecast: false, dataSource: 'simulated'
+      updatedAt: '2026-10-12T21:55:00+03:00', isForecast: false, dataSource: 'simulated', ownership: 'public'
     }, over || {});
   }
 
@@ -257,6 +257,33 @@
     assert.equal(byId.b.activePhysicians, AR.Config.LIMITS.MAX_COUNT);
     assert.equal(byId.j.childER, false);
     assert.equal(byId.j.nonUrgentWaiting, null);
+  });
+
+  test('Schema: yalnız devlet hastaneleri gösterilir; özel hastane uyarısız ayıklanır', function (AR, assert) {
+    const r = AR.Schema.normalizeResponse(envelope([raw({ hospitalId: 'devlet' }), raw({ hospitalId: 'ozel', ownership: 'private' })]), T);
+    assert.deepEqual(r.hospitals.map(function (h) { return h.id; }), ['devlet']);
+    assert.equal(r.excludedCount, 1);
+    assert.equal(r.skippedCount, 0);
+    assert.equal(r.hospitals[0].ownership, 'public');
+  });
+
+  test('Schema: kurum türü (ownership) yoksa ya da bilinmiyorsa kayıt atlanır', function (AR, assert) {
+    const missing = raw({ hospitalId: 'x' });
+    delete missing.ownership;
+    const r = AR.Schema.normalizeResponse(envelope([missing, raw({ hospitalId: 'y', ownership: 'vakif' }), raw({ hospitalId: 'ok' })]), T);
+    assert.deepEqual(r.hospitals.map(function (h) { return h.id; }), ['ok']);
+    assert.equal(r.skippedCount, 2);
+  });
+
+  test('Schema: yanıtta yalnız özel hastane varsa hata değil, boş liste', function (AR, assert) {
+    const r = AR.Schema.normalizeResponse(envelope([raw({ ownership: 'private' })]), T);
+    assert.equal(r.hospitals.length, 0);
+    assert.equal(r.excludedCount, 1);
+  });
+
+  test('Mock: örnek hastanelerin hepsi devlet hastanesi', function (AR, assert) {
+    const body = AR.Mock.build('normal', { at: 'now', region: 'gebze' }, T).body;
+    assert.ok(body.hospitals.every(function (h) { return h.ownership === 'public' && h.name.indexOf('Örnek Devlet Hastanesi') === 0; }));
   });
 
   test('Schema: yinelenen kimlik atlanır; aynı ad farklı kimlik kalır', function (AR, assert) {

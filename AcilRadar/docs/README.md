@@ -1,6 +1,6 @@
 # AcilRadar — Ön yüz (Aşama A)
 
-Yakındaki acil servislerin **tahmini** yoğunluğunu ve "yol + kayıt + bekleme" toplam süresini karşılaştıran web arayüzü. Başlangıç bölgesi: Gebze ve çevresi. Veri şu an **örnek veridir (simülasyon)**.
+Yakındaki **devlet hastanelerinin** acil servislerinin **tahmini** yoğunluğunu ve "yol + kayıt + bekleme" toplam süresini karşılaştıran web arayüzü. Başlangıç bölgesi: Gebze ve çevresi. Veri şu an **örnek veridir (simülasyon)**.
 
 > AcilRadar tıbbi karar aracı değildir. Muayene sırasını triyaj belirler. Hayati tehlikede 112 aranır.
 
@@ -86,6 +86,7 @@ Katmanlar: **veri** (`api.js` + `schema.js`) → **hesap** (`calc.js`) → **çi
 | **Zaman seçeneği** eklemek | `js/config.js › TIME_SLOTS`'a `{ id }` (saatliyse `atHour/atMinute`) + `js/strings.js › time` | Arka uç `?at=<id>` değerini tanımalı. |
 | **API adresi / ortam** | `js/config.js › ENVIRONMENT` (ve gerekirse `ENVIRONMENTS`) | Tek satır. |
 | Bölge (`?region=`) | `js/config.js › REGION_ID`, `REGIONS` | `null` → parametre gönderilmez. |
+| Hangi hastane türleri listelenir | `js/config.js › ALLOWED_OWNERSHIP` | Şu an yalnız `'public'` (devlet). Özel hastaneleri de göstermek için `['public', 'private']`. |
 | "Güncel değil" eşiği | `js/config.js › STALE_AFTER_MINUTES` | |
 | Otomatik yenileme | `js/config.js › AUTO_REFRESH_SECONDS` | |
 | Yol tarifi servisi | `js/config.js › DIRECTIONS_URL_TEMPLATE` | Yalnız `{lat}`, `{lng}`. |

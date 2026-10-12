@@ -424,8 +424,9 @@
 .map .leaflet-container a.leaflet-popup-close-button, .map a.leaflet-popup-close-button { width: var(--tap); height: var(--tap); font-size: var(--fs-22); line-height: var(--tap); }
 .map .leaflet-popup-content { margin-right: var(--tap); }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--c-surface); color: var(--c-text); }
-.leaflet-control-attribution { font-size: var(--fs-14); }
-.leaflet-container .leaflet-control-attribution a { color: var(--c-link); }
+/* Atıf: Leaflet'in kendi renkleri koyu temada okunmuyordu; tema jetonlarıyla (≥ 4.5:1). */
+.map.leaflet-container .leaflet-control-attribution { background: var(--c-surface); color: var(--c-text-2); font-size: var(--fs-14); }
+.map.leaflet-container .leaflet-control-attribution a { color: var(--c-link); }
 
 /* İşaretçi: beyaz numara + koyu durum rengi; koyu temada da okunur */
 .marker-host { background: none; border: 0; }

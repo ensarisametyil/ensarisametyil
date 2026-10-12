@@ -108,7 +108,7 @@ function loadApi(fetchImpl) {
 }
 
 function body() {
-  return { schemaVersion: '1.0', generatedAt: '2026-10-12T22:00:00+03:00', hospitals: [{ hospitalId: 'h1', name: 'Örnek', district: 'Gebze', lat: 40.8, lng: 29.4, occupancyPercent: 50, crowdingLevel: 'medium', estimatedGreenWaitMinutes: [10, 20], estimatedYellowWaitMinutes: [5, 10], updatedAt: '2026-10-12T21:58:00+03:00', isForecast: false, dataSource: 'hospital' }] };
+  return { schemaVersion: '1.0', generatedAt: '2026-10-12T22:00:00+03:00', hospitals: [{ hospitalId: 'h1', name: 'Örnek', district: 'Gebze', lat: 40.8, lng: 29.4, occupancyPercent: 50, crowdingLevel: 'medium', estimatedGreenWaitMinutes: [10, 20], estimatedYellowWaitMinutes: [5, 10], updatedAt: '2026-10-12T21:58:00+03:00', isForecast: false, dataSource: 'hospital', ownership: 'public' }] };
 }
 
 async function expectApiError(promise, code) {

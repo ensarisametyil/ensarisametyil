@@ -2,6 +2,20 @@
 
 Biçim: en yeni üstte. Sözleşme (API) değişiklikleri ayrıca belirtilir.
 
+## 1.1.0 — Yalnız devlet hastaneleri
+
+### Sözleşme (küçük sürüm 1.1)
+- Hastane kaydına zorunlu **`ownership`** alanı eklendi: `public` (devlet) | `private` (özel). Sunucu yalnız `public` göndermelidir.
+
+### Arayüz
+- Listede, haritada, özet kutularında ve öneri kutusunda **yalnız devlet hastaneleri** gösterilir (`js/config.js › ALLOWED_OWNERSHIP: ['public']`).
+- `ownership` alanı olmayan ya da tanınmayan kayıt atlanır (tür bilinmeden gösterilmez).
+- Metinler güncellendi: tanıtım başlığı ve açıklaması, "Veriler nereden geliyor?", altbilgi, sayfa açıklaması.
+- Örnek veride tüm hastaneler "Örnek Devlet Hastanesi …" oldu; bozuk veri senaryosuna ayıklanması gereken bir özel hastane eklendi.
+
+### Testler
+- Özel hastanenin ayıklanması, `ownership` eksikliği, yalnız özel hastane içeren yanıt ve örnek verinin tamamının devlet hastanesi olması için yeni birim testleri.
+
 ## 1.0.0 — Aşama A (herkese açık site)
 
 Önceki deneme sürümünün yerine baştan kuruldu. Başlıca değişiklikler:

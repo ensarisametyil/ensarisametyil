@@ -9,6 +9,7 @@
  *   - Sunucu bir alanın ADINI değiştirdi → yalnız FIELD_MAP / RESPONSE_MAP'te
  *     sağ taraftaki adı değiştirin. Başka hiçbir dosya değişmez.
  *   - Yeni alan göstermek → FIELD_RULES'a kural ekleyin, sonra js/ui/cards.js.
+ *   - Hangi kurum türleri gösterilir (devlet/özel): js/config.js › ALLOWED_OWNERSHIP
  * NOT: Tek hastanenin bozukluğu sayfayı DÜŞÜRMEZ: kayıt atlanır, konsola yazılır.
  *      Bilinmeyen (yeni) alanlar sessizce yok sayılır (küçük sürüm uyumu).
  * ========================================================================== */
@@ -40,6 +41,7 @@
    * @property {number}  updatedAtMs
    * @property {boolean} isForecast
    * @property {'simulated'|'hospital'|'official'} dataSource
+   * @property {'public'|'private'} ownership    public = devlet hastanesi
    */
 
   /**
@@ -54,7 +56,8 @@
    * @property {Hospital[]} hospitals
    * @property {'simulated'|'hospital'|'official'|'mixed'|'none'} dataSource
    * @property {boolean} isSimulated
-   * @property {number}  skippedCount
+   * @property {number}  skippedCount     Bozuk olduğu için atlanan kayıt sayısı
+   * @property {number}  excludedCount    Kurum türü izinli olmadığı için gösterilmeyen kayıt sayısı
    */
 
   /** Sözleşme dışı yanıt. code: INVALID_RESPONSE | UNSUPPORTED_SCHEMA */
@@ -84,7 +87,8 @@
     urgentWaitMinutes: 'estimatedYellowWaitMinutes',
     updatedAtMs: 'updatedAt',
     isForecast: 'isForecast',
-    dataSource: 'dataSource'
+    dataSource: 'dataSource',
+    ownership: 'ownership'
   });
 
   const RESPONSE_MAP = Object.freeze({
@@ -201,7 +205,8 @@
     urgentWaitMinutes: { required: true, parse: parseMinuteRange },
     updatedAtMs: { required: true, parse: parseDate },
     isForecast: { required: true, parse: parseBoolean },
-    dataSource: { required: true, parse: parseEnum(cfg.DATA_SOURCES) }
+    dataSource: { required: true, parse: parseEnum(cfg.DATA_SOURCES) },
+    ownership: { required: true, parse: parseEnum(cfg.OWNERSHIP_TYPES) }
   };
 
   /* ---- Hastane kaydı ------------------------------------------------------ */
@@ -243,12 +248,16 @@
     return hospital;
   }
 
-  /** Geçerli kayıtları süzer, yinelenen kimlikleri atar, üst sınırı uygular. */
+  /**
+   * Geçerli kayıtları süzer, yinelenen kimlikleri atar, üst sınırı uygular ve
+   * yalnız izinli kurum türlerini (config › ALLOWED_OWNERSHIP) bırakır.
+   * @returns {{hospitals: Hospital[], excluded: number}}
+   */
   function normalizeHospitals(list) {
     const max = cfg.LIMITS.MAX_HOSPITALS;
     if (list.length > max) warn(dev.tooMany, { count: list.length, max: max });
     const seen = new Set();
-    const result = [];
+    const result = { hospitals: [], excluded: 0 };
     list.slice(0, max).forEach(function (record, index) {
       const hospital = normalizeHospital(record, index);
       if (!hospital) return;
@@ -257,7 +266,12 @@
         return;
       }
       seen.add(hospital.id);
-      result.push(hospital);
+      // NOT: İzinli olmayan tür (ör. özel hastane) bilinçli bir seçimdir; uyarı yazılmaz.
+      if (cfg.ALLOWED_OWNERSHIP.indexOf(hospital.ownership) === -1) {
+        result.excluded += 1;
+        return;
+      }
+      result.hospitals.push(hospital);
     });
     return result;
   }
@@ -313,8 +327,9 @@
       warn(dev.noHospitals);
       throw new SchemaError('INVALID_RESPONSE', 'no-hospitals');
     }
-    const hospitals = normalizeHospitals(list);
-    if (list.length > 0 && hospitals.length === 0) throw new SchemaError('INVALID_RESPONSE', 'all-invalid');
+    const normalized = normalizeHospitals(list);
+    const hospitals = normalized.hospitals;
+    if (list.length > 0 && hospitals.length === 0 && normalized.excluded === 0) throw new SchemaError('INVALID_RESPONSE', 'all-invalid');
     const generated = parseDate(raw[RESPONSE_MAP.generatedAt]);
     if (generated.invalid) warn(dev.generatedAtMissing);
     const region = raw[RESPONSE_MAP.region];
@@ -328,7 +343,8 @@
       hospitals: hospitals,
       dataSource: overallSource(hospitals),
       isSimulated: hospitals.some(function (h) { return h.dataSource === 'simulated'; }),
-      skippedCount: Math.min(list.length, cfg.LIMITS.MAX_HOSPITALS) - hospitals.length
+      skippedCount: Math.min(list.length, cfg.LIMITS.MAX_HOSPITALS) - hospitals.length - normalized.excluded,
+      excludedCount: normalized.excluded
     };
   }
 

@@ -77,6 +77,12 @@
 
     CROWDING_LEVELS: ['low', 'medium', 'high'],
     DATA_SOURCES: ['simulated', 'hospital', 'official'],
+
+    // Kurum türü (sunucu: "ownership"). public = devlet hastanesi, private = özel hastane.
+    OWNERSHIP_TYPES: ['public', 'private'],
+    // Listede YALNIZ bu türler gösterilir. Şu an yalnız devlet hastaneleri.
+    // NOT: Sunucu da yalnız devlet hastanelerini göndermelidir; bu süzgeç ek güvencedir.
+    ALLOWED_OWNERSHIP: ['public'],
     NOTICE_LEVELS: ['info', 'warning'],
 
     /* ---- 3. Zaman seçici (?at=) ------------------------------------------- */

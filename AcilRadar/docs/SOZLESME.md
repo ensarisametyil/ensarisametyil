@@ -1,4 +1,4 @@
-# AcilRadar · Veri sözleşmesi (EK-1) — sürüm 1.x
+# AcilRadar · Veri sözleşmesi (EK-1) — sürüm 1.x (güncel: 1.1)
 
 Bu belge arka uç ile ön yüzün **tek temas noktasıdır**. Arka uç hangi dille yazılırsa yazılsın (PHP, Node, başka), bu sözleşmeye uyduğu sürece ön yüzde hiçbir dosya değişmez; yalnızca `js/config.js` içindeki ortam satırı değişir.
 
@@ -43,6 +43,21 @@ Panel uçları (AŞAMA B; ayrıntı arka uç ile birlikte kesinleşir, arayüz b
   GET/POST /api/v1/panel/hospitals/{id}/records · GET /api/v1/panel/audit · GET/POST/PATCH /api/v1/panel/users
 Değişiklik kuralı: alan ADI veya TÜRÜ değişirse ana sürüm artar (v2); alan EKLEMEK küçük sürümdür ve istemciyi bozmaz.
 ```
+
+---
+
+## Sürüm 1.1 eki — yalnız devlet hastaneleri
+
+Ürün kararı: listede **yalnız devlet hastaneleri** yer alır. Bunun için her hastane kaydına aşağıdaki alan eklendi (alan eklemek küçük sürümdür; `schemaVersion: "1.1"`):
+
+```
+"ownership": "public"        // zorunlu: public (devlet hastanesi) | private (özel hastane)
+```
+
+- **Sunucu yalnız `public` kayıtları göndermelidir.** Özel hastaneler yanıta hiç girmemelidir.
+- Arayüz ek güvence olarak `ownership` değeri `public` olmayan kaydı **göstermez** (uyarı yazmaz; `config.js › ALLOWED_OWNERSHIP`).
+- `ownership` alanı **yoksa** ya da tanınmayan bir değerse kayıt **atlanır** ve konsola yazılır (tür bilinmeden devlet hastanesi diye gösterilmez).
+- Yanıtta yalnız özel hastane varsa arayüz hata değil, "bu bölge için bilgi yok" durumunu gösterir.
 
 ---
 

@@ -19,7 +19,7 @@
     app: {
       name: 'AcilRadar',
       documentTitle: 'AcilRadar · Acil servis yoğunluk ve süre tahmini',
-      metaDescription: 'Gebze ve çevresindeki acil servislerin tahmini yoğunluğunu ve yol, kayıt, bekleme dâhil tahmini toplam süresini karşılaştırın. Tıbbi karar aracı değildir.',
+      metaDescription: 'Gebze ve çevresindeki devlet hastanesi acil servislerinin tahmini yoğunluğunu ve yol, kayıt, bekleme dâhil tahmini toplam süresini karşılaştırın. Tıbbi karar aracı değildir.',
       tagline: 'Acil servis süre tahmini'
     },
 
@@ -52,8 +52,8 @@
     },
 
     hero: {
-      title: 'Yakınınızdaki acil servislerin tahmini yoğunluğunu ve toplam süresini karşılaştırın.',
-      lead: 'Yol, kayıt ve bekleme süreleri birlikte hesaplanır; sıralama tarafsızdır.',
+      title: 'Yakınınızdaki devlet hastanesi acil servislerinin tahmini yoğunluğunu ve toplam süresini karşılaştırın.',
+      lead: 'Yalnız devlet hastaneleri listelenir. Yol, kayıt ve bekleme süreleri birlikte hesaplanır; sıralama tarafsızdır.',
       statsLabel: 'Bölge özeti'
     },
 
@@ -301,7 +301,7 @@
         mixed: 'Bilgiler birden fazla kaynaktan gelir. Her kartın ayrıntılarında o hastanenin veri kaynağı yazar.',
         none: 'Bilgi geldiğinde kaynağı burada açıklanacaktır.'
       },
-      sourceCommon: 'Bilgiler tahmindir; gerçek durum farklı olabilir. Bir hastanenin bilgisi eskiyse o hastanenin süre ve yoğunluğu gösterilmez.',
+      sourceCommon: 'Listede yalnız devlet hastanelerinin acil servisleri yer alır. Bilgiler tahmindir; gerçek durum farklı olabilir. Bir hastanenin bilgisi eskiyse o hastanenin süre ve yoğunluğu gösterilmez.',
 
       legalTitle: 'Sorumluluk reddi',
       legal: [
@@ -321,7 +321,7 @@
     },
 
     footer: {
-      about: 'Gebze ve çevresindeki acil servislerin tahmini yoğunluğunu ve toplam süresini karşılaştırmanıza yardımcı olur.',
+      about: 'Gebze ve çevresindeki devlet hastanesi acil servislerinin tahmini yoğunluğunu ve toplam süresini karşılaştırmanıza yardımcı olur.',
       navTitle: 'Bu sayfada',
       emergencyTitle: 'Acil durumda',
       emergencyBody: 'Hayati tehlike varsa beklemeyin; 112’yi arayın.',
