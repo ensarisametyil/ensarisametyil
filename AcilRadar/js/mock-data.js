@@ -5,7 +5,7 @@
  *                bu dosyayı kullanır (tek kaynak). Hastaneler gerçek DEĞİLDİR; hepsi
  *                devlet hastanesi örneğidir (ownership: 'public').
  * VERDİĞİ      : AcilRadar.Mock → build(scenario, query, nowMs), respond(query, signal),
- *                SCENARIOS
+ *                SCENARIOS, SAMPLES (panel/ örnek sunucusu da aynı hastaneleri kullanır)
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
  *   - Örnek hastaneler: SAMPLES
  *   - Senaryolar (boş, eski, bozuk, 429 …): SCENARIOS
@@ -228,6 +228,9 @@
     build: build,
     respond: respond,
     SCENARIOS: Object.keys(SCENARIOS),
+    SAMPLES: SAMPLES.map(function (s) {
+      return Object.freeze({ id: s.id, name: s.name, district: s.district, lat: s.lat, lng: s.lng, childER: s.childER, baseLoad: s.baseLoad, physicians: s.physicians });
+    }),
     istanbulIso: istanbulIso
   });
 })(window.AcilRadar = window.AcilRadar || {});

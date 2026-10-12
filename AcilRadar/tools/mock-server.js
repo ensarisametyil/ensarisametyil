@@ -8,6 +8,8 @@
  *                Tarayıcı: http://localhost:8787  (config.js › ENVIRONMENT: 'production'
  *                ya da 'development' ile gerçek ağ yolu denenir)
  *                Senaryo tek istekte: /api/v1/hospitals?at=now&scenario=ratelimit
+ * PANEL        : /api/v1/auth/* ve /api/v1/panel/* uçları panel/js/mock.js ile yanıtlanır;
+ *                oturum HttpOnly + SameSite=Strict çerezle tutulur (yalnız aynı köken).
  * SENARYOLAR   : normal, empty, stale, broken, many, notice, unsupported, error,
  *                unavailable, ratelimit (js/mock-data.js) + slow, offline, html,
  *                invalidjson (bu dosya).
@@ -40,8 +42,12 @@ function loadBrowserModules(files) {
   return sandbox.window.AcilRadar;
 }
 
-const AR = loadBrowserModules(['js/config.js', 'js/mock-data.js']);
+const AR = loadBrowserModules(['js/config.js', 'js/mock-data.js', 'panel/js/config.js', 'panel/js/rules.js', 'panel/js/mock.js']);
 const cfg = AR.Config;
+const panelBackend = AR.Panel.Mock.createBackend(Date.now());
+const SESSION_COOKIE = 'acilradar_panel';
+const SESSION_MAX_AGE_SECONDS = 1800;
+const MAX_BODY_BYTES = 64 * 1024;
 
 /* ---- Güvenlik başlıkları (docs/GUVENLIK.md ile aynı) --------------------- */
 
@@ -129,10 +135,53 @@ function handleStatus(req, res) {
   sendJson(req, res, 200, { ok: true, time: now, dataUpdatedAt: now });
 }
 
+/* ---- Panel uçları (çerezli oturum) -------------------------------------------- */
+
+function readCookie(req, name) {
+  const match = (req.headers.cookie || '').split(';').map(function (p) { return p.trim(); })
+    .find(function (p) { return p.indexOf(name + '=') === 0; });
+  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+}
+
+function readJsonBody(req) {
+  return new Promise(function (resolve) {
+    const chunks = [];
+    let size = 0;
+    req.on('data', function (chunk) {
+      size += chunk.length;
+      if (size <= MAX_BODY_BYTES) chunks.push(chunk);
+    });
+    req.on('end', function () {
+      if (size === 0) return resolve(null);
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch (error) { resolve(undefined); }
+    });
+  });
+}
+
+/** Panel istekleri: yalnız aynı kökenden (CORS başlığı YOK; çerez kimliği taşır). */
+async function handlePanel(req, res, url) {
+  const body = await readJsonBody(req);
+  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' };
+  if (body === undefined) {
+    res.writeHead(400, headers);
+    res.end(JSON.stringify({ error: { code: 'BAD_REQUEST', message: 'Geçersiz JSON' } }));
+    return;
+  }
+  const result = panelBackend.handle({
+    method: req.method, path: url.pathname, query: Object.fromEntries(url.searchParams), body: body,
+    headers: req.headers, sessionToken: readCookie(req, SESSION_COOKIE), nowMs: Date.now()
+  });
+  Object.assign(headers, result.headers || {});
+  if (result.session && result.session.set) headers['Set-Cookie'] = SESSION_COOKIE + '=' + encodeURIComponent(result.session.set) + '; HttpOnly; SameSite=Strict; Path=/api; Max-Age=' + SESSION_MAX_AGE_SECONDS;
+  if (result.session && result.session.clear) headers['Set-Cookie'] = SESSION_COOKIE + '=; HttpOnly; SameSite=Strict; Path=/api; Max-Age=0';
+  res.writeHead(result.status, headers);
+  res.end(result.body === null ? '' : JSON.stringify(result.body));
+}
+
 /* ---- Statik dosyalar --------------------------------------------------------- */
 
 function serveStatic(req, res, url) {
-  const requested = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+  const requested = decodeURIComponent(url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname);
   const filePath = path.normalize(path.join(ROOT, requested));
   if (!filePath.startsWith(ROOT + path.sep)) {
     res.writeHead(403);
@@ -154,6 +203,10 @@ function serveStatic(req, res, url) {
 
 const server = http.createServer(function (req, res) {
   const url = new URL(req.url, 'http://localhost');
+  if (url.pathname.indexOf('/api/v1/auth/') === 0 || url.pathname.indexOf('/api/v1/panel/') === 0) {
+    handlePanel(req, res, url);
+    return;
+  }
   if (req.method === 'OPTIONS') {
     res.writeHead(204, CORS_HEADERS);
     res.end();

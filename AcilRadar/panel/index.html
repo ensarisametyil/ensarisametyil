@@ -1,0 +1,115 @@
+<!doctype html>
+<!--
+  panel/index.html
+  NE İŞE YARAR : Hastane panelinin tek sayfalık iskeleti. Ekranlar #view içine
+                 panel/js/screens/*.js tarafından çizilir; adres #/… biçimindedir.
+  NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
+    - Metinler: panel/js/strings.js (bu dosyada data-text="anahtar")
+    - Tasarım: sitenin ../css/ dosyaları + panel/css/panel.css (ayrı görsel dil YOK)
+  NOT: Satır içi betik/stil/olay yoktur; site ile aynı CSP başlığıyla çalışır.
+  NOT: Arama motorlarına kapalıdır (noindex).
+-->
+<html lang="tr" class="no-js" data-text-size="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AcilRadar Panel</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0F2F55">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="css/panel.css">
+  <script src="../js/config.js"></script>
+  <script src="../js/strings.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/ui/topbar.js"></script>
+</head>
+<body>
+  <noscript>
+    <div class="fallback">
+      <p class="fallback__title">AcilRadar Panel için JavaScript gereklidir.</p>
+      <p>Lütfen tarayıcınızda JavaScript’i açın. Hayati tehlikede 112’yi arayın.</p>
+    </div>
+  </noscript>
+
+  <a class="skip-link" href="#view" data-text="panel.a11y.skipLink"></a>
+
+  <div id="mock-banner" class="banner banner--simulation js-only" hidden>
+    <div class="container banner__inner">
+      <span class="banner__tag" data-text="panel.banner.mockTag"></span>
+      <span data-text="panel.banner.mock"></span>
+    </div>
+  </div>
+
+  <header class="topbar js-only">
+    <div class="container topbar__inner pheader">
+      <a class="brand" href="#/ozet" data-text-attr="aria-label:panel.header.homeLabel">
+        <svg class="brand__logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="8" fill="#0F2F55"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity=".35"/>
+          <path d="M6 16.5h5l2-4.5 3 9 2.5-5H26" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand__text">
+          <span class="brand__name" data-text="panel.app.name"></span>
+          <span class="brand__tagline" data-text="panel.app.tagline"></span>
+        </span>
+      </a>
+      <div id="user-area" class="puser" hidden>
+        <p id="user-label" class="puser__label"></p>
+        <button type="button" id="logout-button" class="btn btn--secondary btn--compact"><span data-text="panel.header.logout"></span></button>
+      </div>
+    </div>
+    <nav id="panel-nav" class="pnav" data-text-attr="aria-label:panel.a11y.mainNav" hidden>
+      <ul id="panel-nav-list" class="container pnav__list"></ul>
+    </nav>
+  </header>
+
+  <div id="session-banner" class="session-banner js-only" role="alert" hidden>
+    <div class="container session-banner__inner">
+      <span data-icon="clock"></span>
+      <p id="session-text" class="session-banner__text"></p>
+      <button type="button" id="session-extend" class="btn btn--primary btn--compact"><span data-text="panel.session.extend"></span></button>
+      <button type="button" id="session-logout" class="btn btn--secondary btn--compact"><span data-text="panel.header.logout"></span></button>
+    </div>
+  </div>
+
+  <main class="container pmain js-only">
+    <div id="global-notice" hidden></div>
+    <div id="view" class="pview" tabindex="-1"></div>
+  </main>
+
+  <footer class="pfooter js-only">
+    <div class="container pfooter__inner">
+      <a href="../index.html" data-text="panel.header.publicSite"></a>
+      <p data-text="disclaimer.short"></p>
+    </div>
+  </footer>
+
+  <div id="panel-live" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="../js/ui/dom.js"></script>
+  <script src="../js/schema.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/schema.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/csv.js"></script>
+  <script src="js/ui/form.js"></script>
+  <script src="js/ui/table.js"></script>
+  <script src="js/ui/shell.js"></script>
+  <script src="js/screens/common.js"></script>
+  <script src="js/screens/login.js"></script>
+  <script src="js/screens/dashboard.js"></script>
+  <script src="js/screens/entry.js"></script>
+  <script src="js/screens/history.js"></script>
+  <script src="js/screens/audit.js"></script>
+  <script src="js/screens/users.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

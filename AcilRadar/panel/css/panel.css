@@ -1,0 +1,457 @@
+/* =============================================================================
+ * panel/css/panel.css
+ * NE İŞE YARAR : Panele özgü yerleşim ve parçalar: başlıktaki kullanıcı alanı, menü,
+ *                oturum bandı, ekran başlığı, kart, form ızgarası, aralık alanları,
+ *                hata özeti, bildirimler, duyarlı tablo, sayfalama, süzgeç.
+ * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: renk/ölçü → ../css/tokens.css (burada sabit değer yok)
+ * NOT: Ayrı bir görsel dil KURULMAZ; düğme, alan, rozet, durum kutusu gibi her şey
+ *      sitenin css/base.css ve css/components.css dosyalarından gelir.
+ * ========================================================================== */
+
+/* ---- Başlık, kullanıcı alanı, menü ------------------------------------------ */
+.pheader {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.pheader .brand__text {
+  display: block;
+}
+
+.puser {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.puser__label {
+  font-size: var(--fs-16);
+  color: var(--c-text-2);
+}
+
+.pnav {
+  border-top: 1px solid var(--c-line);
+  background: var(--c-surface);
+}
+
+.pnav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s-1);
+}
+
+.pnav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border-bottom: 3px solid transparent;
+  color: var(--c-text);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.pnav__link:hover {
+  background: var(--c-selected-bg);
+}
+
+.pnav__link[aria-current="page"] {
+  border-bottom-color: var(--c-selected-line);
+  color: var(--c-selected-fg);
+}
+
+/* ---- Oturum bandı (ekranı engellemez) ------------------------------------- */
+.session-banner {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--c-warn-bg);
+  color: var(--c-warn-fg);
+  border-bottom: 2px solid var(--c-danger-line);
+}
+
+.session-banner__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding-block: var(--s-2);
+}
+
+.session-banner__text {
+  flex: 1 1 14rem;
+  font-weight: 700;
+}
+
+/* ---- Ana alan ve ekran başlığı ------------------------------------------- */
+.pmain {
+  display: grid;
+  gap: var(--s-4);
+  padding-block: var(--s-6) var(--s-7);
+}
+
+.pview {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.pview:focus {
+  outline: none;
+}
+
+.pview__head {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.pview__title {
+  font-size: var(--fs-28);
+}
+
+.pview__title:focus {
+  outline: none;
+}
+
+.pview__lead {
+  max-width: var(--measure);
+  color: var(--c-text-2);
+}
+
+.pview__body {
+  display: grid;
+  gap: var(--s-5);
+  min-width: 0;
+}
+
+.ploading {
+  padding: var(--s-4) 0;
+}
+
+/* ---- Kart ve ölçüler ------------------------------------------------------ */
+.pcard {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.pcard__title {
+  font-size: var(--fs-22);
+}
+
+.pmetrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--s-3);
+  width: 100%;
+}
+
+.pmetric {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-1);
+  background: var(--c-surface-2);
+}
+
+.pmetric dt {
+  font-size: var(--fs-14);
+  font-weight: 700;
+  color: var(--c-text-2);
+}
+
+.pmetric dd {
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.pactions,
+.prow-actions,
+.ptoolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.ptoolbar {
+  justify-content: space-between;
+}
+
+.plink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-weight: 650;
+}
+
+/* ---- Form --------------------------------------------------------------- */
+.pform {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 44rem;
+}
+
+.pform--narrow {
+  max-width: 28rem;
+}
+
+.pfield__error {
+  font-size: var(--fs-16);
+  font-weight: 700;
+  color: var(--c-warn-fg);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--c-danger-line);
+  border-width: 3px;
+}
+
+.input--compact {
+  width: auto;
+  max-width: 100%;
+}
+
+.prange {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-1);
+}
+
+.prange > legend {
+  padding: 0 var(--s-1);
+}
+
+.prange__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+  align-items: start;
+}
+
+/* Hata özeti: gönderimde odaklanır, maddeler alana götürür. */
+.error-summary {
+  padding: var(--s-4);
+  border: 3px solid var(--c-danger-line);
+  border-radius: var(--r-1);
+  background: var(--c-warn-bg);
+}
+
+.error-summary:focus {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.error-summary__title {
+  font-size: var(--fs-18);
+  color: var(--c-warn-fg);
+}
+
+.error-summary__list {
+  display: grid;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+  padding-left: 1.2em;
+  list-style: disc;
+}
+
+.error-summary__list a {
+  display: inline-flex;
+  min-height: var(--tap);
+  align-items: center;
+  color: var(--c-warn-fg);
+  font-weight: 650;
+}
+
+/* ---- Bildirimler ------------------------------------------------------------ */
+.pnotice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-1);
+  border-left: 6px solid var(--c-selected-line);
+  background: var(--c-info-bg);
+  color: var(--c-info-fg);
+  font-weight: 600;
+}
+
+.pnotice .icon {
+  margin-top: 0.15em;
+}
+
+.pnotice--success {
+  border-left-color: var(--c-low-line);
+  background: var(--c-low-bg);
+  color: var(--c-low-fg);
+}
+
+.pnotice--warning,
+.pnotice--error {
+  border-left-color: var(--c-danger-line);
+  background: var(--c-warn-bg);
+  color: var(--c-warn-fg);
+}
+
+.pmock {
+  max-width: 28rem;
+}
+
+.pmock__title {
+  font-weight: 750;
+}
+
+.pmock__list {
+  margin: var(--s-1) 0;
+  padding-left: 1.2em;
+  list-style: disc;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Tablo: dar ekranda satırlar karta dönüşür ----------------------------- */
+.ptable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--c-surface);
+  font-size: var(--fs-16);
+}
+
+.ptable th,
+.ptable td {
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ptable th {
+  background: var(--c-surface-2);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.ptable td {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 899px) {
+  .ptable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .ptable,
+  .ptable tbody,
+  .ptable tr,
+  .ptable td {
+    display: block;
+  }
+
+  .ptable tr {
+    margin-bottom: var(--s-3);
+    padding: var(--s-2) 0;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-1);
+  }
+
+  .ptable td {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--s-2);
+    border-bottom: 0;
+    padding: var(--s-2) var(--s-3);
+  }
+
+  .ptable td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--c-text-2);
+  }
+}
+
+/* ---- Sayfalama ve süzgeç -------------------------------------------------- */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+}
+
+.pager__info {
+  color: var(--c-text-2);
+  font-weight: 600;
+}
+
+.pfilter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: end;
+}
+
+.pfilter__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+@media (min-width: 640px) {
+  .pfilter {
+    grid-template-columns: repeat(2, minmax(0, 14rem)) auto;
+  }
+}
+
+/* ---- Altbilgi --------------------------------------------------------------- */
+.pfooter {
+  border-top: 1px solid var(--c-line);
+  background: var(--c-surface);
+  font-size: var(--fs-16);
+  color: var(--c-text-2);
+}
+
+.pfooter__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  padding-block: var(--s-3) calc(var(--s-3) + env(safe-area-inset-bottom));
+}
+
+.pfooter a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
+/* ---- Yazdırma ------------------------------------------------------------------ */
+@media print {
+  .pnav,
+  .puser,
+  .session-banner,
+  .banner,
+  .pfilter,
+  .pager,
+  .ptoolbar .btn,
+  .pactions {
+    display: none !important;
+  }
+
+  .ptable tr {
+    break-inside: avoid;
+  }
+}

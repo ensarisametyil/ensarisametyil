@@ -2,7 +2,7 @@
  * js/strings.js
  * NE İŞE YARAR : Arayüzde görünen TÜM Türkçe metinler (tek dil) ve bunları
  *                üreten yardımcılar; sayı/tarih biçimleri (Intl, tr-TR).
- * VERDİĞİ      : AcilRadar.Strings → { data, text, list, has, missingKeys, format }
+ * VERDİĞİ      : AcilRadar.Strings → { data, text, list, has, extend, missingKeys, format }
  *                text('card.totalLabel')
  *                text('unit.minutesRange', { min: 10, max: 20 })  → "10–20 dk."
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
@@ -382,6 +382,15 @@
     return value.slice();
   }
 
+  /**
+   * Ayrı bir uygulamanın (ör. panel/) kendi metin grubunu ekler: extend('panel', {...}).
+   * Var olan bir grubun üzerine YAZMAZ (yanlışlıkla site metinleri bozulmasın).
+   */
+  function extend(namespace, group) {
+    if (Object.prototype.hasOwnProperty.call(STRINGS, namespace)) throw new Error(namespace);
+    STRINGS[namespace] = group;
+  }
+
   function has(key) {
     const value = lookup(key);
     return typeof value === 'string' || Array.isArray(value);
@@ -397,6 +406,7 @@
   const numberFormats = {};
   const percentFormat = new Intl.NumberFormat(cfg.LOCALE, { style: 'percent', maximumFractionDigits: 0 });
   const clockFormat = new Intl.DateTimeFormat(cfg.LOCALE, { hour: '2-digit', minute: '2-digit', timeZone: cfg.TIME_ZONE });
+  const dateTimeFormat = new Intl.DateTimeFormat(cfg.LOCALE, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: cfg.TIME_ZONE });
   const relativeFormat = new Intl.RelativeTimeFormat(cfg.LOCALE, { numeric: 'auto' });
 
   function number(value, maxFractionDigits) {
@@ -427,6 +437,11 @@
     return clockFormat.format(new Date(ms));
   }
 
+  /** Zaman damgası (ms) → "12.10.2026 21:30" (Türkiye saati) */
+  function dateTime(ms) {
+    return dateTimeFormat.format(new Date(ms));
+  }
+
   /** Geçen süre (dakika) → "az önce" / "5 dakika önce" / "2 saat önce" / "dün" */
   function ago(minutes) {
     const value = Math.max(0, minutes);
@@ -447,6 +462,7 @@
     text: text,
     list: list,
     has: has,
+    extend: extend,
     missingKeys: missingKeys,
     format: Object.freeze({
       number: number,
@@ -454,6 +470,7 @@
       km: km,
       minutesRange: minutesRange,
       clock: clock,
+      dateTime: dateTime,
       ago: ago,
       minutesBetween: minutesBetween
     })

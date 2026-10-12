@@ -1,4 +1,4 @@
-# AcilRadar — Ön yüz (Aşama A)
+# AcilRadar — Ön yüz (Aşama A: halka açık site · Aşama B: hastane paneli)
 
 Yakındaki **devlet hastanelerinin** acil servislerinin **tahmini** yoğunluğunu ve "yol + kayıt + bekleme" toplam süresini karşılaştıran web arayüzü. Başlangıç bölgesi: Gebze ve çevresi. Veri şu an **örnek veridir (simülasyon)**.
 
@@ -35,6 +35,16 @@ Gereken: güncel bir tarayıcı. Araçlar ve testler için Node 18+ (bağımlıl
 
 Playwright ve axe-core yalnız geliştirme yardımcısıdır (`npx playwright` ya da global kurulum); sayfa bunlara bağlı değildir.
 
+### Hastane paneli (Aşama B)
+
+| Amaç | Komut / adım |
+|---|---|
+| Örnek sunucuyla açmak | `panel/index.html`'i açın (`panel/js/config.js › ENVIRONMENT: 'mock'`). |
+| Gerçek ağ yolu + çerezli oturum | `node tools/mock-server.js` → http://localhost:8787/panel/ ve `ENVIRONMENT: 'production'` |
+| Örnek hesaplar (yalnız örnek sunucuda) | `personel@ornek.test` (hastane personeli) · `yonetici@ornek.test` (hastane yöneticisi) · `il@ornek.test` (il görüntüleyici) · `sistem@ornek.test` (sistem yöneticisi) — parola: `Ornek-Parola-1` |
+
+Panel testleri: `node tests/run-panel.js` (birim) · `node tests/panel-contract.test.js` (mock-server açıkken) · `PLAYWRIGHT_MODULE=… AXE_PATH=… node tests/panel-ui.test.js` (tarayıcı).
+
 ---
 
 ## 2. Dosya haritası
@@ -67,9 +77,26 @@ js/ui/states.js            İskelet, boş, hata, bantlar, duyurular.
 js/ui/info.js              Formül metni (config'ten) ve "Veriler nereden geliyor?".
 vendor/leaflet/            Leaflet 1.9.4 (yerel kopya + lisans).
 docs/                      Bu belge, BILESENLER, GUVENLIK, SOZLESME, DEGISIKLIK, hospitals.schema.json
-tests/                     run-unit.js, unit.html, contract.test.js, ui.test.js, lib/, unit/
-tools/                     mock-server.js, check-contrast.js, size-report.js
+tests/                     run-unit.js, unit.html, contract.test.js, ui.test.js, lib/, unit/,
+                           run-panel.js, panel-contract.test.js, panel-ui.test.js
+tools/                     mock-server.js (site + panel uçları), check-contrast.js, size-report.js
+
+panel/index.html           Panelin tek sayfalık iskeleti (#/giris, #/ozet, #/veri-girisi, #/gecmis,
+                           #/kullanicilar, #/denetim-kaydi, #/parolami-unuttum, #/iki-adimli-dogrulama)
+panel/css/panel.css        Panele özgü yerleşim (renk/bileşenler sitenin css/ dosyalarından)
+panel/js/config.js         Panel ayarları: ortam, uç yolları, oturum, ROL → YETKİ tablosu, form sınırları
+panel/js/strings.js        Paneldeki TÜM Türkçe metinler ("panel" grubu)
+panel/js/rules.js          SAF kurallar: yetki denetimi ve form doğrulama
+panel/js/schema.js         Panelde sunucu biçimini bilen TEK dosya (eşleme + alan hataları)
+panel/js/api.js            Panelde sunucuyla konuşan TEK dosya (çerez, CSRF başlığı, Idempotency-Key, 401, 429)
+panel/js/mock.js           Örnek arka uç (yalnız 'mock' ortamında yüklenir; mock-server de kullanır)
+panel/js/csv.js            CSV oluşturma ve indirme
+panel/js/ui/               shell (çerçeve, menü, oturum bandı), form (alan, hata özeti), table (tablo, sayfalama, süzgeç)
+panel/js/screens/          Ekranlar: login, dashboard, entry, history, users, audit, common
+panel/js/app.js            Yönlendirme, oturum, 401'de güvenli çıkış ve geri dönüş
 ```
+
+Panel katmanları: **veri** (`api.js` + `schema.js`) → **kurallar** (`rules.js`) → **ekranlar** (`screens/*`: veriyi ister, ortak `ui/*` parçalarıyla çizer) → `app.js` bağlar.
 
 Katmanlar: **veri** (`api.js` + `schema.js`) → **hesap** (`calc.js`) → **çizim** (`ui/*`), `app.js` bağlar. Çizim dosyaları veri getirmez, durum değiştirmez.
 
@@ -91,6 +118,12 @@ Katmanlar: **veri** (`api.js` + `schema.js`) → **hesap** (`calc.js`) → **çi
 | Otomatik yenileme | `js/config.js › AUTO_REFRESH_SECONDS` | |
 | Yol tarifi servisi | `js/config.js › DIRECTIONS_URL_TEMPLATE` | Yalnız `{lat}`, `{lng}`. |
 | Sunucu alan adı değişti | `js/schema.js › FIELD_MAP` (sağ taraf) | Başka dosya değişmez. |
+| **Panel:** bir rolün yetkisini değiştirmek | `panel/js/config.js › ROLE_CAPABILITIES`, `ASSIGNABLE_ROLES` | Sunucudaki yetki tablosu da AYNI değiştirilmeli. |
+| **Panel:** form sınırı (ör. en çok hekim) | `panel/js/config.js › RECORD_LIMITS` | Sunucu doğrulaması da güncellenmeli. |
+| **Panel:** metin | `panel/js/strings.js` | |
+| **Panel:** API ortamı | `panel/js/config.js › ENVIRONMENT` | Adres sitenin `ENVIRONMENTS` tablosundan gelir. |
+| **Panel:** oturum uyarı zamanı / sayfa boyutu | `panel/js/config.js › SESSION_WARNING_SECONDS`, `PAGE_SIZE` | |
+| **Panel:** sunucu alan adı değişti | `panel/js/schema.js › RECORD_MAP`, `USER_MAP` | |
 
 ---
 
@@ -101,6 +134,12 @@ Katmanlar: **veri** (`api.js` + `schema.js`) → **hesap** (`calc.js`) → **çi
 3. Ön yüz aynı alan adından sunulacaksa `js/config.js`'te `ENVIRONMENT: 'production'` yapın (`apiBaseUrl: ''`). Farklı adresteyse `ENVIRONMENTS.production.apiBaseUrl`'e tam adresi yazın ve CORS başlıklarını açın (SOZLESME.md › CORS).
 4. Sunucu [GUVENLIK.md](GUVENLIK.md)'deki başlıkları (CSP dahil) gönderir; API başka kökteyse `connect-src`'e eklenir.
 5. Örnek veri bandının kalktığını (gerçek `dataSource`) ve kartların göründüğünü kontrol edin. `js/mock-data.js` canlıda yüklenmez; isterseniz silebilirsiniz.
+
+### Paneli arka uca bağlama
+1. Arka uç [SOZLESME-PANEL.md](SOZLESME-PANEL.md)'deki uçları yazar (oturum çerezi, CSRF başlığı, Idempotency-Key, rol tablosu sunucuda).
+2. Test ortamında `BASE_URL=… STAFF_EMAIL=… ADMIN_EMAIL=… PANEL_PASSWORD=… STAFF_HOSPITAL=… node tests/panel-contract.test.js` yeşil olmalı.
+3. Panel, API ile **aynı kökten** sunulur (ör. `https://alanadi/panel/`); `panel/js/config.js › ENVIRONMENT: 'production'`.
+4. Örnek veri bandı ("ÖRNEK SUNUCU") kendiliğinden kalkar; `panel/js/mock.js` canlıda yüklenmez.
 
 ### Yayına alma notları
 - `index.html`'deki `<link rel="canonical" href="./">` gerçek **mutlak adresle** değiştirilmelidir; pilot dönemde arama motorlarında görünmesi istenmiyorsa `robots` → `noindex, nofollow`.
@@ -122,3 +161,6 @@ Katmanlar: **veri** (`api.js` + `schema.js`) → **hesap** (`calc.js`) → **çi
 | Harita gri | Karolar yüklenmiyor (ağ, CSP `img-src`) | `img-src https://tile.openstreetmap.org` ekli mi? |
 | "Konumumu kullan" çalışmıyor | HTTP üzerinden açılmış ya da izin verilmedi | HTTPS kullanın; kullanıcı ilçeyi listeden seçebilir. |
 | Tercihler hatırlanmıyor | Tarayıcı depolaması kapalı | Uygulama çalışmaya devam eder; tercih yalnız o oturumda geçerlidir. |
+| Panel: girişten hemen sonra yine giriş ekranı | Çerez gitmiyor (farklı köken, `Secure` çerez HTTP'de, `Path` yanlış) | Paneli API ile aynı kökten ve HTTPS ile sunun; çerez `Path=/api`. |
+| Panel: kaydederken "yetkiniz yok" | CSRF başlığı sunucuya ulaşmıyor ya da rol/kapsam uymuyor | Vekil sunucu `X-AcilRadar-Client` başlığını silmemeli; rol tablosunu karşılaştırın. |
+| Panel: menüde beklenen sayfa yok | Rolün yetkisi yok | `panel/js/config.js › ROLE_CAPABILITIES` ve sunucudaki tablo aynı mı? |

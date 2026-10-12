@@ -148,5 +148,5 @@ Kişisel veri (ad, telefon, konum) **alınmaz**. Hız sınırı: 429 + Retry-Aft
 Paylaşım bağlantısı istemci tarafında üretilecektir; ek uç gerekmez.
 
 ### Panel uçları (Aşama B)
-EK-1'deki panel uçları Aşama B'de arka uçla birlikte ayrıntılandırılacaktır. Yazma isteklerinde hata biçimi:
+Ayrıntılı taslak: [SOZLESME-PANEL.md](SOZLESME-PANEL.md). EK-1'deki panel uçları orada tanımlıdır. Yazma isteklerinde hata biçimi:
 `{ "error": { "code": "...", "fields": { "alanAdi": "Türkçe ileti" } } }`; çift gönderime karşı `Idempotency-Key` başlığı.

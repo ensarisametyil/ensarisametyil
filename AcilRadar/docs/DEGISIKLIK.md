@@ -2,6 +2,26 @@
 
 Biçim: en yeni üstte. Sözleşme (API) değişiklikleri ayrıca belirtilir.
 
+## 1.2.0 — Aşama B: hastane paneli (yalnız ön yüz)
+
+### Panel (`panel/`)
+- Ekranlar: giriş, parolamı unuttum (yalnız arayüz), iki adımlı doğrulama yer tutucusu (kapalı), özet (tek hastane / tüm hastaneler), veri girişi, geçmiş kayıtlar, kullanıcı yönetimi, denetim kaydı.
+- Roller: hastane personeli, hastane yöneticisi, il görüntüleyici, sistem yöneticisi; menü ve sayfalar yetkiye göre süzülür (güvenlik sunucudadır).
+- Veri girişi: anlık doğrulama, odaklanan hata özeti, sunucunun alan bazlı hataları, çift gönderime karşı düğme kilidi + `Idempotency-Key`. Formda yalnız toplu sayılar (KVKK).
+- Oturum: bitime 2 dk kala ekranı engellemeyen uyarı bandı, "Oturumu uzat", 401'de güvenli çıkış ve girişten sonra kalınan sayfaya dönüş, 429'da kilit ve kalan süre.
+- Listeler: duyarlı tablo (dar ekranda kart), sayfalama ve tarih süzgeci adreste (geri/ileri çalışır), CSV (noktalı virgül, UTF-8 BOM, formül enjeksiyonu koruması).
+- Aynı tasarım sistemi (sitenin `css/` dosyaları); ayrı görsel dil yok.
+
+### Sözleşme
+- Panel uçları taslağı: `docs/SOZLESME-PANEL.md`. Örnek arka uç `panel/js/mock.js`; `tools/mock-server.js` panel uçlarını HttpOnly çerezli oturumla sunar.
+
+### Ortak dosyalarda küçük eklemeler
+- `js/strings.js`: `extend()` (panelin kendi metin grubu) ve `format.dateTime()`.
+- `js/mock-data.js`: örnek hastane listesi `SAMPLES` olarak dışa açıldı.
+
+### Testler
+- `tests/run-panel.js` (28), `tests/panel-contract.test.js` (13), `tests/panel-ui.test.js` (25, axe-core dahil).
+
 ## 1.1.0 — Yalnız devlet hastaneleri
 
 ### Sözleşme (küçük sürüm 1.1)

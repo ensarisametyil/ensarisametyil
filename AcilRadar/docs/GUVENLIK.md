@@ -43,11 +43,28 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains   (yalnız HTTPS'
 - Tarayıcıda yalnız `acilradar.prefs` anahtarı altında **yazı boyutu** ve **seçilen ilçe** saklanır (try/catch'li; depolama yoksa uygulama yine çalışır).
 - Kişisel sağlık verisi toplanmaz. Aşama B panelinde de yalnız **toplu sayılar** girilecektir; hasta bazlı alan yoktur.
 
-## 5. Kimlik doğrulama (Aşama B için not)
+## 5. Hastane paneli (Aşama B)
 
-- Aşama A'da kimlik doğrulama yoktur. İleride tüm istekler `js/api.js › request()` çekirdeğinden geçtiği için `setRequestHook` ile tek noktadan `Authorization` başlığı ya da `credentials: 'include'` eklenebilir.
-- **Arayüzde bir düğmeyi/ekranı gizlemek güvenlik DEĞİLDİR.** Rol ve yetki denetimi (hospital_staff, hospital_admin, province_viewer, system_admin) her istekte **sunucuda** yapılmalıdır. Arayüz yalnız kullanıcı deneyimi için yetkisiz öğeleri göstermez.
-- Panelde: oturum çerezi `HttpOnly; Secure; SameSite=Strict`, CSRF koruması, kaba kuvvete karşı hız sınırı (429), parola alanlarında `autocomplete="current-password" / "new-password"`.
+Ayrıntılı uç tanımları: [SOZLESME-PANEL.md](SOZLESME-PANEL.md).
+
+> **Arayüzde bir düğmeyi, menüyü ya da ekranı gizlemek güvenlik DEĞİLDİR.** `panel/js/config.js › ROLE_CAPABILITIES` yalnız neyin gösterileceğini belirler. Rol ve kapsam denetimi (hangi hastane, hangi kullanıcı) **her istekte sunucuda** yapılmalıdır. Arayüzü atlatan doğrudan bir istek sunucuda `403` almalıdır.
+
+Sunucunun uygulaması gerekenler:
+- **Oturum:** `HttpOnly; Secure; SameSite=Strict; Path=/api` çerez; 30 dk kayan süre; çıkışta ve hesap pasif yapılınca oturum sunucuda silinir. Arayüz oturum kimliğini hiçbir yerde saklamaz (yalnız tarayıcı içi örnek sunucu, `sessionStorage`'da sahte bir anahtar tutar).
+- **CSRF:** `SameSite=Strict` + durum değiştiren isteklerde `X-AcilRadar-Client: panel` başlığı **ve** `Origin` denetimi. Başlık eksikse `403`.
+- **Kaba kuvvet:** hesap ve IP başına giriş deneme sınırı → `429` + `Retry-After`. Hatalı girişte hangi alanın yanlış olduğu ya da hesabın var olup olmadığı söylenmez.
+- **Çift gönderim:** `Idempotency-Key` ile aynı isteğin tekrarı aynı yanıtı almalı (arayüz ayrıca düğmeyi kilitler).
+- **Doğrulama:** tüm sınırlar (0–100, en az ≤ en çok, tam sayı) sunucuda da denetlenir; arayüzdeki denetim yalnız kolaylıktır.
+- **Denetim kaydı:** her yazma işlemi (kim, ne zaman, ne değişti) kaydedilir; kayıt değiştirilemez ve silinemez olmalıdır.
+- **Parolalar:** güçlü özetleme (ör. Argon2id/bcrypt); panel parola belirlemez, ilk parola tek kullanımlık bağlantıyla.
+- **KVKK:** panelde hasta bazlı veri alanı **yoktur**; sunucu bu tür alanları kabul etmemelidir. Kullanıcıların ad ve e-postası kişisel veridir: en az yetkiyle erişilmeli, saklama süresi belirlenmelidir.
+
+Arayüz tarafında yapılanlar:
+- Parola alanı `autocomplete="current-password"`, e-posta `autocomplete="username"`; parola yöneticileri doğru çalışır. "Parolayı göster" düğmesi `aria-pressed` taşır.
+- CSV dışa aktarımda `= + - @` ile başlayan hücreler `'` ile etkisizleştirilir (formül enjeksiyonu).
+- Sunucunun `message` alanı gösterilmez; yalnız kodlar Türkçe metne çevrilir.
+- 401 gelince bellekteki kullanıcı bilgisi ve hastane listesi silinir; kullanıcı giriş ekranına yönlendirilir.
+- İleride `Authorization` başlığıyla kimlik doğrulama gerekirse `panel/js/api.js › setRequestHook` tek değişiklik noktasıdır.
 
 ## 6. Bildirim
 
