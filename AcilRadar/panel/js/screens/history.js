@@ -77,7 +77,7 @@
         AR.Panel.UI.table.render(table, {
           caption: t('panel.history.title') + ' — ' + hospital.name,
           rows: result.items,
-          columns: COLUMNS.map(function (c) { return { label: col(c.key), cell: c.value }; })
+          columns: COLUMNS.map(function (c) { return { nowrap: c.key === 'time', label: col(c.key), cell: c.value }; })
         });
         AR.Panel.UI.table.pager(pager, result, function (page) { go({ sayfa: page }); });
       }).catch(function (error) {

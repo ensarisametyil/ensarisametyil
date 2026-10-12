@@ -94,7 +94,7 @@
     const fields = { name: name, email: email, role: role, hospitalId: hospital };
     const summary = el('div', { className: 'error-summary', attrs: { id: 'user-summary', tabindex: '-1', hidden: true } });
     const submit = el('button', { className: 'btn btn--primary', attrs: { type: 'submit' }, text: t('panel.users.add') });
-    const form = el('form', { className: 'pform', attrs: { novalidate: true, 'aria-labelledby': 'user-add-title' } }, [summary, name.root, email.root, role.root, hospital.root, submit]);
+    const form = el('form', { className: 'pform pform--grid', attrs: { novalidate: true, 'aria-labelledby': 'user-add-title' } }, [summary, name.root, email.root, role.root, hospital.root, submit]);
     let key = null;
     form.addEventListener('input', function () { key = null; });
     form.addEventListener('submit', function (event) {

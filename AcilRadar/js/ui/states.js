@@ -82,9 +82,9 @@
     container.hidden = true;
   }
 
-  /** Örnek veri bandı: yalnız veri simülasyonsa görünür. */
+  /** Örnek veri bandı: yalnız veri simülasyonsa görünür (<html class="is-simulated">). */
   function setSimulationBanner(visible) {
-    byId('simulation-banner').hidden = !visible;
+    document.documentElement.classList.toggle('is-simulated', Boolean(visible));
   }
 
   function setOfflineBanner(visible) {

@@ -10,13 +10,13 @@ Dağılım: ~%70 nötr, ~%20 lacivert/mavi, ~%10 vurgu ve durum rengi. Koyu tema
 
 | Jeton | Açık | Koyu | Kullanım |
 |---|---|---|---|
-| `--c-navy` | #0F2F55 | #0F2F55 | Logo, seçili yazı boyutu, adım numarası |
+| `--c-navy` | #0F2F55 | #0F2F55 | Logo |
 | `--c-blue` / `--c-primary` | #1565D8 | #1565D8 | Birincil düğme, başlangıç noktası |
 | `--c-accent` | #0E7C86 | #5FC4CC | Bilgi bölümü simgeleri (az kullanılır) |
 | `--c-bg` | #F3F6FA | #0D1726 | Sayfa zemini |
 | `--c-surface` | #FFFFFF | #142236 | Kart, panel |
 | `--c-surface-2` | #F7F9FC | #1A2B42 | Kutucuk, ayrıntı zemini |
-| `--c-line` | #D6DFEA | #2A3D57 | Süs çizgisi (kart kenarı) |
+| `--c-line` | #DCE4EE | #263A54 | Süs çizgisi (kart kenarı, ayraç) |
 | `--c-line-strong` | #6B7C93 | #8094B0 | Form öğesi sınırı (≥ 3:1) |
 | `--c-text` | #14253A | #E8EEF5 | Ana yazı |
 | `--c-text-2` | #4A5B70 | #B3C1D3 | İkincil yazı |
@@ -29,6 +29,9 @@ Dağılım: ~%70 nötr, ~%20 lacivert/mavi, ~%10 vurgu ve durum rengi. Koyu tema
 | `--c-*-solid` | #0B7A4B · #9A5B00 · #B3261E · #5B6676 | aynı | İşaretçi ve sıra rozeti zemini (beyaz yazı) |
 | `--c-*-line` | solid ile aynı | #4FB884 · #D49A3A · #F07C71 · #8C99AB | Kart şeridi, halka, seçili çip sınırı |
 | `--c-info-bg` | #EAF1FB | #18304F | Bilgi zemini |
+| `--c-tonal-*` | #E7EFFA / #0F2F55 (üstüne gelince #D5E3F6) | #1D3150 / #DCE8FA (#25406A) | İkincil düğme, adım numarası, etkin menü öğesi |
+| `--c-seg-on-*` | #0F2F55 zemin / beyaz yazı | #8CB7F5 zemin / #0D1726 yazı | Seçili segment ve seçili yazı boyutu |
+| `--c-hero-bg` | #E6EEF9 | #11213A | Tanıtım bandının üst rengi (aşağı doğru `--c-bg`'ye yumuşak geçiş, hareketsiz) |
 | `--c-warn-bg` | #FDECEA | #3C1A1A | Uyarı zemini (hayati tehlike, hata) |
 
 ### Tipografi
@@ -38,8 +41,8 @@ Sistem yazı tipi yığını (harici yazı tipi yok). Temel 18 px; ölçek **14 
 | Grup | Değerler |
 |---|---|
 | Boşluk (4/8 ızgarası) | 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 px (`--s-1`…`--s-8`); kenar boşluğu `clamp(16px, 4vw, 32px)` |
-| Yarıçap | 12 · 16 · 24 px (`--r-1`…`--r-3`) |
-| Gölge | 2 seviye, çok yumuşak (`--shadow-1`, `--shadow-2`) |
+| Yarıçap | 12 · 18 · 24 px (`--r-1`…`--r-3`) |
+| Gölge | 2 seviye, katmanlı ve çok yumuşak (`--shadow-1` kart, `--shadow-2` öne çıkan kutu / üstüne gelinen kart) + düğme gölgesi (`--shadow-btn`) |
 | Dokunma | En az 48 × 48 px (`--tap`) |
 | Katman | harita `1` (kendi içinde yalıtılmış) · yapışkan üst çubuk `100` · içeriğe atla `200` |
 | Hareket | 150 / 250 ms, ease-out; `prefers-reduced-motion`'da kapalı |
@@ -65,7 +68,14 @@ Sistem yazı tipi yığını (harici yazı tipi yok). Temel 18 px; ölçek **14 
 | Açık | 112 düğmesi | #FFFFFF | #B3261E | 6.54:1 | 4.5:1 | Geçti |
 | Açık | 112 düğmesi (üstüne gelme) | #FFFFFF | #8F1D17 | 8.91:1 | 4.5:1 | Geçti |
 | Açık | Seçili segment/çip | #0F2F55 | #EAF1FB | 11.86:1 | 4.5:1 | Geçti |
-| Açık | Seçili yazı boyutu düğmesi | #FFFFFF | #0F2F55 | 13.48:1 | 4.5:1 | Geçti |
+| Açık | Seçili segment / yazı boyutu düğmesi | #FFFFFF | #0F2F55 | 13.48:1 | 4.5:1 | Geçti |
+| Açık | Seçili segment / yüzey (ayırt edilebilirlik) | #0F2F55 | #FFFFFF | 13.48:1 | 3:1 | Geçti |
+| Açık | Tonlu (ikincil) düğme | #0F2F55 | #E7EFFA | 11.63:1 | 7:1 | Geçti |
+| Açık | Tonlu düğme (üstüne gelme) | #0F2F55 | #D5E3F6 | 10.36:1 | 4.5:1 | Geçti |
+| Açık | Başlık / tanıtım zemini | #0F2F55 | #E6EEF9 | 11.53:1 | 7:1 | Geçti |
+| Açık | İkincil metin / tanıtım zemini | #4A5B70 | #E6EEF9 | 5.94:1 | 4.5:1 | Geçti |
+| Açık | Bağlantı / tanıtım zemini | #1565D8 | #E6EEF9 | 4.62:1 | 4.5:1 | Geçti |
+| Açık | Form sınırı / tanıtım zemini | #6B7C93 | #E6EEF9 | 3.64:1 | 3:1 | Geçti |
 | Açık | Az yoğun rozeti | #0B7A4B | #E6F4EC | 4.75:1 | 4.5:1 | Geçti |
 | Açık | Orta yoğun rozeti | #9A5B00 | #FDF1DE | 4.86:1 | 4.5:1 | Geçti |
 | Açık | Çok yoğun rozeti | #B3261E | #FDECEA | 5.72:1 | 4.5:1 | Geçti |
@@ -111,7 +121,14 @@ Sistem yazı tipi yığını (harici yazı tipi yok). Temel 18 px; ölçek **14 
 | Koyu | 112 düğmesi | #FFFFFF | #B3261E | 6.54:1 | 4.5:1 | Geçti |
 | Koyu | 112 düğmesi (üstüne gelme) | #FFFFFF | #8F1D17 | 8.91:1 | 4.5:1 | Geçti |
 | Koyu | Seçili segment/çip | #DCE8FA | #18304F | 10.78:1 | 4.5:1 | Geçti |
-| Koyu | Seçili yazı boyutu düğmesi | #FFFFFF | #0F2F55 | 13.48:1 | 4.5:1 | Geçti |
+| Koyu | Seçili segment / yazı boyutu düğmesi | #0D1726 | #8CB7F5 | 8.74:1 | 4.5:1 | Geçti |
+| Koyu | Seçili segment / yüzey (ayırt edilebilirlik) | #8CB7F5 | #142236 | 7.78:1 | 3:1 | Geçti |
+| Koyu | Tonlu (ikincil) düğme | #DCE8FA | #1D3150 | 10.56:1 | 7:1 | Geçti |
+| Koyu | Tonlu düğme (üstüne gelme) | #DCE8FA | #25406A | 8.40:1 | 4.5:1 | Geçti |
+| Koyu | Başlık / tanıtım zemini | #F1F5FA | #11213A | 14.73:1 | 7:1 | Geçti |
+| Koyu | İkincil metin / tanıtım zemini | #B3C1D3 | #11213A | 8.82:1 | 4.5:1 | Geçti |
+| Koyu | Bağlantı / tanıtım zemini | #8CB7F5 | #11213A | 7.84:1 | 4.5:1 | Geçti |
+| Koyu | Form sınırı / tanıtım zemini | #8094B0 | #11213A | 5.21:1 | 3:1 | Geçti |
 | Koyu | Az yoğun rozeti | #6FCF9C | #123426 | 7.17:1 | 4.5:1 | Geçti |
 | Koyu | Orta yoğun rozeti | #EDB45A | #36270E | 7.76:1 | 4.5:1 | Geçti |
 | Koyu | Çok yoğun rozeti | #FF9B91 | #3C1A1A | 7.64:1 | 4.5:1 | Geçti |
@@ -151,18 +168,18 @@ Her bileşen için durumlar: **normal · üstüne gelme · odak · basılı · d
 | Stil | Görünüm | Ne zaman |
 |---|---|---|
 | `btn--primary` | Mavi zemin, beyaz yazı | Ekranda **tek** ana eylem: "Yol tarifi al" |
-| `btn--secondary` | Beyaz zemin, güçlü sınır | İkincil eylem: "Konumumu kullan", "Haritada göster", "Tekrar dene" |
+| `btn--secondary` | **Tonlu** açık mavi zemin, lacivert yazı (≥ 7:1), çerçevesiz | İkincil eylem: "Konumumu kullan", "Haritada göster", "Tekrar dene" |
 | `btn--ghost` | Zeminsiz, bağlantı rengi | Üçüncül eylem: "Bilgileri yenile", "Filtreleri temizle" |
 | `btn--danger` | Kırmızı zemin, beyaz yazı | **Yalnız 112** için |
 
-Durumlar: üstüne gelme → koyulaşır; basılı → bir ton daha koyu; odak → halka; devre dışı → %60 opaklık + `cursor: not-allowed` (ör. konum alınırken); meşgul → `aria-busy="true"`.
+Durumlar: üstüne gelme → koyulaşır; basılı → bir ton daha koyu ve 1 px aşağı; odak → halka; devre dışı → %60 opaklık + `cursor: not-allowed` (ör. konum alınırken); meşgul → `aria-busy="true"`.
 Kural: Simge + yazı birlikte; yalnız simgeli düğmede `aria-label` zorunlu. En az 48 px.
 
 ### 3.2 Durum rozeti (`badge`)
 Renk + yazı + simge birlikte (Az yoğun ✓, Orta yoğun –, Çok yoğun ⚠, Güncel bilgi yok ◷). Kural: durum **asla yalnız renkle** verilmez.
 
 ### 3.3 Hastane kartı (`card`)
-Sol kenarda durum şeridi; sıra no (haritadaki numarayla aynı) + ad + ilçe · mesafe · yol süresi; etiketler (En kısa toplam süre · Çocuk acili var · Öngörü · Örnek veri); sağda doluluk halkası; durum rozeti; büyük **"Tahmini toplam süre: 35–50 dk."** (daima aralık); Yol / Bekleme / Hekim kutucukları; "Ayrıntılar" açılır bölümü; "Yol tarifi al" (+ harita varsa "Haritada göster").
+Sol kenarda 5 px durum şeridi; iç içe kutu yok (sade, tek yüzey); üstüne gelince gölge derinleşir; sıra no (haritadaki numarayla aynı) + ad + ilçe · mesafe · yol süresi; etiketler (En kısa toplam süre · Çocuk acili var · Öngörü · Örnek veri); sağda doluluk halkası; durum rozeti; büyük **"Tahmini toplam süre: 35–50 dk."** (daima aralık); Yol / Bekleme / Hekim tek bir şeritte, ince ayraçlarla; "Ayrıntılar" açılır bölümü; "Yol tarifi al" (+ harita varsa "Haritada göster").
 Durumlar: normal · vurgulu (işaretçiyle eşleşince mavi çerçeve) · odak · **eski veri** (şerit gri, süre/halka/kutucuk yerine "Bu hastane için güncel bilgi yok.").
 Kural: Uzun ad alta iner, kesilmez (`overflow-wrap: anywhere`); "3–4 dk." gibi parçalar bölünmez. Yazdırırken bölünmez.
 
@@ -175,7 +192,7 @@ Kural: Uzun ad alta iner, kesilmez (`overflow-wrap: anywhere`); "3–4 dk." gibi
 ### 3.6 Bant (`banner`)
 | Tür | Ne zaman |
 |---|---|
-| Örnek veri | Yanıtta `dataSource: "simulated"` kayıt varsa; gerçek veri gelince kendiliğinden kalkar |
+| Örnek veri | Yanıtta `dataSource: "simulated"` kayıt varsa; gerçek veri gelince kendiliğinden kalkar. Örnek ortamda ya da son açılışta veri örnekse **ilk boyamada** görünür (`<html class="is-simulated">`); sonradan eklenip sayfayı itmez |
 | Çevrimdışı | `navigator.onLine === false`; otomatik yenileme durur |
 | Duyuru (bilgi/uyarı) | Sunucu `notice` gönderirse; metin `textContent` ile yazılır, en çok 300 karakter |
 
@@ -192,7 +209,7 @@ Veri hiç yoksa kırmızı çerçeveli kutu + "Tekrar dene". Eski veri hâlâ g�
 Etiket her zaman görünür (`<label for>`); sınır `--c-line-strong` (≥ 3:1); üstüne gelince mavi sınır. Arama alanında büyüteç simgesi süstür; altında kısa ipucu (`aria-describedby`). Konum durumu `role="status"` ile duyurulur; hata tonu uyarı zemini.
 
 ### 3.11 Segment kontrol (`segment`)
-Görünüşte bölümlü düğme, davranışta **radyo düğmesi** (klavyede ok tuşları çalışır). Seçili olan mavi sınır + açık mavi zemin + **nokta işareti** (yalnız renk değil). Devre dışı (ör. "Akşam 20:00 (bugün için geçti)") kesikli sınır.
+Görünüşte tek bir "ray" içinde yan yana duran bölümlü düğme, davranışta **radyo düğmesi** (klavyede ok tuşları çalışır). Ray `--c-line-strong` sınırlıdır (≥ 3:1). Seçili olan **dolu lacivert zemin + beyaz yazı + nokta işareti** (yalnız renk değil). Sığmazsa alt satıra geçer; 380 px altında yazı da kırılabilir. Devre dışı (ör. "Akşam 20:00 (bugün için geçti)") kesikli sınır. Yazı boyutu seçici (A− · A · A+) aynı görünümdedir.
 
 ### 3.12 Çip (`chip`)
 Aç/kapa filtre (`aria-pressed`). Yoğunluk çiplerinde seçilince durum rengi + simge.
@@ -203,8 +220,25 @@ Aç/kapa filtre (`aria-pressed`). Yoğunluk çiplerinde seçilince durum rengi +
 ### 3.14 Harita açıklaması (`legend`)
 Renk noktası + yazı (Az · Orta · Çok yoğun · Güncel bilgi yok · Başlangıç noktası). "© OpenStreetMap contributors" atfı haritada her zaman görünür. Harita yüklenemezse yerine sakin bilgi kutusu.
 
+### 3.15a Özet şeridi (`stats`)
+Tanıtım bandında üç bilgi (acil servis sayısı · en az yoğun · en yakın) **tek kartta**, aralarında ince ayraç (mobilde yatay, ≥ 640 px'te dikey).
+
 ### 3.15 Öneri kutusu (`pick`)
 "Seçimlerinize göre tahmini toplam süresi en kısa" + ad + aralık + rozet + "Tavsiye değil, tahmindir." + "Yol tarifi al". "En iyi" gibi değer yargısı yoktur. Güncel bilgisi olan hastane yoksa açıklayıcı bir cümle gösterir.
+
+### 3.16 Panel parçaları (`panel/css/panel.css`)
+Panel ayrı bir görsel dil kurmaz; yukarıdaki düğme, alan, rozet ve durum kutularını kullanır. Panele özgü parçalar:
+
+| Parça | Görünüm ve kural |
+|---|---|
+| Menü (`pnav`) | Etkin sayfa: tonlu zemin + alt çizgi (`aria-current="page"`); yalnız yetkili sayfalar listelenir (güvenlik değildir). 900 px altında başlık yapışkan değildir (ekranı kaplamasın) |
+| Giriş kartı (`pview[data-layout="auth"]`) | Giriş, parolamı unuttum ve iki adımlı doğrulama ekranları ortada tek kart |
+| Kart (`pcard`) | Hastane özeti, kullanıcı ekleme ve veri girişi formu; ölçüler (`pmetric`) büyük sayı + küçük büyük harfli etiket |
+| Form ızgarası (`pform--grid`) | ≥ 720 px'te iki sütun; hata özeti, bildirim, aralık kutuları ve düğmeler tam satır. Aralık alanları (`prange`) açık zeminli kutuda "En az / En çok" |
+| Hata özeti (`error-summary`) | Gönderimde odak alır; maddeler ilgili alana götürür; her alanın altında ayrıca hata |
+| Bildirim (`pnotice`) | Bilgi / başarı / uyarı; sol şerit + simge + yazı |
+| Tablo (`ptable`) | Geniş ekranda kart içinde; başlıklar küçük büyük harf; tarih sütunu tek satır; sığmazsa yalnız tablo kayar. 900 px altında her satır bir karta dönüşür (etiket + değer) |
+| Oturum bandı (`session-banner`) | Ekranı engellemez; bitime 2 dk kala görünür, bir kez duyurulur |
 
 ## 4. Genel kurallar
 - Yasak: neon, cam efekti, 3B, hareketli arka plan, parıltı, aşırı degrade, emoji, stok fotoğraf, "canlı/anlık/gerçek zamanlı", "en iyi".

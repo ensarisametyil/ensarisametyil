@@ -40,7 +40,7 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains   (yalnız HTTPS'
 
 - **Konum asla ağa çıkmaz.** "Konumumu kullan" ile alınan koordinat yalnız bellekte tutulur, mesafe tarayıcıda hesaplanır, hiçbir isteğe eklenmez, saklanmaz. "Yol tarifi al" bağlantısı yalnız hastanenin koordinatını içerir.
 - Çerez yoktur. Analitik, reklam, izleyici, harici yazı tipi yoktur.
-- Tarayıcıda yalnız `acilradar.prefs` anahtarı altında **yazı boyutu** ve **seçilen ilçe** saklanır (try/catch'li; depolama yoksa uygulama yine çalışır).
+- Tarayıcıda yalnız `acilradar.prefs` anahtarı altında **yazı boyutu**, **seçilen ilçe** ve **son verinin örnek olup olmadığı** (evet/hayır; örnek veri bandını ilk boyamada göstermek için) saklanır (try/catch'li; depolama yoksa uygulama yine çalışır). Konum ve kişisel veri saklanmaz.
 - Kişisel sağlık verisi toplanmaz. Aşama B panelinde de yalnız **toplu sayılar** girilecektir; hasta bazlı alan yoktur.
 
 ## 5. Hastane paneli (Aşama B)

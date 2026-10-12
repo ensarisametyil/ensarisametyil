@@ -34,6 +34,7 @@
     sortKey: cfg.DEFAULT_SORT,
     filters: emptyFilters(),
     response: null,               // ApiResponse (js/schema.js)
+    simulated: false,             // örnek veri bandı görünür mü
     errorCode: null,
     retryAfterMs: 0,
     isLoading: false,
@@ -94,6 +95,10 @@
     syncControls();
     updateLocationStatus();
     UI.states.setOfflineBanner(navigator.onLine === false);
+    // Örnek veri bandı veri gelmeden gösterilir (örnek ortam ya da son açılış örnekti):
+    // sonradan eklenip içeriği aşağı itmesin.
+    state.simulated = cfg.ENVIRONMENT === 'mock' || prefs.lastSimulated;
+    UI.states.setSimulationBanner(state.simulated);
     UI.hero.render(null);
     load({ announce: true });
     timers.tick = setInterval(handleClockTick, cfg.CLOCK_TICK_SECONDS * MS_PER_SECOND);
@@ -214,7 +219,12 @@
 
   function renderAll(options) {
     const response = state.response;
-    UI.states.setSimulationBanner(Boolean(response && response.isSimulated));
+    // Yanıt yoksa (hata, yükleniyor) bant olduğu gibi kalır; gidip gelmez.
+    if (response && response.isSimulated !== state.simulated) {
+      state.simulated = response.isSimulated;
+      AR.Storage.savePrefs({ lastSimulated: state.simulated });
+    }
+    UI.states.setSimulationBanner(state.simulated);
     UI.states.setNotice(response ? response.notice : null);
     UI.info.renderDataSource(response ? response.dataSource : 'none');
     renderHero();

@@ -32,14 +32,14 @@
     const body = el('tbody', {}, o.rows.map(function (row) {
       return el('tr', {}, o.columns.map(function (c) {
         const value = c.cell(row);
-        return el('td', { data: { label: c.label } }, [value]);
+        return el('td', { className: c.nowrap ? 'is-nowrap' : '', data: { label: c.label } }, [value]);
       }));
     }));
-    container.appendChild(el('table', { className: 'ptable' }, [
+    container.appendChild(el('div', { className: 'ptable-wrap' }, [el('table', { className: 'ptable' }, [
       el('caption', { className: 'visually-hidden', text: o.caption }),
       el('thead', {}, [head]),
       body
-    ]));
+    ])]));
   }
 
   /**

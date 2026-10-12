@@ -19,12 +19,16 @@
     textSize: function (value) { return cfg.TEXT_SIZES.indexOf(value) !== -1; },
     districtId: function (value) {
       return cfg.DISTRICTS.some(function (district) { return district.id === value; });
-    }
+    },
+    // Son açılışta veri örnek miydi? Bant ilk boyamada gösterilir; veri gelince
+    // bant birden eklenip sayfayı aşağı itmez (düzen kayması olmaz).
+    lastSimulated: function (value) { return typeof value === 'boolean'; }
   };
 
   const DEFAULTS = {
     textSize: cfg.DEFAULT_TEXT_SIZE,
-    districtId: cfg.DEFAULT_DISTRICT_ID
+    districtId: cfg.DEFAULT_DISTRICT_ID,
+    lastSimulated: false
   };
 
   function readRaw() {

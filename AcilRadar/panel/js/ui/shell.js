@@ -82,11 +82,15 @@
 
   /**
    * Yeni ekranın kabı: başlık h1 (odak alır) + gövde.
+   * @param {string} title
+   * @param {string} [lead]
+   * @param {{layout?:'auth'}} [options]  'auth': giriş ekranları ortada tek kart
    * @returns {{root:HTMLElement, body:HTMLElement}}
    */
-  function startView(title, lead) {
+  function startView(title, lead, options) {
     const view = byId('view');
     dom.clear(view);
+    view.setAttribute('data-layout', (options && options.layout) || 'page');
     document.title = t('panel.app.documentTitle', { page: title });
     const heading = el('h1', { className: 'pview__title', attrs: { tabindex: '-1', id: 'view-title' }, text: title });
     const body = el('div', { className: 'pview__body' });

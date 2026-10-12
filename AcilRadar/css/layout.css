@@ -1,9 +1,11 @@
 /* =============================================================================
  * css/layout.css
  * NE İŞE YARAR : Yerleşim ve kırılımlar. Önce mobil:
- *                  ≥ 640 px  seçimler 2 sütun, bilgi kutuları 2 sütun
+ *                  ≥ 640 px  özet şeridi 3 sütun, bilgi kutuları 2 sütun
  *                  ≥ 900 px  solda kartlar, sağda yapışkan harita
- *                  ≥ 1200 px seçimler 3 sütun, daha geniş harita
+ *                  ≥ 900 px  seçimler: solda 1 ve 2 üst üste, sağda 3
+ *                  ≥ 1024 px tanıtım bandında radar süsü
+ *                  ≥ 1200 px bilgi kutuları 3 sütun
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
  *   - Sütun sayıları ve harita genişliği: aşağıdaki @media blokları
  *   - İçerik genişliği: tokens.css › --content-max
@@ -21,6 +23,7 @@
   z-index: var(--z-sticky);
   background: var(--c-surface);
   border-bottom: 1px solid var(--c-line);
+  box-shadow: 0 1px 0 rgba(15, 47, 85, 0.02), 0 4px 16px rgba(15, 47, 85, 0.04);
 }
 
 .topbar__inner {
@@ -55,16 +58,19 @@ main {
 }
 
 .hero {
-  padding-block: var(--s-6) var(--s-5);
-  background: var(--c-surface);
-  border-bottom: 1px solid var(--c-line);
+  padding-block: var(--s-7) var(--s-6);
+  /* Hareketsiz, yumuşak geçiş: tanıtım bandı → sayfa zemini */
+  background: linear-gradient(180deg, var(--c-hero-bg) 0%, var(--c-bg) 100%);
 }
 
 .stats {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--s-3);
-  margin-top: var(--s-5);
+  margin-top: var(--s-6);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-1);
 }
 
 .controls {
@@ -124,8 +130,6 @@ main {
 /* ======================= ≥ 640 px =========================================== */
 @media (min-width: 640px) {
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .controls > .step:last-child { grid-column: 1 / -1; }
   .howto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .info-grid > .panel--wide { grid-column: 1 / -1; }
@@ -134,6 +138,18 @@ main {
 
 /* ======================= ≥ 900 px: kartlar solda, harita sağda ============== */
 @media (min-width: 900px) {
+  /* Seçimler: solda 1 ve 2 üst üste, sağda 3 (yükseklikler dengeli, boşluk yok) */
+  .controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "where filter" "when filter";
+    align-items: start;
+  }
+
+  .controls > .step:nth-child(1) { grid-area: where; }
+  .controls > .step:nth-child(2) { grid-area: when; }
+  .controls > .step:nth-child(3) { grid-area: filter; }
+
   .results {
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     grid-template-areas: "list map";
@@ -151,10 +167,19 @@ main {
   .footer__grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); }
 }
 
+/* Tanıtım bandı süsü (≥ 1024 px): hareketsiz, sade radar çizimi; içerik değildir.
+   Yarı saydam tek renk: açık ve koyu temada aynı dosya. */
+@media (min-width: 1024px) {
+  .hero {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='none' stroke='%235A82BE' stroke-opacity='.4' stroke-width='1.5'%3E%3Ccircle cx='200' cy='200' r='60'/%3E%3Ccircle cx='200' cy='200' r='110'/%3E%3Ccircle cx='200' cy='200' r='160'/%3E%3Ccircle cx='200' cy='200' r='198' stroke-dasharray='4 8'/%3E%3Cpath d='M200 2v396M2 200h396' stroke-dasharray='2 10'/%3E%3Cpath d='M200 200L340 60' stroke-width='2'/%3E%3Cg fill='%235A82BE' stroke='none'%3E%3Ccircle cx='278' cy='132' r='7' fill-opacity='.8'/%3E%3Ccircle cx='128' cy='248' r='5' fill-opacity='.55'/%3E%3Ccircle cx='252' cy='300' r='5' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(180deg, var(--c-hero-bg) 0%, var(--c-bg) 100%);
+    background-repeat: no-repeat;
+    background-position: right max(var(--gutter), calc((100% - var(--content-max)) / 2)) top 40px, 0 0;
+    background-size: 340px 340px, auto;
+  }
+}
+
 /* ======================= ≥ 1200 px ============================================= */
 @media (min-width: 1200px) {
-  .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .controls > .step:last-child { grid-column: auto; }
   .info-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .info-grid > .panel--wide { grid-column: auto; }
 }

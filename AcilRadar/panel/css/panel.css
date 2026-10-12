@@ -38,27 +38,60 @@
 .pnav__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--s-1);
+  gap: var(--s-1);
+  padding-block: var(--s-1);
 }
 
 .pnav__link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: var(--tap);
-  padding: 0 var(--s-3);
-  border-bottom: 3px solid transparent;
-  color: var(--c-text);
+  padding: 0 var(--s-4);
+  border-radius: var(--r-1);
+  color: var(--c-text-2);
   font-weight: 650;
   text-decoration: none;
+  transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
 }
 
 .pnav__link:hover {
-  background: var(--c-selected-bg);
+  background: var(--c-tonal-bg);
+  color: var(--c-text);
 }
 
+/* Etkin sayfa: tonlu zemin + alt çizgi (yalnız renge dayanmaz) */
 .pnav__link[aria-current="page"] {
-  border-bottom-color: var(--c-selected-line);
-  color: var(--c-selected-fg);
+  background: var(--c-tonal-bg);
+  color: var(--c-tonal-fg);
+}
+
+.pnav__link[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: var(--s-4);
+  right: var(--s-4);
+  bottom: 6px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--c-selected-line);
+}
+
+/* Dar ekranda başlık + menü birkaç satır tutar; yapışkan kalırsa ekranın
+   yarısını kaplar. Bu yüzden 900 px altında başlık sayfayla birlikte kayar. */
+@media (max-width: 899px) {
+  .topbar {
+    position: static;
+  }
+
+  .pnav__link {
+    padding: 0 var(--s-3);
+  }
+
+  .pnav__link[aria-current="page"]::after {
+    left: var(--s-3);
+    right: var(--s-3);
+  }
 }
 
 /* ---- Oturum bandı (ekranı engellemez) ------------------------------------- */
@@ -87,12 +120,17 @@
 /* ---- Ana alan ve ekran başlığı ------------------------------------------- */
 .pmain {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
   gap: var(--s-4);
+  min-height: 60vh;
   padding-block: var(--s-6) var(--s-7);
 }
 
 .pview {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--s-5);
 }
 
@@ -106,7 +144,36 @@
 }
 
 .pview__title {
+  font-size: var(--fs-36);
+  letter-spacing: -0.02em;
+}
+
+/* Giriş ekranları: ortada tek kart */
+.pview[data-layout="auth"] {
+  width: 100%;
+  max-width: 30rem;
+  margin: var(--s-4) auto 0;
+  padding: var(--s-5);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-3);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-2);
+}
+
+.pview[data-layout="auth"] .pview__title {
   font-size: var(--fs-28);
+}
+
+.pview[data-layout="auth"] .pform--narrow,
+.pview[data-layout="auth"] .pmock {
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .pview[data-layout="auth"] {
+    margin-top: var(--s-6);
+    padding: var(--s-6) var(--s-7);
+  }
 }
 
 .pview__title:focus {
@@ -120,6 +187,7 @@
 
 .pview__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-5);
   min-width: 0;
 }
@@ -131,13 +199,30 @@
 /* ---- Kart ve ölçüler ------------------------------------------------------ */
 .pcard {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   justify-items: start;
-  gap: var(--s-3);
+  gap: var(--s-4);
   padding: var(--s-5);
   border: 1px solid var(--c-line);
   border-radius: var(--r-2);
   background: var(--c-surface);
   box-shadow: var(--shadow-1);
+}
+
+.pcard > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pcard--form {
+  justify-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .pcard {
+    padding: var(--s-6);
+  }
 }
 
 .pcard__title {
@@ -153,9 +238,9 @@
 
 .pmetric {
   display: grid;
-  gap: 2px;
-  padding: var(--s-3) var(--s-4);
-  border: 1px solid var(--c-line);
+  align-content: start;
+  gap: var(--s-1);
+  padding: var(--s-4);
   border-radius: var(--r-1);
   background: var(--c-surface-2);
 }
@@ -163,12 +248,22 @@
 .pmetric dt {
   font-size: var(--fs-14);
   font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--c-text-2);
 }
 
 .pmetric dd {
-  font-weight: 750;
+  font-size: var(--fs-28);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  color: var(--c-heading);
   font-variant-numeric: tabular-nums;
+}
+
+/* İlk ölçü (son veri girişi) uzun bir tarih; daha küçük yazılır */
+.pmetric:first-child dd {
+  font-size: var(--fs-18);
 }
 
 .pactions,
@@ -202,6 +297,45 @@
   max-width: 28rem;
 }
 
+/* Veri girişi: geniş ekranda iki sütun; özet, bildirim, aralıklar ve düğmeler tam satır */
+.pform--grid {
+  max-width: none;
+}
+
+@media (min-width: 720px) {
+  .pform--grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4) var(--s-5);
+    align-items: start;
+  }
+
+  .pform--grid > .error-summary,
+  .pform--grid > div:not(.field),
+  .pform--grid > .pactions {
+    grid-column: 1 / -1;
+  }
+}
+
+.pform--grid > .btn {
+  justify-self: start;
+}
+
+@media (min-width: 720px) {
+  .pform--grid > .btn {
+    grid-column: 1 / -1;
+  }
+}
+
+/* "Parolayı göster" alanın sağ altında */
+.pfield > .btn--ghost {
+  justify-self: end;
+}
+
+.pform--grid > .pactions {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--c-line);
+}
+
 .pfield__error {
   font-size: var(--fs-16);
   font-weight: 700;
@@ -222,12 +356,19 @@
   display: grid;
   gap: var(--s-2);
   padding: var(--s-4);
-  border: 1px solid var(--c-line);
   border-radius: var(--r-1);
+  background: var(--c-surface-2);
 }
 
+/* legend kutunun içinde normal bir başlık gibi dursun */
 .prange > legend {
-  padding: 0 var(--s-1);
+  float: left;
+  width: 100%;
+  padding: 0;
+}
+
+.prange > legend + * {
+  clear: both;
 }
 
 .prange__pair {
@@ -278,7 +419,7 @@
   gap: var(--s-2);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-1);
-  border-left: 6px solid var(--c-selected-line);
+  border-left: 4px solid var(--c-selected-line);
   background: var(--c-info-bg);
   color: var(--c-info-fg);
   font-weight: 600;
@@ -318,30 +459,64 @@
 }
 
 /* ---- Tablo: dar ekranda satırlar karta dönüşür ----------------------------- */
+.ptable-wrap {
+  min-width: 0;
+}
+
 .ptable {
   width: 100%;
   border-collapse: collapse;
-  background: var(--c-surface);
   font-size: var(--fs-16);
 }
 
 .ptable th,
 .ptable td {
-  padding: var(--s-3);
+  padding: var(--s-3) var(--s-4);
   border-bottom: 1px solid var(--c-line);
   text-align: left;
   vertical-align: top;
 }
 
-.ptable th {
-  background: var(--c-surface-2);
-  font-weight: 700;
-  color: var(--c-text);
-}
-
 .ptable td {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  /* Çok sütunlu tablo sığmazsa sayfa değil, yalnız tablo kayar */
+  .ptable-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-2);
+    background: var(--c-surface);
+    box-shadow: var(--shadow-1);
+  }
+
+  .ptable th {
+    background: var(--c-surface-2);
+    font-size: var(--fs-14);
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c-text-2);
+  }
+
+  .ptable tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ptable tbody tr:hover td {
+    background: var(--c-surface-2);
+  }
+
+  .ptable td {
+    overflow-wrap: normal;
+  }
+
+  /* Tarih/saat sütunu tek satırda kalsın */
+  .ptable td.is-nowrap {
+    white-space: nowrap;
+  }
 }
 
 @media (max-width: 899px) {
@@ -364,7 +539,9 @@
     margin-bottom: var(--s-3);
     padding: var(--s-2) 0;
     border: 1px solid var(--c-line);
-    border-radius: var(--r-1);
+    border-radius: var(--r-2);
+    background: var(--c-surface);
+    box-shadow: var(--shadow-1);
   }
 
   .ptable td {
@@ -401,6 +578,10 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
   align-items: end;
+  padding: var(--s-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-2);
+  background: var(--c-surface);
 }
 
 .pfilter__actions {
@@ -417,6 +598,7 @@
 
 /* ---- Altbilgi --------------------------------------------------------------- */
 .pfooter {
+  margin-top: var(--s-6);
   border-top: 1px solid var(--c-line);
   background: var(--c-surface);
   font-size: var(--fs-16);

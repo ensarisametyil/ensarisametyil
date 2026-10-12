@@ -2,7 +2,8 @@
  * js/ui/topbar.js
  * NE İŞE YARAR : Yapışkan üst çubuk: yazı boyutu kontrolü (A− / A / A+).
  *                Ayrıca sayfa ilk çizilmeden ÖNCE kayıtlı yazı boyutunu uygular ve
- *                <html> üzerindeki "no-js" işaretini "js" yapar.
+ *                <html> üzerindeki "no-js" işaretini "js" yapar; örnek veri
+ *                bekleniyorsa "is-simulated" ekler (bant ilk boyamada görünür).
  * VERDİĞİ      : AcilRadar.UI.topbar → init(textSize, onChange), setTextSize(size)
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK:
  *   - Kademelerin piksel karşılıkları: css/tokens.css › [data-text-size]
@@ -44,4 +45,8 @@
   // İlk boyamadan önce: "JS çalışıyor" işareti ve kayıtlı yazı boyutu.
   root.className = root.className.replace(/\bno-js\b/, 'js');
   if (AR.Storage) root.setAttribute('data-text-size', AR.Storage.getPrefs().textSize);
+  // Örnek veri bandı da ilk boyamada yerini alsın (sonradan eklenip içeriği itmesin).
+  if ((AR.Config && AR.Config.ENVIRONMENT === 'mock') || (AR.Storage && AR.Storage.getPrefs().lastSimulated)) {
+    root.classList.add('is-simulated');
+  }
 })(window.AcilRadar = window.AcilRadar || {});

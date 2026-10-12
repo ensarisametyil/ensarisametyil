@@ -30,6 +30,7 @@ Gereken: güncel bir tarayıcı. Araçlar ve testler için Node 18+ (bağımlıl
 | Sözleşme | `node tools/mock-server.js &` sonra `MOCK_SCENARIOS=1 node tests/contract.test.js` | EK-1 sözleşmesi, şema, başlıklar, 304, hata zarfı, senaryolar |
 | Gerçek arka uca karşı sözleşme | `BASE_URL=https://sunucu node tests/contract.test.js` | Aynı genel denetimler |
 | Arayüz durum matrisi (isteğe bağlı) | `PLAYWRIGHT_MODULE=… AXE_PATH=…/axe.min.js node tests/ui.test.js` | Gerçek tarayıcıda 40 durum: yükleniyor/boş/hata/429/eski/çevrimdışı/konum/harita yok, 320–1440 px, 48 px hedefler, klavye, axe-core, yazdırma, JS kapalı … |
+| **Son tarama** (isteğe bağlı) | `PLAYWRIGHT_MODULE=… AXE_PATH=… node tests/full.test.js` | Site + panelin tüm ekranları × 8 genişlik (320–1440) × açık/koyu: taşma, kırpılmış metin, 48 px hedef, "undefined/NaN", yasak ifade, emoji, yinelenen id, satır içi olay; metin aralığı (WCAG 1.4.12); her Tab durağında görünür odak; CLS < 0,1; `file://`; axe-core 320 px. `SHOTS_DIR=klasör` ile tüm ekran görüntülerini kaydeder |
 | Kontrast | `node tools/check-contrast.js` | Her yazı/zemin çifti (açık + koyu) |
 | Boyut | `node tools/size-report.js` | JS + CSS boyut tablosu ve bütçe |
 
@@ -78,7 +79,7 @@ js/ui/info.js              Formül metni (config'ten) ve "Veriler nereden geliyo
 vendor/leaflet/            Leaflet 1.9.4 (yerel kopya + lisans).
 docs/                      Bu belge, BILESENLER, GUVENLIK, SOZLESME, DEGISIKLIK, hospitals.schema.json
 tests/                     run-unit.js, unit.html, contract.test.js, ui.test.js, lib/, unit/,
-                           run-panel.js, panel-contract.test.js, panel-ui.test.js
+                           run-panel.js, panel-contract.test.js, panel-ui.test.js, full.test.js
 tools/                     mock-server.js (site + panel uçları), check-contrast.js, size-report.js
 
 panel/index.html           Panelin tek sayfalık iskeleti (#/giris, #/ozet, #/veri-girisi, #/gecmis,

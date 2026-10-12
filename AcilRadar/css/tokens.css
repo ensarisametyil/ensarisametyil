@@ -23,7 +23,7 @@
   --c-bg: #F3F6FA;
   --c-surface: #FFFFFF;
   --c-surface-2: #F7F9FC;
-  --c-line: #D6DFEA;          /* süs çizgisi (kart kenarı vb.) */
+  --c-line: #DCE4EE;          /* süs çizgisi (kart kenarı vb.) */
   --c-line-strong: #6B7C93;   /* form öğesi sınırı: zemine karşı ≥ 3:1 */
   --c-text: #14253A;
   --c-text-2: #4A5B70;
@@ -41,6 +41,14 @@
   --c-selected-bg: #EAF1FB;
   --c-selected-fg: #0F2F55;
   --c-selected-line: #1565D8;
+  /* Seçili segment (dolu) ve ikincil "tonlu" düğme */
+  --c-seg-on-bg: #0F2F55;
+  --c-seg-on-fg: #FFFFFF;
+  --c-tonal-bg: #E7EFFA;
+  --c-tonal-hover: #D5E3F6;
+  --c-tonal-fg: #0F2F55;
+  /* Tanıtım bandı zemini (alttan --c-bg'ye yumuşak geçiş; hareketsiz) */
+  --c-hero-bg: #E6EEF9;
   --c-focus: #1565D8;
   --c-accent: #0E7C86;
 
@@ -106,11 +114,12 @@
 
   /* ---- Şekil ---- */
   --r-1: 12px;
-  --r-2: 16px;
+  --r-2: 18px;
   --r-3: 24px;
   --r-pill: 999px;
-  --shadow-1: 0 1px 2px rgba(15, 47, 85, 0.06), 0 1px 3px rgba(15, 47, 85, 0.06);
-  --shadow-2: 0 6px 18px rgba(15, 47, 85, 0.08);
+  --shadow-1: 0 1px 2px rgba(15, 47, 85, 0.05), 0 2px 8px rgba(15, 47, 85, 0.05);
+  --shadow-2: 0 2px 6px rgba(15, 47, 85, 0.05), 0 12px 32px rgba(15, 47, 85, 0.09);
+  --shadow-btn: 0 1px 2px rgba(15, 47, 85, 0.12);
 
   /* ---- Dokunma ve katmanlar ---- */
   --tap: 48px;
@@ -132,7 +141,7 @@
     --c-bg: #0D1726;
     --c-surface: #142236;
     --c-surface-2: #1A2B42;
-    --c-line: #2A3D57;
+    --c-line: #263A54;
     --c-line-strong: #8094B0;
     --c-text: #E8EEF5;
     --c-text-2: #B3C1D3;
@@ -143,6 +152,12 @@
     --c-selected-bg: #18304F;
     --c-selected-fg: #DCE8FA;
     --c-selected-line: #8CB7F5;
+    --c-seg-on-bg: #8CB7F5;
+    --c-seg-on-fg: #0D1726;
+    --c-tonal-bg: #1D3150;
+    --c-tonal-hover: #25406A;
+    --c-tonal-fg: #DCE8FA;
+    --c-hero-bg: #11213A;
     --c-focus: #8CB7F5;
     --c-accent: #5FC4CC;
     --c-low-fg: #6FCF9C;
@@ -170,8 +185,9 @@
     --c-footer-bg: #0A1320;
     --c-footer-fg-2: #B3C1D3;
     --c-skeleton: #1F3049;
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-2: 0 6px 18px rgba(0, 0, 0, 0.35);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 }
 

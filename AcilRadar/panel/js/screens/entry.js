@@ -137,7 +137,7 @@
     const submit = el('button', { className: 'btn btn--primary', attrs: { type: 'submit' }, text: t('panel.entry.submit') });
     const copy = el('button', { className: 'btn btn--secondary', attrs: { type: 'button', hidden: !hospital.latest }, text: t('panel.entry.copyLast') });
     const reset = el('button', { className: 'btn btn--ghost', attrs: { type: 'reset' }, text: t('panel.entry.reset') });
-    const form = el('form', { className: 'pform', attrs: { novalidate: true, 'aria-labelledby': 'view-title' } },
+    const form = el('form', { className: 'pform pform--grid', attrs: { novalidate: true, 'aria-labelledby': 'view-title' } },
       [summary, notice].concat(built.parts, [el('div', { className: 'pactions' }, [submit, copy, reset])]));
     const ui = { form: form, built: built, summary: summary, notice: notice, submit: submit, copy: copy };
     copy.addEventListener('click', function () {
@@ -154,9 +154,11 @@
       submitRecord(ctx, state, ui);
     });
     bindLiveValidation(ui, state);
-    container.appendChild(el('h2', { className: 'pcard__title', text: hospital.name }));
-    container.appendChild(el('p', { className: 'pnotice pnotice--info' }, [dom.icon('shield'), el('span', { text: t('panel.entry.privacy') })]));
-    container.appendChild(form);
+    container.appendChild(el('section', { className: 'pcard pcard--form', attrs: { 'aria-label': hospital.name } }, [
+      el('h2', { className: 'pcard__title', text: hospital.name }),
+      el('p', { className: 'pnotice pnotice--info' }, [dom.icon('shield'), el('span', { text: t('panel.entry.privacy') })]),
+      form
+    ]));
   }
 
   function show(ctx) {

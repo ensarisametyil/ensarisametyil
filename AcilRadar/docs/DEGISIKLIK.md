@@ -2,6 +2,24 @@
 
 Biçim: en yeni üstte. Sözleşme (API) değişiklikleri ayrıca belirtilir.
 
+## 1.3.0 — Görsel yenileme ve son tarama
+
+### Tasarım ("Sakin güven" korunarak)
+- Tanıtım bandı: yumuşak renk geçişli zemin, daha büyük başlık, geniş ekranda sade (hareketsiz) radar çizimi; üç bilgi tek bir özet şeridinde.
+- Seçimler: zaman ve sıralama tek bir "ray" içinde yan yana segment kontrol (seçili olan dolu lacivert + nokta); geniş ekranda 1 ve 2 solda üst üste, 3 sağda (boş alan kalmaz).
+- Düğmeler: ikincil düğme tonlu zemin (kalın gri çerçeve yerine); hafif düğme gölgesi; basınca 1 px iner. Form alanlarında ince sınır + belirgin odak halkası.
+- Kartlar: iç içe kutular kaldırıldı; toplam süre büyük ve sade; Yol/Bekleme/Hekim tek şeritte; daha yumuşak katmanlı gölgeler, 18 px köşe.
+- Harita yakınlaştırma düğmeleri tema renklerinde; hayati tehlike kutusu sol şeritli.
+- Panel: giriş ekranı ortada kart; menüde etkin sayfa tonlu zemin + alt çizgi; veri girişi ve kullanıcı ekleme iki sütunlu kart; tablo kart içinde, başlıklar sade, tarih tek satır; dar ekranda başlık yapışkan değil.
+- Yeni jetonlar: `--c-tonal-*`, `--c-seg-on-*`, `--c-hero-bg`, `--shadow-btn` (kontrast 106/106 çift geçer).
+
+### Düzeltmeler (son taramanın bulduğu)
+- Mobilde sayfa açılırken içerik zıplıyordu (CLS 0,45 → 0,01): eski tarayıcı yedek kutusu yer kaplıyordu; örnek veri bandı veri gelince ekleniyordu; boş metin kutuları önce çiziliyordu. Yedek kutu artık sabit konumlu, bant ilk boyamada yerinde (`lastSimulated` tercihi), içerik metinler yerleşince boyanıyor (112 düğmeli üst çubuk hep görünür).
+- Sistem yöneticisinin kullanıcılar tablosu 1024 px'te sayfayı 6 px taşırıyordu; artık yalnız tablo kayar.
+
+### Testler
+- `tests/full.test.js` (son tarama) eklendi.
+
 ## 1.2.0 — Aşama B: hastane paneli (yalnız ön yüz)
 
 ### Panel (`panel/`)

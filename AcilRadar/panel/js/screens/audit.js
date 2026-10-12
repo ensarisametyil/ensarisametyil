@@ -57,7 +57,7 @@
     const table = el('div', { attrs: { 'aria-live': 'polite' } });
     const pager = el('div');
     [toolbar, filter, table, pager].forEach(function (node) { view.body.appendChild(node); });
-    const columns = COLUMNS.map(function (c) { return { label: t('panel.audit.columns.' + c.key), value: c.value, cell: c.value }; });
+    const columns = COLUMNS.map(function (c) { return { nowrap: c.key === 'time', label: t('panel.audit.columns.' + c.key), value: c.value, cell: c.value }; });
     if (Rules.can(ctx.user, 'export.csv')) {
       toolbar.appendChild(AR.Panel.UI.table.exportButton(function (button) {
         common.runExport(button, function (page, size) { return ctx.api.audit({ from: query.from, to: query.to, page: page, pageSize: size }); },

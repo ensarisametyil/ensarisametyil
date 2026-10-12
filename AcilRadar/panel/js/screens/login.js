@@ -20,6 +20,7 @@
   const cfg = AR.Panel.Config;
   const MS_PER_SECOND = 1000;
   const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const AUTH = { layout: 'auth' };   // ekran ortada tek kart
 
   const LOGIN_ERRORS = { INVALID_CREDENTIALS: 'panel.login.invalid', ACCOUNT_INACTIVE: 'panel.login.inactive' };
 
@@ -86,7 +87,7 @@
   }
 
   function show(ctx) {
-    const view = AR.Panel.UI.shell.startView(t('panel.login.title'), t('panel.login.lead'));
+    const view = AR.Panel.UI.shell.startView(t('panel.login.title'), t('panel.login.lead'), AUTH);
     const noticeBox = el('div', { attrs: { hidden: true } });
     if (ctx.params.message) F.notice(noticeBox, ctx.params.message === 'loggedOut' ? 'info' : 'warning', t('panel.login.' + ctx.params.message));
     const email = F.field({ id: 'login-email', name: 'email', label: t('panel.login.email'), type: 'email', inputmode: 'email', autocomplete: 'username', required: true });
@@ -116,7 +117,7 @@
 
   /** Parolamı unuttum: şimdilik ağ isteği YAPMAZ; yalnız yönlendirir. */
   function showForgot() {
-    const view = AR.Panel.UI.shell.startView(t('panel.forgot.title'), t('panel.forgot.lead'));
+    const view = AR.Panel.UI.shell.startView(t('panel.forgot.title'), t('panel.forgot.lead'), AUTH);
     const noticeBox = el('div', { attrs: { hidden: true } });
     const email = F.field({ id: 'forgot-email', name: 'email', label: t('panel.login.email'), type: 'email', inputmode: 'email', autocomplete: 'username' });
     const submit = el('button', { className: 'btn btn--primary', attrs: { type: 'submit' }, text: t('panel.forgot.submit') });
@@ -133,7 +134,7 @@
 
   /** İki adımlı doğrulama yer tutucusu (şimdilik kapalı). */
   function showTwoFactor() {
-    const view = AR.Panel.UI.shell.startView(t('panel.twoFactor.title'), t('panel.twoFactor.lead'));
+    const view = AR.Panel.UI.shell.startView(t('panel.twoFactor.title'), t('panel.twoFactor.lead'), AUTH);
     const noticeBox = el('div', { attrs: { hidden: true } });
     F.notice(noticeBox, 'info', cfg.TWO_FACTOR_ENABLED ? '' : t('panel.twoFactor.disabled'));
     const code = F.field({ id: 'twofa-code', name: 'code', label: t('panel.twoFactor.code'), inputmode: 'numeric', autocomplete: 'one-time-code' });
