@@ -3,6 +3,10 @@
 Acil servislerin **tahmini** doluluk yüzdesini, doluluk seviyesini (az/orta/çok) ve bekleme aralıklarını şimdi, +2 saat ve akşam 20:00 için üretir. Her sayı bir **tahmindir**; ölçülmüş gibi sunulamaz. **Tıbbi karar aracı değildir.**
 
 > Doğruluk durumu: motor yalnız **sentetik rejimlerde** sınanmıştır (`docs/DOGRULAMA_RAPORU.md`). Gerçek dünyadaki doğruluk bilinmiyor; gölge mod pilotunda ölçülecektir (`docs/PILOT_PROTOKOLU.md`).
+>
+> **Karar özeti (`docs/MODEL_KARTI.md` §8):** motor, doluluk tahmininde motorun bilmediği mekanizmalara sahip B–D rejimlerinde basit yöntemlerden tutarlı biçimde iyi değildir. Halka açık doluluk için kısa ufukta süreklilik, akşam için mevsimsel ortalama önerilir; motor gölge modda ölçülmelidir. "Şimdi" yeşil bekleme tahmininde motor, bugünkü formülden A, B ve D rejimlerinde tutarlı biçimde iyidir.
+>
+> Kazanç getirmeyen bileşenler (ani artış, bayram etkisi, parametre belirsizliği) `core/config.js › FEATURES` ile kapalıdır.
 
 ## Hızlı başlangıç
 

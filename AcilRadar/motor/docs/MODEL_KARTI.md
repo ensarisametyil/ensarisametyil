@@ -1,4 +1,4 @@
-# Doluluk motoru · Model kartı (v2.0.1)
+# Doluluk motoru · Model kartı (v2.1.0)
 
 ## 1. Ne yapar, ne yapmaz
 
@@ -87,10 +87,94 @@ Arayüz düşük güveni kartta etiketle gösterir; tahmin güveni kart ayrınt�
 
 ## 6. Doğrulama özeti (SENTETİK)
 
-Ayrıntı ve tüm tablolar: `DOGRULAMA_RAPORU.md`. Özet bu belgenin sonundadır (`§8`).
+Ayrıntı ve tüm tablolar: `DOGRULAMA_RAPORU.md` (model 2.1.0). Kapatma deneyleri: `DOGRULAMA_RAPORU_2.0.0.md`. Özet ve karar: `§8`.
 
 ## 7. Kullanım koşulları
 
 - Çıktı her yerde "tahmin" olarak sunulur, "tıbbi karar aracı değildir" uyarısıyla birlikte. 112 her zaman erişilebilir kalır.
 - Veri bayatsa sayı gösterilmez.
 - Gerçek veriyle doğrulanmadan (`PILOT_PROTOKOLU.md` › karar eşikleri) halka açık gösterimde **kullanılmamalıdır**.
+
+## 8. Sentetik doğrulama sonucu ve karar (model 2.1.0)
+
+> Sayılar 4 sentetik rejimden gelir, rejim başına 5 tohum. Gösterim ortalamadır, köşeli parantezde en az–en çok. **Gerçek dünya değildir.**
+> - Rejim A motorun kendi model ailesidir; döngüsel olduğu için yalnız kontroldür.
+> - Asıl kanıt, motorun bilmediği mekanizmaları içeren B, C ve D rejimleridir.
+
+### 8.1 Doluluk (ana çıktı) — en iyi kıyas modeline göre
+
+| Ufuk | A (kontrol) | B | C | D |
+|---|---|---|---|---|
+| +30 dk | ≈ (motor 9,8 · süreklilik 10,3) | **daha kötü** (9,0 · 7,9) | **daha kötü** (6,3 · 5,2) | **daha kötü** (12,8 · 10,7) |
+| +60 dk | **tutarlı üstün** (12,3 · 13,9; 5/5) | **daha kötü** (13,0 · 11,7) | geride (7,5 · 6,8) | geride (14,4 · 13,4) |
+| +120 dk | iyi ama tutarsız (14,7 · 16,7) | iyi ama tutarsız (15,4 · 16,1) | geride (10,1 · 9,4) | ≈ (17,7 · 18,1) |
+| +240 dk | iyi ama tutarsız (15,0 · 16,0) | ≈ (18,3 · 18,6) | geride (10,5 · 9,8) | geride (19,2 · 16,7) |
+| akşam 20:00 | ≈ (16,6 · 16,3) | **daha kötü** (12,0 · 9,4) | **daha kötü** (7,0 · 3,1) | **daha kötü** (19,6 · 13,8) |
+
+Değerler doluluk MAE (puan) olarak verildi: önce motor, sonra en iyi kıyas.
+
+**Karar (görev kuralı: "anlamlı üstünlük yoksa kullanma, şunu kullan"):** motor, doluluk tahmininde B–D rejimlerinde basit yöntemlerden **tutarlı biçimde iyi değildir**.
+
+| Ufuk | Kullanılacak yöntem |
+|---|---|
+| +30 / +60 dk | **(a) Süreklilik** (şu anki doluluk aynen kalır) |
+| Akşam 20:00 | **(b) Mevsimsel saf** (aynı saat-gün geçmiş ortalaması) |
+| +120 / +240 dk | Motor ve kıyaslar başa baş; daha basit olan **(b) mevsimsel saf** yeterli |
+
+Motorun doluluk çıktısı pilotta **gölge modda** ölçülmeye devam etmelidir.
+
+### 8.2 Bekleme süresi (ikincil çıktı)
+
+- **"Şimdi" yeşil bekleme:** motor, bugünkü üründeki formüle (bekleyen ÷ hekim × 9 dk) göre A, B ve D'de **tutarlı biçimde daha iyi** (5/5 tohum).
+
+  | Rejim | Motor MAE (dk) | Formül MAE (dk) |
+  |---|---|---|
+  | A | 10,4 | 15,4 |
+  | B | 63,2 | 83,1 |
+  | D | 51,1 | 62,5 (üstel düzeltme) |
+
+  C'de (yatak tıkanması) fark yok: motor 14,5, formül 13,6.
+- **+120 dk:**
+  - A'da tutarlı üstün.
+  - B'de iyi ama tutarsız.
+  - C'de daha kötü: motor 24,9, formül 16,8.
+- **Öneri:** "şimdi" bekleme aralığı için motor kullanılabilir. Yatak tıkanması yüksek hastanelerde dikkat gerekir.
+
+### 8.3 Aralıklar, seviye, yük
+
+- **%80 aralık kapsaması** çoğu hücrede %82–92 arasında. Bu, **hedefin (%78–82) üstü**: aralıklar gereğinden geniş.
+  - Ayar dönemi ile sınama dönemi arasındaki dağılım farkı (bayram, sınıf kayması) conformal kalibrasyonun daraltmasını engelliyor.
+- **Seviye doğruluğu (+120 dk):** rejime göre %56–72. **Önerilen pilot eşiğinin (%75) altında.**
+  - Eşik ±5 puan oynatıldığında doğruluk değişimi rejime göre −4 ile +5 puan arasında.
+- **Ağır yük (ρ ≥ 0,85):** motor sapması −2 ile −7 puan arasında. Yani motor **iyimser**: doluluğu olduğundan düşük tahmin ediyor.
+  - Bu, v1 için bildirilen zayıflığın v2'de de sürdüğünü gösteriyor.
+- **Kayma denetimi:** Page-Hinkley (λ = 60, önceden seçildi) neredeyse her seride alarm verdi. Bu ayarla **ayırt edici değildir**.
+  - Eşik pilotun ayar döneminde, yanlış alarm oranına göre belirlenmelidir.
+
+### 8.4 Bileşenlerin değeri (kapatma deneyleri, 2.0.0)
+
+| Bileşen | Kapatınca doluluk MAE (+120) değişimi | Durum |
+|---|---|---|
+| Ani artış (CUSUM) | −0,1 ile 0,0 | **Kapalı** |
+| Bayram etkisi | C'de kapatınca −0,5 (hata azaldı) | **Kapalı** |
+| Parametre belirsizliği | ≈ 0 | **Kapalı** |
+| Talep öğrenmesi | A +1,0 · B +0,7 · C −1,0 | Açık (karışık; pilotta yeniden değerlendirilmeli) |
+| Yatak tıkanması | ≈ 0 | Açık (yapısal) |
+
+### 8.5 v1 ile karşılaştırma
+
+v1 bulunamadı; bildirilen v1 sayıları doğrulanamadı ve farklı bir dünyada ölçüldü. Yan yana bakıldığında v2'nin sentetik hataları daha yüksek.
+
+| Ölçü | v2 | v1 (bildirilen) |
+|---|---|---|
+| Doluluk MAE +60 / +120 / +240 (puan) | 10,9 / 13,4 / 14,6 | 6,9 / 10,0 / 12,7 |
+| Seviye doğruluğu +60 / +120 / +240 | %72 / %65 / %64 | %86 / %83 / %80 |
+
+Ancak v2'nin dünyaları **bilerek** motordan farklı mekanizmalar içeriyor, bu yüzden bu fark **v2'nin daha kötü olduğunu kanıtlamaz, iyi olduğunu da kanıtlamaz**. Kesin kıyas için v1 kodunun aynı geriye dönük testte çalıştırılması gerekir: `tools/backtest.js` içine (d) olarak eklenebilir.
+
+### 8.6 Sonraki adımlar (öneri)
+
+1. **Ürün doluluk kaynağı:** halka açık doluluk için ufka göre basit yöntem kullanılmalı (§8.1). Motor gölge modda çalışmalı.
+2. **Pilotun ilk iki haftası:** `DOĞRULANMALI` parametreler (hizmet süreleri, yatış oranı, sınıf payları, kapasite) gerçek toplu veriyle güncellenmeli. Ağır yükteki iyimserliğin büyük olasılıkla ana kaynağı bunlardır.
+3. **Pilot sonrası kayma eşiği:** Page-Hinkley eşiği ayar döneminden belirlenmeli.
+4. **Pilot sonrası yeniden ölçüm:** geriye dönük test gerçek CSV ile yeniden koşulmalı (`--csv`). Motor ancak kıyaslardan ölçülebilir biçimde iyiyse halka açık gösterime alınmalı (`PILOT_PROTOKOLU.md` §4).
