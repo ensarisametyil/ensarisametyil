@@ -275,12 +275,15 @@ function build(data, tests) {
     out.push('');
   });
 
+  out.push('## Bileşen kapatma deneyleri (karmaşıklık hak ediliyor mu?)');
+  out.push('');
   if (data.ablations && data.ablations.length) {
-    out.push('## Bileşen kapatma deneyleri (karmaşıklık hak ediliyor mu?)');
-    out.push('');
     out.push(ablationTable(data));
-    out.push('');
+  } else {
+    out.push('Bu koşuda kapatma deneyi yapılmadı. Model 2.0.0 ile yapılan deneyler ve sonuçları: [DOGRULAMA_RAPORU_2.0.0.md](DOGRULAMA_RAPORU_2.0.0.md) › "Bileşen kapatma deneyleri". ' +
+      'O deneylerde ölçülebilir kazanç göstermeyen ani artış algısı, bayram etkisi ve parametre belirsizliği 2.1.0\'da kapatıldı (`config.FEATURES`).');
   }
+  out.push('');
 
   out.push('## v1 referans değerleriyle karşılaştırma');
   out.push('');

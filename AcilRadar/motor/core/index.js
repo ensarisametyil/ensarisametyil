@@ -105,13 +105,15 @@
     const record = assessment.record;
     const ablate = o.ablate || {};
     const seed = o.seed || record.hospitalId + '@' + Math.floor(nowMs / MS_PER_MINUTE);
-    const model = demand.learn(ablate.learning === false ? Object.assign({}, record, { history: [], arrivalsLastHour: null }) : record, nowMs);
+    const FEAT = config.FEATURES;
+    const on = function (key, featureFlag) { return ablate[key] !== undefined ? ablate[key] !== false : featureFlag; };
+    const model = demand.learn(on('learning', FEAT.DEMAND_LEARNING) ? record : Object.assign({}, record, { history: [], arrivalsLastHour: null }), nowMs);
     const evening = time.eveningTarget(nowMs);
     const eveningInline = evening.available && !evening.longLead;
     const offsets = uniqueSorted(config.HORIZONS_MINUTES.concat(eveningInline ? [evening.leadMinutes] : []));
-    const ablateNeutral = { surge: ablate.surge === false, holiday: ablate.holiday === false };
+    const ablateNeutral = { surge: !on('surge', FEAT.SURGE_DETECTION), holiday: !on('holiday', FEAT.HOLIDAY_EFFECT) };
     const runOptions = { seed: seed, maxRuns: o.maxRuns, minRuns: o.minRuns, waits: o.waits,
-      fixedParams: ablate.paramUncertainty === false, noBedBlocking: ablate.bedBlocking === false };
+      fixedParams: !on('paramUncertainty', FEAT.PARAM_UNCERTAINTY), noBedBlocking: !on('bedBlocking', FEAT.BED_BLOCKING) };
 
     let fc;
     if (tier === 'seasonal') {
@@ -146,7 +148,8 @@
       const slots = [['now', 0], ['2h', SLOT_OFFSET['2h']]];
       if (eveningInline) slots.push(['evening', evening.leadMinutes]);
       slots.forEach(function (s) {
-        factors[s[0]] = explainLib.explain(record, model, { startMs: nowMs, offset: s[1], seed: seed, dayInfo: time.dayInfo });
+        factors[s[0]] = explainLib.explain(record, model, { startMs: nowMs, offset: s[1], seed: seed, dayInfo: time.dayInfo,
+          baseNeutral: ablateNeutral, fixedParams: runOptions.fixedParams, noBedBlocking: runOptions.noBedBlocking });
       });
     }
 
@@ -169,6 +172,7 @@
       horizons: horizons,
       evening: { mode: eveningMode, atMs: evening.ms, leadMinutes: evening.leadMinutes },
       earlyWarning: forecast.earlyWarning(fc.horizons),
+      features: { surge: !ablateNeutral.surge, holiday: !ablateNeutral.holiday, paramUncertainty: !runOptions.fixedParams, bedBlocking: !runOptions.noBedBlocking },
       demand: { surge: model.surge, observedHours: model.observedHours, scale: model.scale, dayType: time.dayInfo(nowMs).type },
       factors: factors,
       runs: fc.runs,

@@ -16,6 +16,7 @@
  * KULLANIM:
  *   node motor/tools/backtest.js                     sentetik (4 rejim × 5 tohum)
  *   node motor/tools/backtest.js --quick             hızlı (2 tohum, kapatma deneyi yok)
+ *   node motor/tools/backtest.js --no-ablation       5 tohum, kapatma deneyi yok
  *   node motor/tools/backtest.js --csv veri.csv      GERÇEK veri (CSV şeması: docs/VERI_GEREKSINIMLERI.md)
  *   node motor/tools/backtest.js --make-sample-csv ornek.csv   CSV yolunu sınamak için örnek dosya
  * ÇIKTI: motor/out/backtest.json → node motor/tools/report.js ile Türkçe rapora dönüşür.
@@ -432,7 +433,7 @@ function main() {
     });
   });
   const ablations = [];
-  if (!quick) {
+  if (!quick && args.indexOf('--no-ablation') === -1) {
     const variants = [{ id: 'ani-artis-kapali', ablate: { surge: false } }, { id: 'ogrenme-kapali', ablate: { learning: false } },
       { id: 'parametre-belirsizligi-kapali', ablate: { paramUncertainty: false } }, { id: 'yatak-kisiti-kapali', ablate: { bedBlocking: false } },
       { id: 'bayram-etkisi-kapali', ablate: { holiday: false } }];

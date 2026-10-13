@@ -26,7 +26,18 @@
   }
 
   return deepFreeze({
-    MODEL_VERSION: '2.0.1',
+    MODEL_VERSION: '2.1.0',
+
+    // Bileşenler. Geriye dönük testte (docs/DOGRULAMA_RAPORU_2.0.0.md › kapatma deneyleri)
+    // ölçülebilir kazanç getirmeyenler KAPALIDIR (görev kuralı: karmaşıklık hak edilmeli).
+    // Kod yerinde durur; pilot verisi kazanç gösterirse açılabilir.
+    FEATURES: {
+      DEMAND_LEARNING: true,      // Gamma-Poisson öğrenme: doluluk MAE'de A/B'de küçük kazanç, C'de kayıp (karışık) — açık
+      BED_BLOCKING: true,         // yatak tıkanması: ölçüde ≈ 0, ama yapısal (bedCapacity anlamı) — açık
+      SURGE_DETECTION: false,     // CUSUM ani artış: Δ MAE ≈ 0 (A/B/C) — KAPALI
+      HOLIDAY_EFFECT: false,      // gün türü etkisi: C'de kapatınca hata AZALDI — KAPALI
+      PARAM_UNCERTAINTY: false    // parametre belirsizliği: Δ MAE ≈ 0, aralıklar zaten fazla geniş — KAPALI
+    },
 
     TIME: {
       UTC_OFFSET_MINUTES: 180,   // Türkiye 2016'dan beri sabit UTC+3 (yaz saati yok)

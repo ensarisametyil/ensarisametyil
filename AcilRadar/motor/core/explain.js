@@ -27,10 +27,10 @@
   };
 
   /** Hangi faktörler bu durumda anlamlı (yoksa benzetim boşa yapılmaz)? */
-  function applicableFactors(record, model, targetMs, dayInfo) {
+  function applicableFactors(record, model, targetMs, dayInfo, baseNeutral) {
     const list = ['queue', 'seasonal', 'boarding'];
-    if (dayInfo(targetMs).type || dayInfo(model.nowMs).type) list.push('holiday');
-    if (model.surge.alarm) list.push('surge');
+    if (!baseNeutral.holiday && (dayInfo(targetMs).type || dayInfo(model.nowMs).type)) list.push('holiday');
+    if (!baseNeutral.surge && model.surge.alarm) list.push('surge');
     if (record.physicianSchedule) list.push('shift');
     return list;
   }
@@ -38,15 +38,18 @@
   /**
    * @param {Object} record
    * @param {Object} model
-   * @param {{startMs:number, offset:number, seed:string, dayInfo:function(number):Object}} o
+   * @param {{startMs:number, offset:number, seed:string, dayInfo:function(number):Object,
+   *          baseNeutral?:Object, fixedParams?:boolean, noBedBlocking?:boolean}} o  temel (kapalı bileşenler dahil)
    * @returns {{key:string, text:string, points:number}[]}
    */
   function explain(record, model, o) {
     const runs = config.EXPLAIN.RUNS;
-    const common = { startMs: o.startMs, offsets: [o.offset], seed: o.seed + '/explain', maxRuns: runs, minRuns: runs, adaptive: false, waits: false };
-    const baseline = forecast.run(record, model, common).horizons[0].occupancy.mean;
-    const factors = applicableFactors(record, model, o.startMs + o.offset * 60000, o.dayInfo).map(function (key) {
-      const neutral = {};
+    const baseNeutral = o.baseNeutral || {};
+    const common = { startMs: o.startMs, offsets: [o.offset], seed: o.seed + '/explain', maxRuns: runs, minRuns: runs, adaptive: false, waits: false,
+      fixedParams: o.fixedParams, noBedBlocking: o.noBedBlocking };
+    const baseline = forecast.run(record, model, Object.assign({ neutral: baseNeutral }, common)).horizons[0].occupancy.mean;
+    const factors = applicableFactors(record, model, o.startMs + o.offset * 60000, o.dayInfo, baseNeutral).map(function (key) {
+      const neutral = Object.assign({}, baseNeutral);
       neutral[key] = true;
       const value = forecast.run(record, model, Object.assign({ neutral: neutral }, common)).horizons[0].occupancy.mean;
       return { key: key, points: baseline - value };

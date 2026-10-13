@@ -2,6 +2,18 @@
 
 Biçim: en yeni üstte. Model çıktısını değiştiren her değişiklik `MODEL_VERSION` artışı ve `tests/golden/golden.json` yenilemesi gerektirir.
 
+## 2.1.0 — kazanç getirmeyen bileşenler kapatıldı
+- Kapatma deneylerine dayanır (`DOGRULAMA_RAPORU_2.0.0.md`, tohum 1–2, rejim A–C, +120 dk). Görev kuralı: ölçülebilir kazanç getirmeyen bileşen kapalı kalır.
+- **Kapatılanlar** (kod yerinde, `config.FEATURES`):
+  - **Ani artış algısı (CUSUM):** doluluk MAE farkı −0,1 ile 0,0 arası; kazanç yok.
+  - **Bayram/gün türü etkisi:** C rejiminde kapatınca doluluk MAE 0,5 puan, yeşil bekleme MAE 2,0 dk düştü; etki ters yönde.
+  - **Parametre belirsizliği:** MAE farkı ≈ 0. Aralıklar zaten hedeften geniş (%82–93 kapsama).
+- **Açık kalanlar:**
+  - **Talep öğrenmesi:** A'da doluluk MAE'de +1,0 puan kazanç; B'de karışık (−0,4 ile +1,9 arası); C'de −1,0 puan kayıp.
+  - **Yatak tıkanması:** ölçüde ≈ 0, ama `bedCapacity`'nin anlamı için yapısal olarak gerekli.
+- Açıklama (etkenler) artık kapalı bileşenleri temel durumda da kapalı tutuyor. Kapalı bileşen etken listesinde görünmez.
+- Geriye dönük test 2.1.0 ile yeniden koşuldu: `DOGRULAMA_RAPORU.md`.
+
 ## 2.0.1
 - Sözleşme çıktısında bekleme aralığının üst ucu en az alt uç + 5 dk (`config.CONTRACT.MIN_WAIT_SPREAD_MINUTES`). Ürün kuralı "süre daima aralıktır"; boş sistemde aralık "0 dk."ya iniyordu.
 - Ölçülen doğruluğa etkisi yok: geriye dönük test motorun ham yüzdeliklerini kullanır. `DOGRULAMA_RAPORU.md` 2.0.0 ile üretildi.
