@@ -44,24 +44,25 @@
     return list.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
   }
 
-  function roundRange(lo, hi, max) {
+  function roundRange(lo, hi, max, minSpread) {
     const a = Math.max(0, Math.min(max, Math.round(lo)));
-    const b = Math.max(a, Math.min(max, Math.round(hi)));
-    return [a, b];
+    const b = Math.max(a + (minSpread || 0), Math.min(max, Math.round(hi)));
+    return [Math.min(a, max), Math.min(b, max)];
   }
 
   /** Kalibrasyon (varsa) uygulanmış horizon özeti. */
   function calibrated(h, table, key) {
     const daypart = time.daypart(h.atMs);
-    const occ = calibrate.apply(table, 'occupancy', key, daypart, h.occupancy.p10, h.occupancy.p90, 0);
-    const wg = calibrate.apply(table, 'waitGreen', key, daypart, h.waitGreen.p10, h.waitGreen.p90, 0);
-    const wy = calibrate.apply(table, 'waitYellow', key, daypart, h.waitYellow.p10, h.waitYellow.p90, 0);
+    const occ = calibrate.apply(table, 'occupancy', key, daypart, h.occupancy.p50, h.occupancy.p10, h.occupancy.p90, 0, 100);
+    const wg = calibrate.apply(table, 'waitGreen', key, daypart, h.waitGreen.p50, h.waitGreen.p10, h.waitGreen.p90, 0);
+    const wy = calibrate.apply(table, 'waitYellow', key, daypart, h.waitYellow.p50, h.waitYellow.p10, h.waitYellow.p90, 0);
     return {
       offset: h.offset,
       atMs: h.atMs,
-      occupancy: Object.assign({}, h.occupancy, { lo: Math.min(100, occ.lo), hi: Math.min(100, occ.hi) }),
-      waitGreen: Object.assign({}, h.waitGreen, { lo: wg.lo, hi: wg.hi }),
-      waitYellow: Object.assign({}, h.waitYellow, { lo: wy.lo, hi: wy.hi }),
+      // point: kalibre edilmiş orta tahmin (kalibrasyon yoksa p50)
+      occupancy: Object.assign({}, h.occupancy, { point: occ.point, lo: occ.lo, hi: occ.hi }),
+      waitGreen: Object.assign({}, h.waitGreen, { point: wg.point, lo: wg.lo, hi: wg.hi }),
+      waitYellow: Object.assign({}, h.waitYellow, { point: wy.point, lo: wy.lo, hi: wy.hi }),
       greenWaiting: h.greenWaiting,
       yellowWaiting: h.yellowWaiting,
       physicians: h.physicians,
@@ -86,6 +87,8 @@
    * @param {Object} [options.calibration]   calibrate.fit() çıktısı
    * @param {string} [options.recentAccuracy] 'good'|'fair'|'poor'
    * @param {boolean} [options.waits=true]
+   * @param {Object} [options.ablate]  YALNIZ doğrulama içindir (bileşen kapatma deneyi):
+   *   { surge:false, learning:false, holiday:false, paramUncertainty:false, bedBlocking:false }
    */
   function computeHospital(input, options) {
     const o = options || {};
@@ -100,20 +103,23 @@
       });
     }
     const record = assessment.record;
+    const ablate = o.ablate || {};
     const seed = o.seed || record.hospitalId + '@' + Math.floor(nowMs / MS_PER_MINUTE);
-    const model = demand.learn(record, nowMs);
+    const model = demand.learn(ablate.learning === false ? Object.assign({}, record, { history: [], arrivalsLastHour: null }) : record, nowMs);
     const evening = time.eveningTarget(nowMs);
     const eveningInline = evening.available && !evening.longLead;
     const offsets = uniqueSorted(config.HORIZONS_MINUTES.concat(eveningInline ? [evening.leadMinutes] : []));
-    const runOptions = { seed: seed, maxRuns: o.maxRuns, minRuns: o.minRuns, waits: o.waits };
+    const ablateNeutral = { surge: ablate.surge === false, holiday: ablate.holiday === false };
+    const runOptions = { seed: seed, maxRuns: o.maxRuns, minRuns: o.minRuns, waits: o.waits,
+      fixedParams: ablate.paramUncertainty === false, noBedBlocking: ablate.bedBlocking === false };
 
     let fc;
     if (tier === 'seasonal') {
       const warm = fallback.WARMUP_MINUTES;
-      fc = forecast.run(record, model, Object.assign({ startMs: nowMs - warm * MS_PER_MINUTE, offsets: offsets.map(function (v) { return v + warm; }), neutral: { emptyStart: true } }, runOptions));
+      fc = forecast.run(record, model, Object.assign({ startMs: nowMs - warm * MS_PER_MINUTE, offsets: offsets.map(function (v) { return v + warm; }), neutral: Object.assign({ emptyStart: true }, ablateNeutral) }, runOptions));
       fc.horizons.forEach(function (h) { h.offset -= warm; });
     } else {
-      fc = forecast.run(record, model, Object.assign({ startMs: nowMs, offsets: offsets }, runOptions));
+      fc = forecast.run(record, model, Object.assign({ startMs: nowMs, offsets: offsets, neutral: ablateNeutral }, runOptions));
     }
 
     const horizons = {};
@@ -126,7 +132,7 @@
     if (evening.available && !eveningInline) {
       // Akşam çok uzaksa: yalnız mevsimsel öncül (boş sistemden ısınma)
       const warm = fallback.WARMUP_MINUTES;
-      const sf = forecast.run(record, model, Object.assign({}, runOptions, { startMs: evening.ms - warm * MS_PER_MINUTE, offsets: [warm], neutral: { emptyStart: true }, maxRuns: config.SIMULATION.MIN_RUNS, seed: seed + '/evening' }));
+      const sf = forecast.run(record, model, Object.assign({}, runOptions, { startMs: evening.ms - warm * MS_PER_MINUTE, offsets: [warm], neutral: Object.assign({ emptyStart: true }, ablateNeutral), maxRuns: config.SIMULATION.MIN_RUNS, seed: seed + '/evening' }));
       horizons.evening = calibrated(Object.assign(sf.horizons[0], { offset: evening.leadMinutes }), o.calibration, 'evening');
       eveningMode = 'seasonal';
     }
@@ -185,7 +191,7 @@
     const key = slot === 'evening' ? 'evening' : String(SLOT_OFFSET[slot]);
     const h = result.horizons[key];
     if (!h) return null;
-    const occ = Math.round(h.occupancy.p50);
+    const occ = Math.round(h.occupancy.point);
     const simulated = result.simulated;
     const out = {
       occupancyPercent: occ,
@@ -193,8 +199,8 @@
       greenWaiting: Math.round(h.greenWaiting.p50 || 0),
       yellowWaiting: Math.round(h.yellowWaiting.p50 || 0),
       activePhysicians: Math.round(h.physicians.p50 || 0),
-      estimatedGreenWaitMinutes: roundRange(h.waitGreen.lo, h.waitGreen.hi, MAX_WAIT_MINUTES),
-      estimatedYellowWaitMinutes: roundRange(h.waitYellow.lo, h.waitYellow.hi, MAX_WAIT_MINUTES),
+      estimatedGreenWaitMinutes: roundRange(h.waitGreen.lo, h.waitGreen.hi, MAX_WAIT_MINUTES, config.CONTRACT.MIN_WAIT_SPREAD_MINUTES),
+      estimatedYellowWaitMinutes: roundRange(h.waitYellow.lo, h.waitYellow.hi, MAX_WAIT_MINUTES, config.CONTRACT.MIN_WAIT_SPREAD_MINUTES),
       updatedAt: toIso(result.updatedAtMs),
       isForecast: slot !== 'now' || simulated,
       dataSource: result.dataSource,

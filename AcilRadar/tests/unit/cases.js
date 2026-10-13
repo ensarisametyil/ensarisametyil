@@ -200,6 +200,30 @@
     assert.ok(!('newField' in r.hospitals[0]));
   });
 
+  test('Schema 1.2: güven, doluluk aralığı ve etkenler okunur; etken METNİ alınmaz (yalnız anahtar + puan)', function (AR, assert) {
+    const r = AR.Schema.normalizeResponse(envelope([raw({ confidence: 'low', occupancyRange: [40, 78.6],
+      factors: [{ key: 'queue', text: '<b>sunucu metni</b>', points: 12.4 }, { key: 'bilinmeyen', points: 5 }, { key: 'seasonal', points: -3 }] })], { schemaVersion: '1.2' }), T);
+    const h = r.hospitals[0];
+    assert.equal(h.confidence, 'low');
+    assert.deepEqual(h.occupancyRange, [40, 79]);
+    assert.deepEqual(h.factors, [{ key: 'queue', points: 12 }, { key: 'seasonal', points: -3 }]);
+  });
+
+  test('Schema 1.2: alanlar yoksa ya da bozuksa kayıt ATILMAZ (isteğe bağlı)', function (AR, assert) {
+    const r = AR.Schema.normalizeResponse(envelope([raw({ confidence: 'çok', occupancyRange: [90, 10], factors: 'x' }), raw({ hospitalId: 'h2' })]), T);
+    assert.equal(r.hospitals.length, 2);
+    assert.equal(r.hospitals[0].confidence, null);
+    assert.equal(r.hospitals[0].occupancyRange, null);
+    assert.deepEqual(r.hospitals[0].factors, []);
+  });
+
+  test('Kart 1.2: etken cümlesi arayüz metninden kurulur; düşük güven etiketi (örnek veri dışında) görünür', function (AR, assert) {
+    assert.equal(AR.Strings.text('factors.queue.up', { n: '12' }), 'Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +12 puan.');
+    assert.equal(AR.Strings.text('factors.seasonal.down', { n: '3' }), 'Günün bu saatlerinde başvurular azaldığı için doluluk yaklaşık −3 puan.');
+    assert.equal(AR.Strings.text('confidence.low'), 'Düşük');
+    assert.ok(AR.Strings.has('card.lowConfidence'));
+  });
+
   test('Schema: ana sürüm uyuşmazlığı (2.0) → UNSUPPORTED_SCHEMA', function (AR, assert) {
     expectCode(assert, function () { AR.Schema.normalizeResponse(envelope([raw()], { schemaVersion: '2.0' }), T); }, 'UNSUPPORTED_SCHEMA');
   });

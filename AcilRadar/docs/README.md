@@ -48,6 +48,19 @@ Panel testleri: `node tests/run-panel.js` (birim) · `node tests/panel-contract.
 
 ---
 
+
+## Doluluk hesaplama motoru
+
+`motor/` klasöründe, sıfır bağımlılıklı. Her sayı tahmindir; motor yalnız **sentetik** rejimlerde sınandı.
+
+| Komut | Ne yapar |
+|---|---|
+| `node motor/tests/run-all.js` | Motorun tüm testleri |
+| `node motor/tools/backtest.js` | Geriye dönük test |
+| `node motor/tools/report.js` | `motor/docs/DOGRULAMA_RAPORU.md` raporunu üretir |
+
+Ayrıntılar `motor/README.md` dosyasında. Örnek API normal senaryoda sayıları motordan üretir; kapatmak için `--engine=off`.
+
 ## 2. Dosya haritası
 
 ```

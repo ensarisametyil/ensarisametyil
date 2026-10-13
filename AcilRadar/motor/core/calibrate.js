@@ -1,6 +1,9 @@
 /* =============================================================================
  * motor/core/calibrate.js
  * NE İŞE YARAR : Kalibrasyon ve kayma denetimi.
+ *   0) SAPMA DÜZELTMESİ: ayar döneminde hücre başına artıkların ortancası (y − tahmin)
+ *      öğrenilir; tahmin ve aralık bu kadar kaydırılır (motorun bilmediği hizmet/yatış
+ *      farklarını kısmen giderir). Önce kaydırılır, sonra conformal uygulanır.
  *   1) SPLIT-CONFORMAL (konform nicel regresyon, CQR türü): geriye dönük testteki
  *      AYRI bir kalibrasyon döneminden uygunluk puanları s = max(alt − y, y − üst)
  *      toplanır; ufuk × saat dilimi hücresi başına q̂ = ⌈(n+1)(1−α)⌉/n. yüzdelik.
@@ -28,44 +31,65 @@
     return rank > n ? sorted[n - 1] : sorted[rank - 1];
   }
 
+  function median(values) {
+    const s = values.slice().sort(function (a, b) { return a - b; });
+    const n = s.length;
+    return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+  }
+
+  function cellKeys(r) {
+    return [r.target + '|' + r.horizon + '|' + r.daypart, r.target + '|' + r.horizon + '|*'];
+  }
+
   /**
-   * @param {{target:string, horizon:(number|string), daypart:string, y:number, lo:number, hi:number}[]} records
-   * @returns {CalibrationTable}
+   * @param {{target:string, horizon:(number|string), daypart:string, y:number, point:number, lo:number, hi:number}[]} records
+   *        YALNIZ ayar döneminden.
+   * @returns {CalibrationTable}  hücre: { shift, q, n }
    */
-  function fit(records) {
-    const groups = {};
-    (records || []).forEach(function (r) {
-      if (![r.y, r.lo, r.hi].every(isFinite)) return;
-      const score = Math.max(r.lo - r.y, r.y - r.hi);
-      const cell = r.target + '|' + r.horizon + '|' + r.daypart;
-      const pooled = r.target + '|' + r.horizon + '|*';
-      (groups[cell] = groups[cell] || []).push(score);
-      (groups[pooled] = groups[pooled] || []).push(score);
+  function fit(records, options) {
+    const useShift = !(options && options.shift === false);
+    const valid = (records || []).filter(function (r) { return [r.y, r.lo, r.hi].every(isFinite) && (!useShift || isFinite(r.point)); });
+    const residuals = {};
+    valid.forEach(function (r) {
+      cellKeys(r).forEach(function (k) { (residuals[k] = residuals[k] || []).push(r.y - (useShift ? r.point : 0)); });
+    });
+    const minSize = function (key) { return key.slice(-2) === '|*' ? C.MIN_POOLED_SIZE : C.MIN_CELL_SIZE; };
+    const shifts = {};
+    Object.keys(residuals).forEach(function (k) { shifts[k] = useShift && residuals[k].length >= minSize(k) ? median(residuals[k]) : 0; });
+    const scores = {};
+    valid.forEach(function (r) {
+      const keys = cellKeys(r);
+      const shift = shifts[keys[0]] !== undefined && residuals[keys[0]].length >= minSize(keys[0]) ? shifts[keys[0]] : shifts[keys[1]] || 0;
+      const score = Math.max(r.lo + shift - r.y, r.y - (r.hi + shift));
+      keys.forEach(function (k) { (scores[k] = scores[k] || []).push(score); });
     });
     const table = {};
-    Object.keys(groups).forEach(function (key) {
-      const scores = groups[key];
-      const minSize = key.slice(-2) === '|*' ? C.MIN_POOLED_SIZE : C.MIN_CELL_SIZE;
-      if (scores.length >= minSize) table[key] = { q: conformalQuantile(scores, C.TARGET_COVERAGE), n: scores.length };
+    Object.keys(scores).forEach(function (key) {
+      if (scores[key].length >= minSize(key)) table[key] = { shift: shifts[key] || 0, q: conformalQuantile(scores[key], C.TARGET_COVERAGE), n: scores[key].length };
     });
     return { coverage: C.TARGET_COVERAGE, cells: table };
   }
 
   /**
-   * @returns {{lo:number, hi:number, applied:boolean, scope:?string}}
+   * @returns {{point:number, lo:number, hi:number, applied:boolean, scope:?string}}
    */
-  function apply(table, target, horizon, daypart, lo, hi, floor) {
-    const none = { lo: lo, hi: hi, applied: false, scope: null };
+  function apply(table, target, horizon, daypart, point, lo, hi, floor, ceiling) {
+    const none = { point: point, lo: lo, hi: hi, applied: false, scope: null };
     if (!table || !table.cells) return none;
     const cell = table.cells[target + '|' + horizon + '|' + daypart];
     const pooled = table.cells[target + '|' + horizon + '|*'];
     const use = cell || pooled;
     if (!use) return none;
-    let newLo = lo - use.q;
-    let newHi = hi + use.q;
-    if (newLo > newHi) { const mid = (lo + hi) / 2; newLo = mid; newHi = mid; }
+    const shift = use.shift || 0;
+    let newLo = lo + shift - use.q;
+    let newHi = hi + shift + use.q;
+    let newPoint = point + shift;
+    if (newLo > newHi) { const mid = (newLo + newHi) / 2; newLo = mid; newHi = mid; }
     const minimum = floor === undefined ? 0 : floor;
-    return { lo: Math.max(minimum, newLo), hi: Math.max(minimum, newHi), applied: true, scope: cell ? 'cell' : 'horizon' };
+    const maximum = ceiling === undefined ? Infinity : ceiling;
+    const clamp = function (v) { return Math.min(maximum, Math.max(minimum, v)); };
+    newPoint = Math.min(clamp(newHi), Math.max(clamp(newLo), clamp(newPoint)));
+    return { point: newPoint, lo: clamp(newLo), hi: clamp(newHi), applied: true, scope: cell ? 'cell' : 'horizon' };
   }
 
   /**

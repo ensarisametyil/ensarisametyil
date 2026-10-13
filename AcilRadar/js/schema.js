@@ -37,6 +37,9 @@
    * @property {?number} urgentWaiting              Daha acil başvurularda bekleyen (sunucu: yellowWaiting)
    * @property {?number} activePhysicians
    * @property {number[]} nonUrgentWaitMinutes      [en az, en çok]
+   * @property {?number[]} occupancyRange           [alt, üst] (1.2, isteğe bağlı)
+   * @property {?('low'|'medium'|'high')} confidence tahmin güveni (1.2, isteğe bağlı)
+   * @property {{key:string, points:number}[]} factors açıklama etkenleri (1.2)
    * @property {number[]} urgentWaitMinutes         [en az, en çok]
    * @property {number}  updatedAtMs
    * @property {boolean} isForecast
@@ -88,7 +91,11 @@
     updatedAtMs: 'updatedAt',
     isForecast: 'isForecast',
     dataSource: 'dataSource',
-    ownership: 'ownership'
+    ownership: 'ownership',
+    // 1.2 (isteğe bağlı)
+    occupancyRange: 'occupancyRange',
+    confidence: 'confidence',
+    factors: 'factors'
   });
 
   const RESPONSE_MAP = Object.freeze({
@@ -181,6 +188,30 @@
     return { value: [Math.round(low), Math.round(high)] };
   }
 
+  /** [alt, üst] doluluk yüzdesi (1.2). */
+  function parsePercentRange(value) {
+    if (!Array.isArray(value) || value.length !== 2) return INVALID;
+    const low = toNumber(value[0]);
+    const high = toNumber(value[1]);
+    if (Number.isNaN(low) || Number.isNaN(high) || low < 0 || high > MAX_PERCENT || low > high) return INVALID;
+    return { value: [Math.round(low), Math.round(high)] };
+  }
+
+  /**
+   * Açıklama etkenleri (1.2): yalnız ANAHTAR ve PUAN okunur; cümle arayüzün kendi
+   * metinlerinden (strings.js › factors) kurulur — sunucu metni gösterilmez.
+   */
+  function parseFactors(value) {
+    if (!Array.isArray(value)) return INVALID;
+    const list = [];
+    value.forEach(function (f) {
+      const points = f ? toNumber(f.points) : NaN;
+      if (!f || cfg.FACTOR_KEYS.indexOf(f.key) === -1 || Number.isNaN(points) || list.length >= cfg.MAX_FACTORS) return;
+      list.push({ key: f.key, points: Math.round(clamp(points, -MAX_PERCENT, MAX_PERCENT)) });
+    });
+    return { value: list };
+  }
+
   function parseDate(value) {
     if (typeof value !== 'string') return INVALID;
     const ms = Date.parse(value);
@@ -206,7 +237,10 @@
     updatedAtMs: { required: true, parse: parseDate },
     isForecast: { required: true, parse: parseBoolean },
     dataSource: { required: true, parse: parseEnum(cfg.DATA_SOURCES) },
-    ownership: { required: true, parse: parseEnum(cfg.OWNERSHIP_TYPES) }
+    ownership: { required: true, parse: parseEnum(cfg.OWNERSHIP_TYPES) },
+    occupancyRange: { required: false, fallback: null, parse: parsePercentRange },
+    confidence: { required: false, fallback: null, parse: parseEnum(cfg.CONFIDENCE_LEVELS) },
+    factors: { required: false, fallback: [], parse: parseFactors }
   };
 
   /* ---- Hastane kaydı ------------------------------------------------------ */

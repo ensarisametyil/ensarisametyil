@@ -1,7 +1,7 @@
 /* =============================================================================
  * motor/core/forecast.js
  * NE İŞE YARAR : Ufuk bazlı tahmin. Tek bir benzetim yörüngesinden tüm ufukların
- *   (0, 30, 60, 120, 180, 240 dk ve akşam 20:00) anlık görüntüleri alınır; çok koşu
+ *   (0, 30, 60, 120, 180, 240 dk ve akşam 20:00) durum kesitleri alınır; çok koşu
  *   (Monte Carlo) ile dağılım çıkar. Koşu sayısı UYARLAMALI: doluluk yüzdelikleri
  *   (10/50/90) art arda denetimlerde en çok 1 puan (ya da bir hastanın puanı —
  *   hangisi büyükse) kayıyorsa durur.
@@ -49,13 +49,15 @@
    * @param {Object} model      demand.learn()
    * @param {Object} o
    * @param {number} o.startMs  benzetim başlangıcı (genelde "şimdi")
-   * @param {number[]} o.offsets anlık görüntü dakikaları (artan)
+   * @param {number[]} o.offsets durum kesiti dakikaları (artan)
    * @param {string|number} o.seed
    * @param {number} [o.maxRuns]
    * @param {number} [o.minRuns]
    * @param {boolean} [o.adaptive=true]
    * @param {Object} [o.neutral] karşıolgusal: {queue, seasonal, holiday, surge, shift, boarding, emptyStart}
    * @param {boolean} [o.waits=true] ölçüm hastası (bekleme süresi) gerekli mi
+   * @param {boolean} [o.fixedParams] kapatma deneyi: parametre belirsizliği yok
+   * @param {boolean} [o.noBedBlocking] kapatma deneyi: yatak kısıtı benzetilmez
    */
   function run(record, model, o) {
     const neutral = o.neutral || {};
@@ -92,11 +94,11 @@
         initial: init,
         rng: rng,
         rateTable: table,
-        scale: demand.sampleScale(model, rng),
-        serviceParams: service.sampleParams(rng),
+        scale: o.fixedParams ? model.scale : demand.sampleScale(model, rng),
+        serviceParams: o.fixedParams ? { logShift: 0 } : service.sampleParams(rng),
         physicianChanges: changes,
         snapshots: offsets,
-        bedCapacity: record.bedCapacity,
+        bedCapacity: o.noBedBlocking ? null : record.bedCapacity,
         tagClasses: o.waits === false ? [] : TAG_CLASSES,
         noAdmissions: Boolean(neutral.boarding)
       });

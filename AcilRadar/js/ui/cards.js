@@ -52,7 +52,9 @@
       isShortest ? tag('tag--shortest', 'clock', t('card.shortest')) : null,
       h.childER ? tag('tag--child', 'child', t('card.childER')) : null,
       h.isForecast ? tag('tag--forecast', 'clock', t('card.forecast')) : null,
-      h.dataSource === 'simulated' ? tag('tag--sample', null, t('card.sample')) : null
+      h.dataSource === 'simulated' ? tag('tag--sample', null, t('card.sample')) : null,
+      // Düşük güven arayüzde GÖSTERİLİR. Örnek veride zaten "Örnek veri" etiketi var.
+      h.confidence === 'low' && h.dataSource !== 'simulated' ? tag('tag--lowconf', 'info', t('card.lowConfidence')) : null
     ].filter(Boolean);
     return items.length > 0 ? el('ul', { className: 'tags' }, items) : null;
   }
@@ -153,6 +155,16 @@
     rows.push(['details.updated', row.staleReason === 'future' ? t('card.unknown') : format.ago(row.ageMinutes)]);
     rows.push(['details.kind', t(h.isForecast ? 'details.kindForecast' : 'details.kindNow')]);
     rows.push(['details.source', t('source.' + h.dataSource)]);
+    if (!row.isStale && h.confidence) rows.push(['details.confidence', t('confidence.' + h.confidence)]);
+    if (!row.isStale && h.occupancyRange) {
+      rows.push(['details.occupancyRange', h.occupancyRange[0] === h.occupancyRange[1] ? format.percent(h.occupancyRange[0])
+        : t('details.occupancyRangeValue', { low: format.number(h.occupancyRange[0]), high: format.number(h.occupancyRange[1]) })]);
+    }
+    if (!row.isStale && h.factors && h.factors.length) {
+      rows.push(['details.factors', h.factors.map(function (f) {
+        return t('factors.' + f.key + '.' + (f.points >= 0 ? 'up' : 'down'), { n: format.number(Math.abs(f.points)) });
+      }).join(' ')]);
+    }
     return rows;
   }
 

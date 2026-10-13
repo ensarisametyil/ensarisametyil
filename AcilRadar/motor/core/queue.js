@@ -6,8 +6,8 @@
  *   - Vazgeçme (LWBS): sabır süresi dolan bekleyen ayrılır.
  *   - Yatış bekleyenler (boarding) yatak/gözlem alanını bloklar; yatak gerektiren sınıf
  *     yatak yoksa bekler (alt sınıf öne geçebilir — yeşil hızlı alan yatak istemez).
- *   - İstenen anlarda anlık görüntü: bekleyen, muayenede, yatış bekleyen, hekim.
- *   - "Ölçüm hastası": her anlık görüntüde her sınıf için SIFIR süreli sanal bir hasta
+ *   - İstenen anlarda durum kesiti: bekleyen, muayenede, yatış bekleyen, hekim.
+ *   - "Ölçüm hastası": her durum kesitinde her sınıf için SIFIR süreli sanal bir hasta
  *     sıraya girer; muayeneye alınma anı, o anda gelen yeni bir hastanın bekleyeceği
  *     süreyi verir. Süresi sıfır olduğu için kimseyi geciktirmez, sayımlara girmez.
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: davranış ayarları config'te; algoritma bu dosyada.

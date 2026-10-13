@@ -26,7 +26,7 @@
   }
 
   return deepFreeze({
-    MODEL_VERSION: '2.0.0',
+    MODEL_VERSION: '2.0.1',
 
     TIME: {
       UTC_OFFSET_MINUTES: 180,   // Türkiye 2016'dan beri sabit UTC+3 (yaz saati yok)
@@ -127,7 +127,7 @@
       CONVERGENCE_POINTS: 1,          // yüzdelik kayması ≤ max(1 puan, bir hasta) → yeterli
       CONVERGENCE_STREAK: 2,          // art arda kaç denetimde sağlanmalı
       MAX_EVENTS_PER_RUN: 50000,      // sınırsız döngüye karşı üst sınır
-      TAG_EXTENSION_MINUTES: 600,     // ölçüm hastası için son anlık görüntüden sonra en çok
+      TAG_EXTENSION_MINUTES: 600,     // ölçüm hastası için son durum kesitinden sonra en çok
       MAX_ARRIVAL_RATE_PER_HOUR: 400  // akıl dışı hızlara karşı üst sınır
     },
     QUANTILES: { LOW: 0.1, MID: 0.5, HIGH: 0.9 },   // nominal %80 aralık
@@ -178,6 +178,14 @@
       ]
     },
     DRIFT: { DELTA: 0.5, LAMBDA: 60 },  // Page-Hinkley (hata birimi: puan)
+
+    // ---- Sözleşme çıktısı ----------------------------------------------------------
+    CONTRACT: {
+      // Ürün kuralı: süre DAİMA aralıktır, tek sayıya inmez. Kuyruk benzetimi muayeneye
+      // çağrılma, sedyeye yerleşme gibi kısa gecikmeleri içermez; bu nedenle gösterilen
+      // bekleme aralığının üst ucu en az alt uç + 5 dk'dır (VARSAYIM; pilotta gözden geçirilir).
+      MIN_WAIT_SPREAD_MINUTES: 5
+    },
 
     // ---- Bölge hesabı ---------------------------------------------------------------
     REGION: {

@@ -63,7 +63,7 @@ sarı bekleme   = [5, 20] sabit
 | R5 | Resmî tatil ve dini bayram takvimi | Dini bayram tarihleri yıla göre değişir; ezberden yazılırsa yanlış olabilir | Takvim **veri dosyası** olarak tutulur; her satırda kaynak ve "doğrulandı mı" alanı olur. Sabit tatiller kanundan, bayramlar Diyanet / Cumhurbaşkanlığı ilanından alınır. Doğrulanamayan yıl "doğrulanmadı" diye işaretlenir ve motor o yıl için bayram etkisini **uygulamaz**. Takvimi siz de resmî kaynakla karşılaştırmalısınız |
 | R6 | Model için gereken girdilerin bir kısmı (başvuru/saat, yatış bekleyen, yatak kapasitesi) panelde yok | Kapasite tabanlı doluluk için kapasite `hekim × capacityPerPhysician` varsayımına düşer; bu "DOĞRULANMALI" etiketlidir | Düşüş basamakları ve `assumedFields` ile açıkça belirtilir, güven düzeyi düşer. Panel alanlarının eklenmesi motor kapsamı dışında, ayrı bir iş olarak önerilir |
 | R7 | **Döngüsellik:** motor kendi model ailesiyle üretilmiş veride sınanırsa iyi görünür | Sonuçlar abartılı çıkar | Motorun bilmediği mekanizmalarla en az 3 rejim (§5.4). Her ölçü rejime göre ayrı raporlanır; "kendi ailesi" rejimi ayrıca etiketlenir |
-| R8 | Performans: 1500 benzetim × 6 ufuk + akşam + karşıolgusal açıklama | Node'da p95 ≤ 250 ms zorlayıcı olabilir | Tek koşu tüm ufukları birlikte üretir (ufuklar aynı yörüngenin anlık görüntüleri). Açıklama ortak rastgele sayılarla daha az benzetimle yapılır. Gerekirse yakınsama ölçütüne göre uyarlamalı benzetim sayısı. Sonuç ölçülüp raporlanır |
+| R8 | Performans: 1500 benzetim × 6 ufuk + akşam + karşıolgusal açıklama | Node'da p95 ≤ 250 ms zorlayıcı olabilir | Tek koşu tüm ufukları birlikte üretir (ufuklar aynı yörüngenin durum kesitleri). Açıklama ortak rastgele sayılarla daha az benzetimle yapılır. Gerekirse yakınsama ölçütüne göre uyarlamalı benzetim sayısı. Sonuç ölçülüp raporlanır |
 | R9 | Ön yüz boyut bütçesi zaten aşılmış (178,8 KB / 120 KB) | Motor tarayıcıda gönderilirse bütçe daha da aşılır | Motor **sunucuda** (ya da sahte sunucuda) çalışır; site yalnız sonucu gösterir. Tarayıcı uyumluluğu yalnız test ve isteğe bağlı Web Worker içindir |
 | R10 | Gerçek veri yok | Hiçbir doğruluk iddiası yapılamaz | Tüm ölçüler "sentetik rejimlerde ölçüldü" etiketiyle verilir; gerçek doğrulama gölge mod pilotunda |
 | R11 | Seviye eşikleri (50/80) gerekçesiz | Seviye doğruluğu eşiğe çok duyarlı olabilir | Eşikler `config.js`'e taşınır; ±5 puan hassasiyet analizi raporlanır |
@@ -91,7 +91,7 @@ girdi → quality (doğrula, bayatlık, aykırı → sınırla + uyarı, assumed
       → demand (saat-hafta hızı × tatil × ani artış CUSUM; Gamma-Poisson büzülme)
       → service (sınıf başına log-normal; vardiya çizelgesi)
       → queue (Monte Carlo: 3 sınıf, müdahalesiz öncelik, LWBS, yatış tıkanması)
-          tek yörüngeden 0/30/60/120/180/240 dk ve 20:00 anlık görüntüleri
+          tek yörüngeden 0/30/60/120/180/240 dk ve 20:00 durum kesitleri
       → occupancy (kapasite tabanlı; endeks yalnız girdiler + doğrulanmış katsayılar varsa)
       → calibrate (split-conformal düzeltme; ufuk × saat dilimi; veri yoksa "uygulanmadı")
       → explain (karşıolgusal, ortak rastgele sayılar; en çok 3 faktör, şablon cümle)

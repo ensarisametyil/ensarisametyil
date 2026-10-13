@@ -172,6 +172,7 @@
       travelMeta: '{range} yol',
       childER: 'Çocuk acili var',
       sample: 'Örnek veri',
+      lowConfidence: 'Düşük güvenli tahmin',
       forecast: 'Öngörü',
       shortest: 'En kısa toplam süre',
       occupancy: 'Doluluk {value}',
@@ -204,7 +205,27 @@
       kindNow: 'Şu anki durum tahmini',
       kindForecast: 'İleri saat öngörüsü',
       source: 'Veri kaynağı',
-      people: '{count} kişi'
+      people: '{count} kişi',
+      confidence: 'Tahmin güveni',
+      occupancyRange: 'Doluluk aralığı (tahmini)',
+      occupancyRangeValue: '%{low}–%{high}',
+      factors: 'Öne çıkan etkenler'
+    },
+
+    // Sözleşme 1.2: tahmin güveni ve etken cümleleri (motor/core/explain.js şablonlarıyla aynı)
+    confidence: {
+      low: 'Düşük',
+      medium: 'Orta',
+      high: 'Yüksek'
+    },
+
+    factors: {
+      queue: { up: 'Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +{n} puan.', down: 'Bekleyen hasta az olduğu için doluluk yaklaşık −{n} puan.' },
+      seasonal: { up: 'Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +{n} puan.', down: 'Günün bu saatlerinde başvurular azaldığı için doluluk yaklaşık −{n} puan.' },
+      holiday: { up: 'Tatil/bayram dönemi nedeniyle doluluk yaklaşık +{n} puan.', down: 'Tatil/bayram dönemi nedeniyle doluluk yaklaşık −{n} puan.' },
+      surge: { up: 'Son saatlerde başvurular beklenenden fazla olduğu için doluluk yaklaşık +{n} puan.', down: 'Son saatlerdeki başvuru değişimi doluluğu yaklaşık −{n} puan etkiliyor.' },
+      shift: { up: 'Hekim vardiyası değişimi nedeniyle doluluk yaklaşık +{n} puan.', down: 'Vardiyada hekim sayısı arttığı için doluluk yaklaşık −{n} puan.' },
+      boarding: { up: 'Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +{n} puan.', down: 'Yatış bekleyen hasta etkisi yaklaşık −{n} puan.' }
     },
 
     source: {

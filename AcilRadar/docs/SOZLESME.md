@@ -1,4 +1,4 @@
-# AcilRadar · Veri sözleşmesi (EK-1) — sürüm 1.x (güncel: 1.1)
+# AcilRadar · Veri sözleşmesi (EK-1) — sürüm 1.x (güncel: 1.2)
 
 Bu belge arka uç ile ön yüzün **tek temas noktasıdır**. Arka uç hangi dille yazılırsa yazılsın (PHP, Node, başka), bu sözleşmeye uyduğu sürece ön yüzde hiçbir dosya değişmez; yalnızca `js/config.js` içindeki ortam satırı değişir.
 
@@ -45,6 +45,25 @@ Değişiklik kuralı: alan ADI veya TÜRÜ değişirse ana sürüm artar (v2); a
 ```
 
 ---
+
+## Sürüm 1.2 eki — doluluk motoru alanları (hepsi İSTEĞE BAĞLI)
+
+Doluluk hesaplama motoru (`motor/`) her hastane kaydına aşağıdaki alanları **ekleyebilir**. Hiçbir mevcut alanın adı ya da türü değişmedi; alan eklemek küçük sürümdür (`schemaVersion: "1.2"`), eski istemci bozulmaz.
+
+| Alan | Tür | Anlam |
+|---|---|---|
+| `occupancyRange` | `[alt, üst]` (0–100) | Doluluk için nominal %80 tahmin aralığı |
+| `overCapacityShare` | 0–1 | Kapasitenin aşılma olasılığı (`occupancyPercent` en çok 100 gösterilir) |
+| `confidence` | `low` · `medium` · `high` | Tahmin güveni (kurallar: `motor/docs/MODEL_KARTI.md`). Arayüz düşük güveni gösterir |
+| `factors` | en çok 3 × `{ key, text, points }` | Açıklama etkenleri. `key`: `queue`, `seasonal`, `holiday`, `surge`, `shift`, `boarding`. **Arayüz yalnız `key` ve `points` okur**; cümleyi kendi metinlerinden kurar (`text` gösterilmez) |
+| `modelVersion` | metin | Motor sürümü (ör. `"2.0.0"`) |
+| `definition` | `capacity` · `index` | Kullanılan doluluk tanımı (şimdilik yalnız `capacity`) |
+| `assumedFields` | metin dizisi | Varsayılan değerle doldurulan girdi alanları |
+| `simulated` | boolean | `true`: sayılar örnek veriden üretildi (bu durumda `isForecast` da `true`) |
+
+- `occupancyPercent` = motorun orta tahmini (yuvarlanmış); `crowdingLevel` bu değerden eşiklerle (orta ≥ 50, çok ≥ 80) türetilir.
+- Bilgi bayatsa motor sayı üretmez; sunucu o hastaneyi eski `updatedAt` ile gönderir ve arayüz "güncel bilgi yok" gösterir (değişmedi).
+- `at=evening` 20:00'den sonra istenmez (arayüz göndermez); motor bu durumda akşam tahmini üretmez.
 
 ## Sürüm 1.1 eki — yalnız devlet hastaneleri
 

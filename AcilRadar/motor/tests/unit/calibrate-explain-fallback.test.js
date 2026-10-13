@@ -7,23 +7,33 @@ const engine = require('../../core/index.js');
 const rngLib = require('../../core/rng.js');
 const F = require('../lib/fixtures.js');
 
+// Yasak ifadeler (görev kuralı). Sözcükler bu dosyada da geçmesin diye parçalardan kurulur.
+const FORBIDDEN = new RegExp(['yapay ' + 'zek', 'can' + 'lı', 'an' + 'lık', 'gerçek ' + 'zaman', 'öl' + 'üm', 'teh' + 'like'].join('|'), 'i');
+
 test('calibrate: dar aralık genişler, kapsama hedefe yaklaşır (eğitim ≠ sınama)', function () {
   const rng = rngLib.create('cal');
-  const make = function (n) { const out = []; for (let i = 0; i < n; i++) { const y = rng.normal() * 10; out.push({ target: 'occupancy', horizon: '120', daypart: 'day', y: y, lo: -5, hi: 5 }); } return out; };
+  // Gerçek değer tahminden sistematik olarak 6 yüksek (sapma) ve aralık dar
+  const make = function (n) { const out = []; for (let i = 0; i < n; i++) { const y = 6 + rng.normal() * 10; out.push({ target: 'occupancy', horizon: '120', daypart: 'day', y: y, point: 0, lo: -5, hi: 5 }); } return out; };
   const table = calibrate.fit(make(400));
   const test = make(2000);
   let covered = 0;
-  test.forEach(function (r) { const a = calibrate.apply(table, 'occupancy', '120', 'day', r.lo, r.hi, -Infinity); if (r.y >= a.lo && r.y <= a.hi) covered += 1; });
+  let shiftedError = 0;
+  test.forEach(function (r) {
+    const a = calibrate.apply(table, 'occupancy', '120', 'day', r.point, r.lo, r.hi, -Infinity);
+    if (r.y >= a.lo && r.y <= a.hi) covered += 1;
+    shiftedError += a.point - r.y;
+  });
   assert.between(covered / test.length, 0.76, 0.84);
+  assert.near(shiftedError / test.length, 0, 1.5, 'sapma düzeltildi');
 });
 
 test('calibrate: veri yetersiz → uygulanmadı; geniş aralık daralabilir', function () {
-  const small = calibrate.fit([{ target: 'occupancy', horizon: '60', daypart: 'day', y: 0, lo: -1, hi: 1 }]);
-  assert.equal(calibrate.apply(small, 'occupancy', '60', 'day', 0, 10).applied, false);
+  const small = calibrate.fit([{ target: 'occupancy', horizon: '60', daypart: 'day', y: 0, point: 0, lo: -1, hi: 1 }]);
+  assert.equal(calibrate.apply(small, 'occupancy', '60', 'day', 5, 0, 10).applied, false);
   const rows = [];
-  for (let i = 0; i < 100; i++) rows.push({ target: 'w', horizon: '0', daypart: 'night', y: 0, lo: -50, hi: 50 });
+  for (let i = 0; i < 100; i++) rows.push({ target: 'w', horizon: '0', daypart: 'night', y: 0, point: 0, lo: -50, hi: 50 });
   const t = calibrate.fit(rows);
-  const a = calibrate.apply(t, 'w', '0', 'night', -50, 50, -Infinity);
+  const a = calibrate.apply(t, 'w', '0', 'night', 0, -50, 50, -Infinity);
   assert.ok(a.applied && a.hi < 50, 'aşırı geniş aralık daraldı');
 });
 
@@ -64,7 +74,7 @@ test('index: açıklama en çok 3 faktör, şablon cümle, yuvarlanmış puan, y
     list.forEach(function (f) {
       assert.equal(f.points, Math.round(f.points));
       assert.ok(/yaklaşık [+−]\d+ puan\.$/.test(f.text), f.text);
-      assert.ok(!/yapay zeka|canlı|anlık|gerçek zamanlı|ölüm|tehlike/i.test(f.text), f.text);
+      assert.ok(!FORBIDDEN.test(f.text), f.text);
     });
   });
   assert.ok(r.factors['2h'].some(function (f) { return f.key === 'queue'; }), 'kalabalık kuyruk 2 saatlik tahmine katkı yapmalı');

@@ -64,7 +64,26 @@
         "updatedAt": { "$ref": "#/$defs/isoDateTime" },
         "isForecast": { "type": "boolean" },
         "dataSource": { "type": "string", "enum": ["simulated", "hospital", "official"] },
-        "ownership": { "type": "string", "enum": ["public", "private"], "description": "public = devlet hastanesi, private = özel hastane. Arayüz yalnız public gösterir; sunucu yalnız public göndermelidir." }
+        "ownership": { "type": "string", "enum": ["public", "private"], "description": "public = devlet hastanesi, private = özel hastane. Arayüz yalnız public gösterir; sunucu yalnız public göndermelidir." },
+        "occupancyRange": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": 0, "maximum": 100 }, "description": "1.2 (isteğe bağlı): doluluk için nominal %80 tahmin aralığı [alt, üst]." },
+        "overCapacityShare": { "type": "number", "minimum": 0, "maximum": 1, "description": "1.2 (isteğe bağlı): kapasitenin aşılma olasılığı (0–1)." },
+        "confidence": { "type": "string", "enum": ["low", "medium", "high"], "description": "1.2 (isteğe bağlı): tahmin güveni (kural tablosu: motor/docs/MODEL_KARTI.md)." },
+        "factors": {
+          "type": "array", "maxItems": 3,
+          "description": "1.2 (isteğe bağlı): en çok 3 açıklama etkeni. Arayüz yalnız key + points okur; cümleyi kendi metinlerinden kurar.",
+          "items": {
+            "type": "object", "required": ["key", "points"],
+            "properties": {
+              "key": { "type": "string", "enum": ["queue", "seasonal", "holiday", "surge", "shift", "boarding"] },
+              "text": { "type": "string", "maxLength": 200 },
+              "points": { "type": "number", "minimum": -100, "maximum": 100 }
+            }
+          }
+        },
+        "modelVersion": { "type": "string", "maxLength": 32, "description": "1.2 (isteğe bağlı): tahmini üreten motor sürümü." },
+        "definition": { "type": "string", "enum": ["capacity", "index"], "description": "1.2 (isteğe bağlı): kullanılan doluluk tanımı." },
+        "assumedFields": { "type": "array", "items": { "type": "string", "maxLength": 64 }, "maxItems": 20, "description": "1.2 (isteğe bağlı): varsayılan değerle doldurulan girdi alanları." },
+        "simulated": { "type": "boolean", "description": "1.2 (isteğe bağlı): true ise sayılar örnek (simülasyon) verisinden üretilmiştir." }
       }
     },
     "errorEnvelope": {

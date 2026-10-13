@@ -77,6 +77,10 @@
 
     CROWDING_LEVELS: ['low', 'medium', 'high'],
     DATA_SOURCES: ['simulated', 'hospital', 'official'],
+    // Sözleşme 1.2 (isteğe bağlı): tahmin güveni ve açıklama etkenleri (motor/core/explain.js)
+    CONFIDENCE_LEVELS: ['low', 'medium', 'high'],
+    FACTOR_KEYS: ['queue', 'seasonal', 'holiday', 'surge', 'shift', 'boarding'],
+    MAX_FACTORS: 3,
 
     // Kurum türü (sunucu: "ownership"). public = devlet hastanesi, private = özel hastane.
     OWNERSHIP_TYPES: ['public', 'private'],

@@ -2,7 +2,6 @@
 const { test, assert } = require('../lib/harness.js');
 const queue = require('../../core/queue.js');
 const occupancy = require('../../core/occupancy.js');
-const service = require('../../core/service.js');
 const rngLib = require('../../core/rng.js');
 
 function table(perMinute, slots) { return { slotMinutes: 15, rates: new Float64Array(slots || 200).fill(perMinute) }; }
@@ -16,7 +15,7 @@ function sim(o) {
   }, o));
 }
 
-test('queue: 0. dakikadaki anlık görüntü gözlenen durumu aynen verir', function () {
+test('queue: 0. dakikadaki durum kesiti gözlenen durumu aynen verir', function () {
   const r = sim({ initial: { waiting: { red: 1, yellow: 3, green: 7 }, inService: 4, boarding: 2 }, bedCapacity: 20 });
   const s = r.snapshots[0];
   assert.deepEqual(s.waiting, { red: 1, yellow: 3, green: 7 });

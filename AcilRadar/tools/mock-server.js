@@ -13,7 +13,10 @@
  * SENARYOLAR   : normal, empty, stale, broken, many, notice, unsupported, error,
  *                unavailable, ratelimit (js/mock-data.js) + slow, offline, html,
  *                invalidjson (bu dosya).
- * NOT: Veri üretimi js/mock-data.js'ten gelir (tek kaynak). Canlı ortamda KULLANILMAZ.
+ * MOTOR        : "normal" ve "notice" senaryolarında sayılar doluluk motorundan gelir
+ *                (motor/tools/mock-adapter.js; sözleşme 1.2 alanlarıyla). Kapatmak için
+ *                --engine=off. Diğer senaryolar js/mock-data.js'ten gelir.
+ * NOT: Hastane kimlikleri js/mock-data.js'ten gelir. Canlı ortamda KULLANILMAZ.
  * ========================================================================== */
 'use strict';
 
@@ -29,6 +32,8 @@ const PORT = Number(ARGS.port || process.env.PORT || 8787);
 const DEFAULT_SCENARIO = ARGS.scenario || process.env.MOCK_SCENARIO || 'normal';
 const CACHE_SECONDS = 30;
 const SLOW_EXTRA_MS = 2000;
+const ENGINE_ON = (ARGS.engine || process.env.MOCK_ENGINE || 'on') !== 'off';
+const ENGINE_SCENARIOS = ['normal', 'notice', 'slow'];
 
 /* ---- Tarayıcı dosyalarını Node'da yükle (config + mock-data) ------------- */
 
@@ -43,6 +48,7 @@ function loadBrowserModules(files) {
 }
 
 const AR = loadBrowserModules(['js/config.js', 'js/mock-data.js', 'panel/js/config.js', 'panel/js/rules.js', 'panel/js/mock.js']);
+const adapter = ENGINE_ON ? require('../motor/tools/mock-adapter.js').createAdapter(AR.Mock.SAMPLES.map(function (s) { return s.id; })) : null;
 const cfg = AR.Config;
 const panelBackend = AR.Panel.Mock.createBackend(Date.now());
 const SESSION_COOKIE = 'acilradar_panel';
@@ -125,7 +131,8 @@ function handleHospitals(req, res, url) {
   const nowMs = Math.floor(Date.now() / (CACHE_SECONDS * 1000)) * CACHE_SECONDS * 1000;
   const respondNormally = function () {
     const result = AR.Mock.build(scenario === 'slow' ? 'normal' : scenario, query, nowMs);
-    sendJson(req, res, result.status, result.body, result.headers);
+    const body = adapter && result.status === 200 && ENGINE_SCENARIOS.indexOf(scenario) !== -1 ? adapter.enrich(result.body, query.at, nowMs) : result.body;
+    sendJson(req, res, result.status, body, result.headers);
   };
   if (!handleTransportScenario(scenario, req, res, respondNormally)) respondNormally();
 }
@@ -223,5 +230,7 @@ const server = http.createServer(function (req, res) {
 });
 
 server.listen(PORT, function () {
-  console.log('AcilRadar örnek API: http://localhost:' + PORT + '  (varsayılan senaryo: ' + DEFAULT_SCENARIO + ')');
+  console.log('AcilRadar örnek API: http://localhost:' + PORT + '  (varsayılan senaryo: ' + DEFAULT_SCENARIO + ', motor: ' + (adapter ? 'açık' : 'kapalı') + ')');
+  // Isınma: ilk istek beklemesin diye o anki tahminler önceden hesaplanır.
+  if (adapter) setImmediate(function () { adapter.warm(Math.floor(Date.now() / (CACHE_SECONDS * 1000)) * CACHE_SECONDS * 1000); });
 });

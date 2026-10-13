@@ -2,7 +2,7 @@
 /* Özellik tabanlı testler: rastgele (tohumlu) girdilerde her zaman doğru olması
  * gereken kurallar. Karşılaştırmalar ortak tohumla ve koşu ortalamasıyla yapılır;
  * Monte Carlo gürültüsü için küçük bir tolerans (TOL) vardır. */
-const { test, assert } = require('../lib/harness.js');
+const { test } = require('../lib/harness.js');
 const { forAll, int } = require('../lib/property.js');
 const forecast = require('../../core/forecast.js');
 const demand = require('../../core/demand.js');

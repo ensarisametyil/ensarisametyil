@@ -2,6 +2,22 @@
 
 Biçim: en yeni üstte. Sözleşme (API) değişiklikleri ayrıca belirtilir.
 
+## 1.4.0 — Doluluk hesaplama motoru (v2) ve sözleşme 1.2
+
+- **Motor:** `motor/` klasörü. Ayrıntılar `motor/README.md` ve `motor/docs/` altında.
+- **Örnek API:** `tools/mock-server.js` normal senaryoda sayıları artık motordan üretiyor (`--engine=off` ile eski davranış). Yanıt `schemaVersion: "1.2"`.
+- **Sözleşme 1.2 (isteğe bağlı alanlar):**
+  - `occupancyRange`, `overCapacityShare`
+  - `confidence`, `factors`
+  - `modelVersion`, `definition`
+  - `assumedFields`, `simulated`
+  
+  Ayrıntılar `docs/SOZLESME.md` ve şema içinde.
+- **Arayüz:**
+  - Kart ayrıntılarında tahmin güveni, doluluk aralığı ve öne çıkan etkenler gösteriliyor.
+  - Etken cümleleri arayüzün kendi metinlerinden kuruluyor; sunucu metni gösterilmiyor.
+  - Örnek veri dışında düşük güven, kartta etiketle belirtiliyor.
+
 ## 1.3.0 — Görsel yenileme ve son tarama
 
 ### Tasarım ("Sakin güven" korunarak)
