@@ -26,7 +26,7 @@
   }
 
   return deepFreeze({
-    MODEL_VERSION: '2.1.0',
+    MODEL_VERSION: '2.2.0',
 
     // Bileşenler. Geriye dönük testte (docs/DOGRULAMA_RAPORU_2.0.0.md › kapatma deneyleri)
     // ölçülebilir kazanç getirmeyenler KAPALIDIR (görev kuralı: karmaşıklık hak edilmeli).
@@ -37,6 +37,17 @@
       SURGE_DETECTION: false,     // CUSUM ani artış: Δ MAE ≈ 0 (A/B/C) — KAPALI
       HOLIDAY_EFFECT: false,      // gün türü etkisi: C'de kapatınca hata AZALDI — KAPALI
       PARAM_UNCERTAINTY: false    // parametre belirsizliği: Δ MAE ≈ 0, aralıklar zaten fazla geniş — KAPALI
+    },
+
+    // Hibrit yöntem seçimi (core/hybrid.js). Gerekçe: docs/MODEL_KARTI.md §8.
+    HYBRID: {
+      PERSISTENCE_UNTIL_MINUTES: 60,    // doluluk: bu ufka kadar güncel doluluk aynen kalır
+      SEASONAL_MIN_SAMPLES: 2,          // mevsimsel ortalama için aynı saat-gün diliminde en az örnek (yoksa süreklilik + 'occupancyHistory' varsayıldı)
+      SEASONAL_MAX_HISTORY_DAYS: 84,    // en çok 12 hafta geriye bakılır
+      ENGINE_WAIT_HORIZON_MINUTES: 0,   // bekleme için motor YALNIZ "şimdi"de kullanılır
+      YELLOW_NOW_ENGINE: true,          // sarı bekleme "şimdi": motor (4 rejimde bugünkü formülden iyi ölçüldü); false → sabit aralık
+      // Bugünkü ürün formülü (js/mock-data.js ile aynı): ileri ufuklarda bekleme için
+      FORMULA: { MINUTES_PER_PATIENT: 9, SPREAD: 1.4, YELLOW: [5, 20] }
     },
 
     TIME: {
@@ -149,7 +160,9 @@
       PHYSICIANS_MAX: 500,
       CAPACITY_MAX: 5000,
       ARRIVALS_HOUR_MAX: 2000,
-      WAITING_PER_PHYSICIAN_MAX: 60   // üstü aykırı sayılır, sınırlanır ve uyarı üretilir
+      WAITING_PER_PHYSICIAN_MAX: 60,  // üstü aykırı sayılır, sınırlanır ve uyarı üretilir
+      OCCUPANCY_PERCENT_MAX: 1000,    // geçmiş doluluk gözleminde ham yüzde üst sınırı (aşırı kuyruk)
+      OCCUPANCY_HISTORY_MAX_ROWS: 4032 // 12 hafta × 336 yarım saat
     },
     SOURCE_TRUST: { simulated: 0, hospital: 1, official: 2 },
     // Güven düzeyi kural tablosu (docs/MODEL_KARTI.md › Güven düzeyi).
@@ -173,7 +186,8 @@
     EXPLAIN: {
       RUNS: 300,                      // karşıolgusal benzetim sayısı (ortak rastgele sayılar)
       MAX_FACTORS: 3,
-      MIN_POINTS: 2                   // |katkı| < 2 puan ise cümle kurulmaz
+      MIN_POINTS: 2,                  // doluluk: |katkı| < 2 puan ise cümle kurulmaz
+      MIN_WAIT_POINTS: 3              // bekleme: |katkı| < 3 dk ise cümle kurulmaz
     },
 
     // ---- Kalibrasyon ve kayma -----------------------------------------------------

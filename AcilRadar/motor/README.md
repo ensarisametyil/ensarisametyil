@@ -6,6 +6,8 @@ Acil servislerin **tahmini** doluluk yüzdesini, doluluk seviyesini (az/orta/ço
 >
 > **Karar özeti (`docs/MODEL_KARTI.md` §8):** motor, doluluk tahmininde motorun bilmediği mekanizmalara sahip B–D rejimlerinde basit yöntemlerden tutarlı biçimde iyi değildir. Halka açık doluluk için kısa ufukta süreklilik, akşam için mevsimsel ortalama önerilir; motor gölge modda ölçülmelidir. "Şimdi" yeşil bekleme tahmininde motor, bugünkü formülden A, B ve D rejimlerinde tutarlı biçimde iyidir.
 >
+> **Ürün çıktısı hibrittir (v2.2.0):** doluluk şimdi ve +60 dk güncel doluluk, +2 saat ve akşam geçmiş ortalama; yeşil/sarı bekleme "şimdi" motor, ileri ufuk bugünkü formül. Güven ve etkenler yalnız "şimdi" yeşil bekleme için. Ayrıntı: `docs/MODEL_KARTI.md` (başındaki tablo) ve `core/hybrid.js`.
+>
 > Kazanç getirmeyen bileşenler (ani artış, bayram etkisi, parametre belirsizliği) `core/config.js › FEATURES` ile kapalıdır.
 
 ## Hızlı başlangıç
@@ -46,7 +48,8 @@ Tarayıcıda: `motor/core/*.js` dosyaları sırayla klasik `<script>` olarak yü
 | `core/calibrate.js` | Sapma düzeltmesi + split-conformal kalibrasyon, Page-Hinkley kayma denetimi |
 | `core/explain.js` | Karşıolgusal etken katkıları, en çok 3 şablon cümle |
 | `core/fallback.js` | Düşüş basamakları: tam → kısmi → mevsimsel → bilinmiyor |
-| `core/index.js` | `computeHospital`, `computeRegion` (önbellek + zaman sınırı), `toContract` |
+| `core/hybrid.js` | Ufka göre yöntem seçimi: süreklilik, mevsimsel ortalama, bugünkü bekleme formülü |
+| `core/index.js` | `computeHospital`, `computeRegion` (önbellek + zaman sınırı), `toContract` (hibrit), `methodsFor` |
 | `tools/simulator.js` | Motordan bağımsız sentetik dünya (4 rejim) |
 | `tools/backtest.js` | Kayan başlangıçlı geriye dönük test, kıyas modelleri, CSV yolu |
 | `tools/report.js` | Türkçe doğrulama raporu |

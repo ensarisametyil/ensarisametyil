@@ -33,6 +33,7 @@ const occupancyLib = require('../core/occupancy.js');
 const calibrate = require('../core/calibrate.js');
 const rngLib = require('../core/rng.js');
 const simulator = require('./simulator.js');
+const hybrid = require('../core/hybrid.js');
 
 const MS_PER_MINUTE = 60000;
 const HORIZONS = config.HORIZONS_MINUTES;
@@ -77,11 +78,12 @@ function quantileOf(values, q) {
 function benchmarkOccupancy(hospital, originIndex, observedNow) {
   const origin = hospital.obs[originIndex];
   const past = hospital.obs.slice(0, originIndex + 1);
-  const hw = function (o) { const p = time.parts(o.ms); return p.hourOfWeek * 2 + (p.minute >= 30 ? 1 : 0); };
+  // Mevsimsel kıyas ürünle AYNI fonksiyondur (core/hybrid.js); burada en az 1 örnek yeter ve
+  // geçmişin tamamına bakılır (ürün: ≥ 2 örnek, en çok 12 hafta).
+  const history = past.map(function (o) { return { ms: o.ms, percent: o.occupancy }; });
   const seasonalFor = function (targetMs) {
-    const key = hw({ ms: targetMs });
-    const same = past.filter(function (o) { return hw(o) === key && o.ms < origin.ms; }).map(function (o) { return o.occupancy; });
-    return same.length ? mean(same) : observedNow;
+    const s = hybrid.seasonalMean(history, targetMs, origin.ms + 1, 1);
+    return s ? s.percent : observedNow;
   };
   let level = null;
   past.slice(-336).forEach(function (o) { level = level === null ? o.occupancy : SES_ALPHA * o.occupancy + (1 - SES_ALPHA) * level; });

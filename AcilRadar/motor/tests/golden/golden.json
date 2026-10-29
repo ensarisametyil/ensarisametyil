@@ -1,5 +1,5 @@
 {
-  "modelVersion": "2.1.0",
+  "modelVersion": "2.2.0",
   "cases": {
     "sakin-gun": {
       "tier": "full",
@@ -21,67 +21,40 @@
         "updatedAt": "2026-10-13T13:55:00+03:00",
         "isForecast": false,
         "dataSource": "hospital",
-        "occupancyRange": [
-          47,
-          47
-        ],
-        "overCapacityShare": 0,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +27 puan.",
-            "points": 27
-          },
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +3 puan.",
-            "points": 3
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
           "physicianSchedule"
+        ],
+        "confidence": "medium",
+        "factors": [
+          {
+            "key": "queue",
+            "text": "Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +24 dk.",
+            "points": 24,
+            "target": "greenWait"
+          }
         ]
       },
       "2h": {
-        "occupancyPercent": 23,
+        "occupancyPercent": 44,
         "crowdingLevel": "low",
-        "greenWaiting": 0,
-        "yellowWaiting": 0,
+        "greenWaiting": 6,
+        "yellowWaiting": 2,
         "activePhysicians": 6,
         "estimatedGreenWaitMinutes": [
-          0,
-          11
+          9,
+          14
         ],
         "estimatedYellowWaitMinutes": [
-          0,
-          5
+          5,
+          20
         ],
         "updatedAt": "2026-10-13T13:55:00+03:00",
         "isForecast": true,
         "dataSource": "hospital",
-        "occupancyRange": [
-          13,
-          40
-        ],
-        "overCapacityShare": 0,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +10 puan.",
-            "points": 10
-          },
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +6 puan.",
-            "points": 6
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
@@ -89,41 +62,23 @@
         ]
       },
       "evening": {
-        "occupancyPercent": 33,
-        "crowdingLevel": "low",
-        "greenWaiting": 0,
-        "yellowWaiting": 0,
+        "occupancyPercent": 52,
+        "crowdingLevel": "medium",
+        "greenWaiting": 6,
+        "yellowWaiting": 2,
         "activePhysicians": 6,
         "estimatedGreenWaitMinutes": [
-          0,
-          25
+          9,
+          14
         ],
         "estimatedYellowWaitMinutes": [
-          0,
-          5
+          5,
+          20
         ],
         "updatedAt": "2026-10-13T13:55:00+03:00",
         "isForecast": true,
         "dataSource": "hospital",
-        "occupancyRange": [
-          20,
-          57
-        ],
-        "overCapacityShare": 0,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +15 puan.",
-            "points": 15
-          },
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +12 puan.",
-            "points": 12
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
@@ -151,115 +106,60 @@
         "updatedAt": "2026-10-13T13:55:00+03:00",
         "isForecast": false,
         "dataSource": "hospital",
-        "occupancyRange": [
-          100,
-          100
-        ],
-        "overCapacityShare": 1,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +29 puan.",
-            "points": 29
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
           "physicianSchedule"
+        ],
+        "confidence": "medium",
+        "factors": [
+          {
+            "key": "queue",
+            "text": "Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +144 dk.",
+            "points": 144,
+            "target": "greenWait"
+          },
+          {
+            "key": "seasonal",
+            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle bekleme yaklaşık +10 dk.",
+            "points": 10,
+            "target": "greenWait"
+          },
+          {
+            "key": "boarding",
+            "text": "Yatış bekleyen hasta etkisi bekleme için yaklaşık −7 dk.",
+            "points": -7,
+            "target": "greenWait"
+          }
         ]
       },
       "2h": {
         "occupancyPercent": 100,
         "crowdingLevel": "high",
-        "greenWaiting": 22,
-        "yellowWaiting": 0,
+        "greenWaiting": 45,
+        "yellowWaiting": 14,
         "activePhysicians": 6,
         "estimatedGreenWaitMinutes": [
-          30,
-          103
+          68,
+          95
         ],
         "estimatedYellowWaitMinutes": [
-          0,
-          8
+          5,
+          20
         ],
         "updatedAt": "2026-10-13T13:55:00+03:00",
         "isForecast": true,
         "dataSource": "hospital",
-        "occupancyRange": [
-          100,
-          100
-        ],
-        "overCapacityShare": 0.9,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +54 puan.",
-            "points": 54
-          },
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +5 puan.",
-            "points": 5
-          },
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +4 puan.",
-            "points": 4
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
-          "physicianSchedule"
+          "physicianSchedule",
+          "occupancyHistory"
         ]
       },
-      "evening": {
-        "occupancyPercent": 46,
-        "crowdingLevel": "low",
-        "greenWaiting": 0,
-        "yellowWaiting": 0,
-        "activePhysicians": 6,
-        "estimatedGreenWaitMinutes": [
-          0,
-          26
-        ],
-        "estimatedYellowWaitMinutes": [
-          0,
-          6
-        ],
-        "updatedAt": "2026-10-13T13:55:00+03:00",
-        "isForecast": true,
-        "dataSource": "hospital",
-        "occupancyRange": [
-          25,
-          71
-        ],
-        "overCapacityShare": 0.01,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +20 puan.",
-            "points": 20
-          },
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +16 puan.",
-            "points": 16
-          }
-        ],
-        "modelVersion": "2.1.0",
-        "definition": "capacity",
-        "assumedFields": [
-          "redWaiting",
-          "physicianSchedule"
-        ]
-      }
+      "evening": null
     },
     "eksik-veri-gece": {
       "tier": "partial",
@@ -281,20 +181,7 @@
         "updatedAt": "2026-10-13T01:55:00+03:00",
         "isForecast": false,
         "dataSource": "hospital",
-        "occupancyRange": [
-          100,
-          100
-        ],
-        "overCapacityShare": 1,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +79 puan.",
-            "points": 79
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "activePhysicians",
@@ -302,92 +189,52 @@
           "inService",
           "bedCapacity",
           "physicianSchedule"
+        ],
+        "confidence": "medium",
+        "factors": [
+          {
+            "key": "queue",
+            "text": "Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +90 dk.",
+            "points": 90,
+            "target": "greenWait"
+          },
+          {
+            "key": "seasonal",
+            "text": "Günün bu saatlerinde başvurular azaldığı için bekleme yaklaşık −45 dk.",
+            "points": -45,
+            "target": "greenWait"
+          }
         ]
       },
       "2h": {
-        "occupancyPercent": 21,
-        "crowdingLevel": "low",
-        "greenWaiting": 0,
-        "yellowWaiting": 0,
+        "occupancyPercent": 100,
+        "crowdingLevel": "high",
+        "greenWaiting": 20,
+        "yellowWaiting": 6,
         "activePhysicians": 4,
         "estimatedGreenWaitMinutes": [
-          0,
-          11
+          45,
+          63
         ],
         "estimatedYellowWaitMinutes": [
-          0,
-          5
+          5,
+          20
         ],
         "updatedAt": "2026-10-13T01:55:00+03:00",
         "isForecast": true,
         "dataSource": "hospital",
-        "occupancyRange": [
-          8,
-          42
-        ],
-        "overCapacityShare": 0,
-        "confidence": "medium",
-        "factors": [
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerinde başvurular azaldığı için doluluk yaklaşık −54 puan.",
-            "points": -54
-          },
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +10 puan.",
-            "points": 10
-          },
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +10 puan.",
-            "points": 10
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "activePhysicians",
           "redWaiting",
           "inService",
           "bedCapacity",
-          "physicianSchedule"
+          "physicianSchedule",
+          "occupancyHistory"
         ]
       },
-      "evening": {
-        "occupancyPercent": 71,
-        "crowdingLevel": "medium",
-        "greenWaiting": 8,
-        "yellowWaiting": 1,
-        "activePhysicians": 4,
-        "estimatedGreenWaitMinutes": [
-          12,
-          152
-        ],
-        "estimatedYellowWaitMinutes": [
-          1,
-          30
-        ],
-        "updatedAt": "2026-10-13T01:55:00+03:00",
-        "isForecast": true,
-        "dataSource": "hospital",
-        "occupancyRange": [
-          38,
-          100
-        ],
-        "overCapacityShare": 0.18,
-        "confidence": "low",
-        "factors": [],
-        "modelVersion": "2.1.0",
-        "definition": "capacity",
-        "assumedFields": [
-          "activePhysicians",
-          "redWaiting",
-          "inService",
-          "bedCapacity",
-          "physicianSchedule"
-        ]
-      }
+      "evening": null
     },
     "bayram-ilk-gun": {
       "tier": "full",
@@ -409,104 +256,54 @@
         "updatedAt": "2026-05-27T10:57:00+03:00",
         "isForecast": false,
         "dataSource": "official",
-        "occupancyRange": [
-          100,
-          100
-        ],
-        "overCapacityShare": 1,
-        "confidence": "high",
-        "factors": [
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +77 puan.",
-            "points": 77
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
           "physicianSchedule"
+        ],
+        "confidence": "high",
+        "factors": [
+          {
+            "key": "queue",
+            "text": "Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +87 dk.",
+            "points": 87,
+            "target": "greenWait"
+          },
+          {
+            "key": "seasonal",
+            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle bekleme yaklaşık +15 dk.",
+            "points": 15,
+            "target": "greenWait"
+          }
         ]
       },
       "2h": {
-        "occupancyPercent": 50,
-        "crowdingLevel": "medium",
-        "greenWaiting": 5,
-        "yellowWaiting": 0,
+        "occupancyPercent": 100,
+        "crowdingLevel": "high",
+        "greenWaiting": 20,
+        "yellowWaiting": 6,
         "activePhysicians": 6,
         "estimatedGreenWaitMinutes": [
-          0,
-          52
+          30,
+          42
         ],
         "estimatedYellowWaitMinutes": [
-          0,
-          7
+          5,
+          20
         ],
         "updatedAt": "2026-05-27T10:57:00+03:00",
         "isForecast": true,
         "dataSource": "official",
-        "occupancyRange": [
-          23,
-          87
-        ],
-        "overCapacityShare": 0.04,
-        "confidence": "high",
-        "factors": [
-          {
-            "key": "seasonal",
-            "text": "Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +24 puan.",
-            "points": 24
-          },
-          {
-            "key": "queue",
-            "text": "Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +23 puan.",
-            "points": 23
-          },
-          {
-            "key": "boarding",
-            "text": "Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +12 puan.",
-            "points": 12
-          }
-        ],
-        "modelVersion": "2.1.0",
+        "modelVersion": "2.2.0",
         "definition": "capacity",
         "assumedFields": [
           "redWaiting",
-          "physicianSchedule"
+          "physicianSchedule",
+          "occupancyHistory"
         ]
       },
-      "evening": {
-        "occupancyPercent": 30,
-        "crowdingLevel": "low",
-        "greenWaiting": 0,
-        "yellowWaiting": 0,
-        "activePhysicians": 6,
-        "estimatedGreenWaitMinutes": [
-          0,
-          18
-        ],
-        "estimatedYellowWaitMinutes": [
-          0,
-          5
-        ],
-        "updatedAt": "2026-05-27T10:57:00+03:00",
-        "isForecast": true,
-        "dataSource": "official",
-        "occupancyRange": [
-          20,
-          50
-        ],
-        "overCapacityShare": 0,
-        "confidence": "low",
-        "factors": [],
-        "modelVersion": "2.1.0",
-        "definition": "capacity",
-        "assumedFields": [
-          "redWaiting",
-          "physicianSchedule"
-        ]
-      }
+      "evening": null
     }
   }
 }

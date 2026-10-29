@@ -1,4 +1,18 @@
-# Doluluk motoru · Model kartı (v2.1.0)
+# Doluluk motoru · Model kartı (v2.2.0 — hibrit)
+
+> **v2.2.0 — hibrit yöntem seçimi.** §8'deki sonuca göre ürün çıktısı tek bir model değil, ufka göre seçilen yöntemlerdir (`core/hybrid.js`, `config.HYBRID`):
+>
+> | Çıktı | Yöntem | Dayanak |
+> |---|---|---|
+> | Doluluk, şimdi ve +30/+60 dk | **Süreklilik** (bildirilen güncel doluluk aynen kalır) | B, C, D rejimlerinde motordan iyi ya da başa baş |
+> | Doluluk, +2 saat (ve +180/+240) | **Mevsimsel ortalama** (aynı saat-gün, geçmiş; ≥ 2 örnek) | +120 dk'da motorla başa baş; daha basit |
+> | Doluluk, akşam 20:00 | **Mevsimsel ortalama** (ufuk ne olursa olsun) | Akşamda 4 rejimin 4'ünde süreklilikten çok daha iyi, motordan iyi ya da eşit |
+> | Yeşil ve sarı bekleme, "şimdi" | **Motor** | Bugünkü formülden A, B, D'de tutarlı üstün; sarıda dört rejimde de daha iyi |
+> | Bekleme, ileri ufuklar | Bugünkü ürün formülü | Motorun ileri ufukta kanıtı yok (C'de daha kötü) |
+>
+> **Güven düzeyi ve etkenler yalnız "şimdi" yeşil bekleme için** üretilir ve gösterilir (etkenler dakika cinsindendir). Doluluk tahmini için güven, etken ve aralık yoktur. Mevsimsel örnek yetersizse +2 saatte süreklilik kullanılır ve `assumedFields` içinde `occupancyHistory` yazılır; akşam için sayı üretilmez.
+>
+> Doluluk için benzetim motoru ürün çıktısına **girmez**; `computeHospital` yine de çalışır ve gölge modda ölçülmeye devam edebilir. Aşağıdaki §2–§7 benzetim motorunu anlatır; §8 karar ve sonuçlardır.
 
 ## 1. Ne yapar, ne yapmaz
 
@@ -172,7 +186,11 @@ v1 bulunamadı; bildirilen v1 sayıları doğrulanamadı ve farklı bir dünyada
 
 Ancak v2'nin dünyaları **bilerek** motordan farklı mekanizmalar içeriyor, bu yüzden bu fark **v2'nin daha kötü olduğunu kanıtlamaz, iyi olduğunu da kanıtlamaz**. Kesin kıyas için v1 kodunun aynı geriye dönük testte çalıştırılması gerekir: `tools/backtest.js` içine (d) olarak eklenebilir.
 
-### 8.6 Sonraki adımlar (öneri)
+### 8.6 Uygulanan karar (2.2.0)
+
+Yukarıdaki hibrit tablo uygulandı. Ölçüm dayanağı: mevsimsel ve süreklilik yöntemlerinin hatası, hibritte çalışan fonksiyonlarla geriye dönük testte ölçülenle **birebir aynıdır** (rejim A tohum 1 kontrolü: mevsimsel +120 dk 16,062 → 16,062; akşam 21,125 → 21,125; süreklilik +60 dk 13,926 → 13,926). Hibrit çıktı için ayrı bir doğruluk iddiası yapılmaz: değerler bu basit yöntemlerin ölçülmüş hatalarını taşır. Kapsam ve eşik sınırlılıkları §8.3'tekilerle aynıdır.
+
+### 8.7 Sonraki adımlar (öneri)
 
 1. **Ürün doluluk kaynağı:** halka açık doluluk için ufka göre basit yöntem kullanılmalı (§8.1). Motor gölge modda çalışmalı.
 2. **Pilotun ilk iki haftası:** `DOĞRULANMALI` parametreler (hizmet süreleri, yatış oranı, sınıf payları, kapasite) gerçek toplu veriyle güncellenmeli. Ağır yükteki iyimserliğin büyük olasılıkla ana kaynağı bunlardır.

@@ -80,6 +80,10 @@
     // Sözleşme 1.2 (isteğe bağlı): tahmin güveni ve açıklama etkenleri (motor/core/explain.js)
     CONFIDENCE_LEVELS: ['low', 'medium', 'high'],
     FACTOR_KEYS: ['queue', 'seasonal', 'holiday', 'surge', 'shift', 'boarding'],
+    // Etkenler yalnız "şimdi" yeşil bekleme tahminini açıklar (hibrit yöntem: motor yalnız orada kanıtlı).
+    // Başka bir hedefi açıklayan etken (ör. doluluk) arayüzde GÖSTERİLMEZ.
+    FACTOR_TARGETS: ['greenWait'],
+    CONFIDENCE_SLOT: 'now',          // güven ve etkenler yalnız bu zaman diliminde gösterilir
     MAX_FACTORS: 3,
 
     // Kurum türü (sunucu: "ownership"). public = devlet hastanesi, private = özel hastane.

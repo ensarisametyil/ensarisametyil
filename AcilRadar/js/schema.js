@@ -38,8 +38,8 @@
    * @property {?number} activePhysicians
    * @property {number[]} nonUrgentWaitMinutes      [en az, en çok]
    * @property {?number[]} occupancyRange           [alt, üst] (1.2, isteğe bağlı)
-   * @property {?('low'|'medium'|'high')} confidence tahmin güveni (1.2, isteğe bağlı)
-   * @property {{key:string, points:number}[]} factors açıklama etkenleri (1.2)
+   * @property {?('low'|'medium'|'high')} confidence "şimdi" yeşil bekleme tahmininin güveni (1.2, isteğe bağlı)
+   * @property {{key:string, points:number, target:'greenWait'}[]} factors yeşil bekleme etkenleri, puan = dakika (1.2)
    * @property {number[]} urgentWaitMinutes         [en az, en çok]
    * @property {number}  updatedAtMs
    * @property {boolean} isForecast
@@ -198,16 +198,18 @@
   }
 
   /**
-   * Açıklama etkenleri (1.2): yalnız ANAHTAR ve PUAN okunur; cümle arayüzün kendi
-   * metinlerinden (strings.js › factors) kurulur — sunucu metni gösterilmez.
+   * Açıklama etkenleri (1.2): yalnız ANAHTAR, PUAN ve HEDEF okunur; cümle arayüzün kendi
+   * metinlerinden (strings.js › waitFactors) kurulur — sunucu metni gösterilmez. Yalnız bilinen
+   * hedef (greenWait: yeşil bekleme, puan = dakika) kabul edilir; hedefi olmayan ya da başka
+   * hedefli (ör. doluluk) etken atılır.
    */
   function parseFactors(value) {
     if (!Array.isArray(value)) return INVALID;
     const list = [];
     value.forEach(function (f) {
       const points = f ? toNumber(f.points) : NaN;
-      if (!f || cfg.FACTOR_KEYS.indexOf(f.key) === -1 || Number.isNaN(points) || list.length >= cfg.MAX_FACTORS) return;
-      list.push({ key: f.key, points: Math.round(clamp(points, -MAX_PERCENT, MAX_PERCENT)) });
+      if (!f || cfg.FACTOR_KEYS.indexOf(f.key) === -1 || cfg.FACTOR_TARGETS.indexOf(f.target) === -1 || Number.isNaN(points) || list.length >= cfg.MAX_FACTORS) return;
+      list.push({ key: f.key, points: Math.round(clamp(points, -cfg.LIMITS.MAX_WAIT_MINUTES, cfg.LIMITS.MAX_WAIT_MINUTES)), target: f.target });
     });
     return { value: list };
   }

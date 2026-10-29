@@ -200,13 +200,18 @@
     assert.ok(!('newField' in r.hospitals[0]));
   });
 
-  test('Schema 1.2: güven, doluluk aralığı ve etkenler okunur; etken METNİ alınmaz (yalnız anahtar + puan)', function (AR, assert) {
+  test('Schema 1.2: güven, doluluk aralığı ve YEŞİL BEKLEME etkenleri okunur; etken METNİ alınmaz', function (AR, assert) {
     const r = AR.Schema.normalizeResponse(envelope([raw({ confidence: 'low', occupancyRange: [40, 78.6],
-      factors: [{ key: 'queue', text: '<b>sunucu metni</b>', points: 12.4 }, { key: 'bilinmeyen', points: 5 }, { key: 'seasonal', points: -3 }] })], { schemaVersion: '1.2' }), T);
+      factors: [{ key: 'queue', target: 'greenWait', text: '<b>sunucu metni</b>', points: 112.4 }, { key: 'bilinmeyen', target: 'greenWait', points: 5 }, { key: 'seasonal', target: 'greenWait', points: -3 }] })], { schemaVersion: '1.2' }), T);
     const h = r.hospitals[0];
     assert.equal(h.confidence, 'low');
     assert.deepEqual(h.occupancyRange, [40, 79]);
-    assert.deepEqual(h.factors, [{ key: 'queue', points: 12 }, { key: 'seasonal', points: -3 }]);
+    assert.deepEqual(h.factors, [{ key: 'queue', points: 112, target: 'greenWait' }, { key: 'seasonal', points: -3, target: 'greenWait' }]);
+  });
+
+  test('Schema 1.2: hedefi olmayan ya da doluluk hedefli etken arayüze ALINMAZ (doluluk için etken gösterilmez)', function (AR, assert) {
+    const r = AR.Schema.normalizeResponse(envelope([raw({ factors: [{ key: 'queue', points: 12 }, { key: 'seasonal', target: 'occupancy', points: 5 }, { key: 'boarding', target: 'greenWait', points: 9 }] })], { schemaVersion: '1.2' }), T);
+    assert.deepEqual(r.hospitals[0].factors, [{ key: 'boarding', points: 9, target: 'greenWait' }]);
   });
 
   test('Schema 1.2: alanlar yoksa ya da bozuksa kayıt ATILMAZ (isteğe bağlı)', function (AR, assert) {
@@ -217,11 +222,13 @@
     assert.deepEqual(r.hospitals[0].factors, []);
   });
 
-  test('Kart 1.2: etken cümlesi arayüz metninden kurulur; düşük güven etiketi (örnek veri dışında) görünür', function (AR, assert) {
-    assert.equal(AR.Strings.text('factors.queue.up', { n: '12' }), 'Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +12 puan.');
-    assert.equal(AR.Strings.text('factors.seasonal.down', { n: '3' }), 'Günün bu saatlerinde başvurular azaldığı için doluluk yaklaşık −3 puan.');
+  test('Kart 1.2: etken cümlesi (bekleme, dakika) arayüz metninden kurulur; güven ve etken YALNIZ "şimdi" diliminde görünür', function (AR, assert) {
+    assert.equal(AR.Strings.text('waitFactors.queue.up', { n: '12' }), 'Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +12 dk.');
+    assert.equal(AR.Strings.text('waitFactors.seasonal.down', { n: '3' }), 'Günün bu saatlerinde başvurular azaldığı için bekleme yaklaşık −3 dk.');
     assert.equal(AR.Strings.text('confidence.low'), 'Düşük');
     assert.ok(AR.Strings.has('card.lowConfidence'));
+    assert.ok(!AR.Strings.has('factors.queue.up'), 'doluluk etken cümleleri artık yok');
+    assert.equal(AR.Config.CONFIDENCE_SLOT, 'now');
   });
 
   test('Schema: ana sürüm uyuşmazlığı (2.0) → UNSUPPORTED_SCHEMA', function (AR, assert) {

@@ -55,7 +55,7 @@ test('özellik: yatak kısıtı yokken öncelikli (sarı) sınıf yeşilden uzun
   }, { runs: 12, seed: 'p-prio' });
 });
 
-test('özellik: sözleşme çıktısı — doluluk 0–100, aralıklar sıralı, seviye eşikle tutarlı, 0. dk gözlemle aynı', function () {
+test('özellik: sözleşme çıktısı — doluluk 0–100, bekleme aralıkları sıralı ve ≥ 5 dk, seviye eşikle tutarlı, "şimdi" gözlemle aynı', function () {
   forAll(genInput, function (inp) {
     const r = engine.computeHospital(inp, { nowMs: F.NOW, maxRuns: 150, explain: false });
     return ['now', '2h', 'evening'].every(function (slot) {
@@ -63,13 +63,14 @@ test('özellik: sözleşme çıktısı — doluluk 0–100, aralıklar sıralı,
       if (!c) return true;
       const ordered = function (a) { return a[0] <= a[1]; };
       const lvl = c.occupancyPercent >= 80 ? 'high' : c.occupancyPercent >= 50 ? 'medium' : 'low';
-      return c.occupancyPercent >= 0 && c.occupancyPercent <= 100 && ordered(c.occupancyRange) && ordered(c.estimatedGreenWaitMinutes) &&
-        ordered(c.estimatedYellowWaitMinutes) && c.crowdingLevel === lvl && c.occupancyRange[0] <= c.occupancyPercent && c.occupancyPercent <= c.occupancyRange[1];
+      return c.occupancyPercent >= 0 && c.occupancyPercent <= 100 && ordered(c.estimatedGreenWaitMinutes) &&
+        ordered(c.estimatedYellowWaitMinutes) && c.crowdingLevel === lvl && c.estimatedGreenWaitMinutes[1] - c.estimatedGreenWaitMinutes[0] >= 5;
     }) && (function () {
       const rec = quality.assess(inp, F.NOW).record;
       const cap = rec.bedCapacity || rec.activePhysicians * 6;
       const observed = Math.min(100, (rec.greenWaiting + rec.yellowWaiting + rec.redWaiting + Math.min(rec.inService, rec.activePhysicians) + rec.boarding) / cap * 100);
-      return Math.abs(r.horizons['0'].occupancy.p50 - observed) < 1e-6;
+      const c = engine.toContract(r, 'now');
+      return Math.abs(r.horizons['0'].occupancy.p50 - observed) < 1e-6 && c.occupancyPercent === Math.round(observed);
     })();
   }, { runs: 15, seed: 'p-contract' });
 });

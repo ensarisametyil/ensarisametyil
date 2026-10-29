@@ -31,4 +31,15 @@ function history(hours, perHour, endMs) {
   return list;
 }
 
-module.exports = { NOW: NOW, MIN: MIN, input: input, history: history };
+/**
+ * Geçmiş doluluk gözlemleri (mevsimsel ortalama için): her 30 dk, 'weeks' hafta, percentFn(ms) → ham yüzde.
+ */
+function occupancyHistory(weeks, percentFn, endMs) {
+  const end = endMs || NOW;
+  const list = [];
+  const step = 30 * MIN;
+  for (let ms = end - weeks * 7 * 86400000; ms < end; ms += step) list.push({ ms: ms, percent: typeof percentFn === 'function' ? percentFn(ms) : percentFn });
+  return list;
+}
+
+module.exports = { NOW: NOW, MIN: MIN, input: input, history: history, occupancyHistory: occupancyHistory };

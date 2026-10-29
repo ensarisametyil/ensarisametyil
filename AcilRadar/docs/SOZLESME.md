@@ -48,22 +48,37 @@ Değişiklik kuralı: alan ADI veya TÜRÜ değişirse ana sürüm artar (v2); a
 
 ## Sürüm 1.2 eki — doluluk motoru alanları (hepsi İSTEĞE BAĞLI)
 
-Doluluk hesaplama motoru (`motor/`) her hastane kaydına aşağıdaki alanları **ekleyebilir**. Hiçbir mevcut alanın adı ya da türü değişmedi; alan eklemek küçük sürümdür (`schemaVersion: "1.2"`), eski istemci bozulmaz.
+Doluluk hesaplama motoru (`motor/`) hastane kaydına aşağıdaki alanları **ekleyebilir**. Hiçbir mevcut alanın adı ya da türü değişmedi; alan eklemek küçük sürümdür (`schemaVersion: "1.2"`), eski istemci bozulmaz.
+
+**Hibrit yöntem (motor 2.2.0):** geriye dönük testte benzetim motoru doluluk tahmininde basit yöntemlerden tutarlı biçimde iyi çıkmadığı için sayılar ufka göre farklı yöntemlerle üretilir (`motor/docs/MODEL_KARTI.md` §8):
+
+| Çıktı | Yöntem |
+|---|---|
+| `occupancyPercent`, `at=now` ve +60 dk'ya kadar | Süreklilik: hastanenin bildirdiği güncel doluluk aynen kalır |
+| `occupancyPercent`, `at=2h` | Mevsimsel ortalama: aynı saat-gün diliminin geçmiş ortalaması (≥ 2 örnek; yoksa süreklilik ve `assumedFields` içinde `occupancyHistory`) |
+| `occupancyPercent`, `at=evening` | Mevsimsel ortalama (geçmiş yoksa kayıt gönderilmez) |
+| `estimatedGreenWaitMinutes`, `at=now` | Motor (benzetim) |
+| `estimatedYellowWaitMinutes`, `at=now` | Motor (4 sentetik rejimde bugünkü sabit aralıktan daha iyi ölçüldü; `config.HYBRID.YELLOW_NOW_ENGINE` ile kapatılabilir) |
+| Bekleme, `at=2h` ve `at=evening` | Bugünkü ürün formülü: bekleyen ÷ hekim × 9 dk (üst uç ×1,4); sarı için sabit 5–20 dk |
+| `greenWaiting`, `yellowWaiting` | Hastanenin bildirdiği güncel sayılar (her dilimde) |
+| `activePhysicians` | `now`: bildirilen; ileri dilimde: vardiya çizelgesi varsa o saatteki sayı |
+
+Süre aralıklarının üst ucu en az alt uç + 5 dk'dır ("süre daima aralıktır").
 
 | Alan | Tür | Anlam |
 |---|---|---|
-| `occupancyRange` | `[alt, üst]` (0–100) | Doluluk için nominal %80 tahmin aralığı |
-| `overCapacityShare` | 0–1 | Kapasitenin aşılma olasılığı (`occupancyPercent` en çok 100 gösterilir) |
-| `confidence` | `low` · `medium` · `high` | Tahmin güveni (kurallar: `motor/docs/MODEL_KARTI.md`). Arayüz düşük güveni gösterir |
-| `factors` | en çok 3 × `{ key, text, points }` | Açıklama etkenleri. `key`: `queue`, `seasonal`, `holiday`, `surge`, `shift`, `boarding`. **Arayüz yalnız `key` ve `points` okur**; cümleyi kendi metinlerinden kurar (`text` gösterilmez) |
-| `modelVersion` | metin | Motor sürümü (ör. `"2.0.0"`) |
+| `confidence` | `low` · `medium` · `high` | **Yalnız `at=now`'da gönderilir ve "şimdi" yeşil bekleme tahmininin** güvenidir (kurallar: `motor/docs/MODEL_KARTI.md`). Doluluk tahmini için gönderilmez; arayüz yalnız `now` diliminde gösterir |
+| `factors` | en çok 3 × `{ key, text, points, target }` | **Yalnız `at=now`'da**; `target` her zaman `"greenWait"` (yeşil bekleme) ve `points` **dakikadır**. `key`: `queue`, `seasonal`, `holiday`, `surge`, `shift`, `boarding`. **Arayüz `key`, `points`, `target` okur**; cümleyi kendi metinlerinden kurar (`text` gösterilmez). `target` olmayan ya da başka hedefli etken arayüzde yok sayılır |
+| `modelVersion` | metin | Çıktıyı üreten motor/yöntem takımının sürümü (ör. `"2.2.0"`); hibrit yöntem seçimi bu sürüme bağlıdır |
 | `definition` | `capacity` · `index` | Kullanılan doluluk tanımı (şimdilik yalnız `capacity`) |
 | `assumedFields` | metin dizisi | Varsayılan değerle doldurulan girdi alanları |
 | `simulated` | boolean | `true`: sayılar örnek veriden üretildi (bu durumda `isForecast` da `true`) |
+| `occupancyRange`, `overCapacityShare` | — | Hibrit yöntemde **gönderilmez** (süreklilik ve mevsimsel ortalama aralık üretmez). Şemada kalır; ileride bir yöntem aralık üretirse kullanılır |
 
-- `occupancyPercent` = motorun orta tahmini (yuvarlanmış); `crowdingLevel` bu değerden eşiklerle (orta ≥ 50, çok ≥ 80) türetilir.
+- `dataSource` girdinin kaynağını aynen yansıtır (`simulated`, `hospital`, `official`); mevsimsel ortalama aynı hastanenin geçmiş bildirimlerinden hesaplandığı için kaynak değişmez.
+- `crowdingLevel`, `occupancyPercent` değerinden eşiklerle türetilir (orta ≥ 50, çok ≥ 80).
 - Bilgi bayatsa motor sayı üretmez; sunucu o hastaneyi eski `updatedAt` ile gönderir ve arayüz "güncel bilgi yok" gösterir (değişmedi).
-- `at=evening` 20:00'den sonra istenmez (arayüz göndermez); motor bu durumda akşam tahmini üretmez.
+- `at=evening` 20:00'den sonra istenmez (arayüz göndermez); motor bu durumda akşam kaydı üretmez.
 
 ## Sürüm 1.1 eki — yalnız devlet hastaneleri
 

@@ -16,7 +16,9 @@ function envelope(hospitals) {
 }
 
 test('sözleşme: motor çıktısı şemaya uyar (şimdi / +2 saat / akşam; tam, kısmi, mevsimsel, örnek veri)', function () {
-  const inputs = [F.input(), F.input({ activePhysicians: undefined, bedCapacity: undefined }), F.input({ greenWaiting: undefined, yellowWaiting: undefined }), F.input({ dataSource: 'simulated', greenWaiting: 80 })];
+  const hist = F.occupancyHistory(3, function (ms) { return 40 + (ms / 1800000) % 30; });
+  const inputs = [F.input({ occupancyHistory: hist }), F.input({ activePhysicians: undefined, bedCapacity: undefined, occupancyHistory: hist }), F.input({ greenWaiting: undefined, yellowWaiting: undefined }),
+    F.input({ dataSource: 'simulated', greenWaiting: 80, occupancyHistory: hist }), F.input()];
   const list = [];
   inputs.forEach(function (inp, i) {
     const r = engine.computeHospital(inp, { nowMs: F.NOW, maxRuns: 150 });

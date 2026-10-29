@@ -250,6 +250,7 @@
       mapAvailable: UI.map.isAvailable(),
       directionsTemplate: cfg.DIRECTIONS_URL_TEMPLATE,
       registrationMinutes: cfg.REGISTRATION_MINUTES,
+      timeSlot: state.timeSlot,
       animate: animate,
       maxAnimated: cfg.MAX_ANIMATED_CARDS
     };

@@ -5,6 +5,8 @@
  *   istekte o andaki 30 dakikalık gözlem motora verilir, motorun çıktısı EK-1
  *   sözleşmesine (1.2 isteğe bağlı alanlarla) dönüştürülür.
  *   Hastane adı, ilçe, konum gibi kimlik bilgileri js/mock-data.js'ten gelir.
+ *   Yöntem seçimi HİBRİTTİR (core/hybrid.js): doluluk ≤ +60 dk süreklilik, 2 saat ve akşam mevsimsel
+ *   ortalama (3 haftalık örnek dünya geçmişi); "şimdi" bekleme motor, ileri ufuk bugünkü formül.
  * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: benzetim sayısı → ENGINE_OPTIONS; dünya → WORLD_DAYS.
  * NOT: Üretilen bütün sayılar ÖRNEKTİR (dataSource: "simulated"); gerçek değildir.
  * ========================================================================== */
@@ -15,10 +17,10 @@ const time = require('../core/time.js');
 const simulator = require('./simulator.js');
 
 const MS_PER_MINUTE = 60000;
-const WORLD_PAST_DAYS = 7;
-const WORLD_DAYS = 10;
+const WORLD_PAST_DAYS = 21;       // mevsimsel ortalama için 3 hafta geçmiş
+const WORLD_DAYS = 28;
 const BUCKET_MINUTES = simulator.PROBE_EVERY_MINUTES;
-const ENGINE_OPTIONS = { maxRuns: 600, explain: true };
+const ENGINE_OPTIONS = { maxRuns: 600, explain: true, explainTarget: 'waitGreen' };
 const SLOTS = ['now', '2h', 'evening'];
 const CACHE_LIMIT = 256;
 
@@ -42,9 +44,12 @@ function createAdapter(sampleIds) {
     const key = index + '@' + obsIndex;
     if (cache.has(key)) return cache.get(key);
     const ob = hospital.obs[Math.max(0, Math.min(hospital.obs.length - 1, obsIndex))];
-    const input = simulator.engineInput(world, hospital, hospital.obs.indexOf(ob), null);
+    const obIndex = hospital.obs.indexOf(ob);
+    const input = simulator.engineInput(world, hospital, obIndex, null);
     input.hospitalId = sampleIds[index];
     input.dataSource = 'simulated';
+    // Geçmiş doluluk gözlemleri (mevsimsel ortalama için): dünyanın bu ana kadarki 30 dk'lık gözlemleri
+    input.occupancyHistory = hospital.obs.slice(0, obIndex).map(function (x) { return { ms: x.ms, percent: x.occupancy }; });
     const result = engine.computeHospital(input, Object.assign({ nowMs: ob.ms, seed: 'ornek-api/' + key }, ENGINE_OPTIONS));
     const out = {};
     SLOTS.forEach(function (slot) { out[slot] = engine.toContract(result, slot); });

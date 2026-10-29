@@ -116,6 +116,31 @@ async function scenario(name, params) {
 }
 
 async function scenarioChecks() {
+  await check('Hibrit (motor açık): modelVersion/dataSource yansır; güven ve etken YALNIZ "şimdi"de (yeşil bekleme); doluluk aralığı yok', async function () {
+    const slots = {};
+    for (const at of ['now', '2h']) {
+      const r = await getJson('/api/v1/hospitals', { at: at, region: AR.Config.REGION_ID });
+      expect(r.response.status === 200, at + ' durum ' + r.response.status);
+      slots[at] = r.body.hospitals;
+    }
+    const versions = new Set();
+    slots.now.concat(slots['2h']).forEach(function (h) {
+      expect(typeof h.modelVersion === 'string' && /^\d+\.\d+\.\d+$/.test(h.modelVersion), h.hospitalId + ': modelVersion yok');
+      versions.add(h.modelVersion);
+      expect(h.dataSource === 'simulated' && h.simulated === true && h.isForecast === true, h.hospitalId + ': örnek veri işareti');
+      expect(!('occupancyRange' in h) && !('overCapacityShare' in h), h.hospitalId + ': hibritte doluluk aralığı olmamalı');
+    });
+    expect(versions.size === 1, 'tek modelVersion beklenirdi: ' + Array.from(versions).join());
+    slots.now.forEach(function (h) {
+      expect(['low', 'medium', 'high'].indexOf(h.confidence) !== -1, h.hospitalId + ': şimdi için güven gerekli');
+      (h.factors || []).forEach(function (f) { expect(f.target === 'greenWait', h.hospitalId + ': etken hedefi ' + f.target); });
+      expect(h.estimatedGreenWaitMinutes[1] - h.estimatedGreenWaitMinutes[0] >= 5, h.hospitalId + ': bekleme daima aralık');
+    });
+    slots['2h'].forEach(function (h) {
+      expect(!('confidence' in h) && !('factors' in h), h.hospitalId + ': +2 saatte güven/etken olmamalı');
+    });
+  });
+
   await check('Senaryo empty → 200, boş liste', async function () {
     const r = await scenario('empty');
     expectSchema(r.body);

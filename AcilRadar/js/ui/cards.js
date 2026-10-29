@@ -18,6 +18,7 @@
   const el = dom.el;
   const t = AR.Strings.text;
   const format = AR.Strings.format;
+  const cfg = AR.Config;
 
   const STATUS_ICONS = { low: 'check', medium: 'medium', high: 'alert', stale: 'clock' };
 
@@ -46,7 +47,12 @@
     return el('li', { className: 'tag ' + className }, [iconName ? dom.icon(iconName) : null, el('span', { text: label })]);
   }
 
-  function buildTags(row, isShortest) {
+  /** Güven ve etkenler yalnız "şimdi" diliminde ve yeşil bekleme için gösterilir (motorun kanıtlı olduğu yer). */
+  function showsWaitInsights(ctx) {
+    return ctx.timeSlot === cfg.CONFIDENCE_SLOT;
+  }
+
+  function buildTags(row, isShortest, ctx) {
     const h = row.hospital;
     const items = [
       isShortest ? tag('tag--shortest', 'clock', t('card.shortest')) : null,
@@ -54,7 +60,7 @@
       h.isForecast ? tag('tag--forecast', 'clock', t('card.forecast')) : null,
       h.dataSource === 'simulated' ? tag('tag--sample', null, t('card.sample')) : null,
       // Düşük güven arayüzde GÖSTERİLİR. Örnek veride zaten "Örnek veri" etiketi var.
-      h.confidence === 'low' && h.dataSource !== 'simulated' ? tag('tag--lowconf', 'info', t('card.lowConfidence')) : null
+      showsWaitInsights(ctx) && h.confidence === 'low' && h.dataSource !== 'simulated' ? tag('tag--lowconf', 'info', t('card.lowConfidence')) : null
     ].filter(Boolean);
     return items.length > 0 ? el('ul', { className: 'tags' }, items) : null;
   }
@@ -80,7 +86,7 @@
     }, [el('span', { className: 'ring__value', attrs: { 'aria-hidden': 'true' }, text: value })]);
   }
 
-  function buildHead(row, rank, titleId, isShortest) {
+  function buildHead(row, rank, titleId, isShortest, ctx) {
     return el('header', { className: 'card__head' }, [
       el('span', { className: 'rank rank--' + statusOf(row).level, attrs: { 'aria-hidden': 'true' }, text: format.number(rank) }),
       el('div', { className: 'card__heading' }, [
@@ -89,7 +95,7 @@
           row.hospital.name
         ]),
         buildMeta(row),
-        buildTags(row, isShortest)
+        buildTags(row, isShortest, ctx)
       ]),
       row.isStale ? null : buildRing(row)
     ]);
@@ -155,14 +161,15 @@
     rows.push(['details.updated', row.staleReason === 'future' ? t('card.unknown') : format.ago(row.ageMinutes)]);
     rows.push(['details.kind', t(h.isForecast ? 'details.kindForecast' : 'details.kindNow')]);
     rows.push(['details.source', t('source.' + h.dataSource)]);
-    if (!row.isStale && h.confidence) rows.push(['details.confidence', t('confidence.' + h.confidence)]);
+    const insights = !row.isStale && showsWaitInsights(ctx);
+    if (insights && h.confidence) rows.push(['details.confidence', t('confidence.' + h.confidence)]);
     if (!row.isStale && h.occupancyRange) {
       rows.push(['details.occupancyRange', h.occupancyRange[0] === h.occupancyRange[1] ? format.percent(h.occupancyRange[0])
         : t('details.occupancyRangeValue', { low: format.number(h.occupancyRange[0]), high: format.number(h.occupancyRange[1]) })]);
     }
-    if (!row.isStale && h.factors && h.factors.length) {
+    if (insights && h.factors && h.factors.length) {
       rows.push(['details.factors', h.factors.map(function (f) {
-        return t('factors.' + f.key + '.' + (f.points >= 0 ? 'up' : 'down'), { n: format.number(Math.abs(f.points)) });
+        return t('waitFactors.' + f.key + '.' + (f.points >= 0 ? 'up' : 'down'), { n: format.number(Math.abs(f.points)) });
       }).join(' ')]);
     }
     return rows;
@@ -203,7 +210,7 @@
       attrs: { id: dom.safeDomId('hospital-', row.id), 'aria-labelledby': titleId, tabindex: '-1' },
       data: { hospitalId: row.id }
     }, [
-      buildHead(row, rank, titleId, isShortest),
+      buildHead(row, rank, titleId, isShortest, ctx),
       row.isStale ? buildStaleBody(row) : buildLiveBody(row)
     ].concat(buildDetails(row, ctx), [buildActions(row, ctx)]));
     return el('li', { className: 'card-item', style: { '--i': Math.min(rank - 1, ctx.maxAnimated) } }, [article]);

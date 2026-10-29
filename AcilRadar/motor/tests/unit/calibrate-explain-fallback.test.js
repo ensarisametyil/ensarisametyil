@@ -66,8 +66,8 @@ test('index: örnek (simulated) veride isForecast:true ve simulated:true; güven
   assert.equal(c.isForecast, true); assert.equal(c.simulated, true); assert.equal(c.confidence, 'low');
 });
 
-test('index: açıklama en çok 3 faktör, şablon cümle, yuvarlanmış puan, yasaklı ifade yok', function () {
-  const r = engine.computeHospital(F.input({ greenWaiting: 40, boarding: 6 }), { nowMs: F.NOW, maxRuns: 300 });
+test('index: [motor incelemesi] doluluk etkenleri en çok 3, şablon cümle, yuvarlanmış puan, yasaklı ifade yok', function () {
+  const r = engine.computeHospital(F.input({ greenWaiting: 40, boarding: 6 }), { nowMs: F.NOW, maxRuns: 300, explainTarget: 'occupancy' });
   ['now', '2h', 'evening'].forEach(function (slot) {
     const list = r.factors[slot] || [];
     assert.ok(list.length <= 3);
@@ -88,9 +88,12 @@ test('index: akşam 20:00 sonrası "geçti" — akşam sözleşme çıktısı yo
   assert.ok(engine.toContract(r, '2h'));
 });
 
-test('index: akşam çok uzaksa (gece 03:00) yalnız mevsimsel öncül + düşük güven', function () {
+test('index: akşam çok uzaksa (gece 03:00) motor yalnız mevsimsel öncül kullanır; hibrit akşam geçmiş ortalamadan gelir', function () {
   const early = Date.parse('2026-10-13T03:00:00+03:00');
-  const r = engine.computeHospital(F.input({ updatedAtMs: early - 5 * F.MIN, dataSource: 'official' }), { nowMs: early, maxRuns: 200, explain: false });
+  const inp = F.input({ updatedAtMs: early - 5 * F.MIN, dataSource: 'official', occupancyHistory: F.occupancyHistory(3, 55, early) });
+  const r = engine.computeHospital(inp, { nowMs: early, maxRuns: 200, explain: false });
   assert.equal(r.evening.mode, 'seasonal');
-  assert.equal(engine.toContract(r, 'evening').confidence, 'low');
+  const c = engine.toContract(r, 'evening');
+  assert.equal(c.occupancyPercent, 55, 'akşam = aynı saat-gün geçmiş ortalaması');
+  assert.ok(!('confidence' in c) && !('factors' in c), 'doluluk tahmininde güven/etken yok');
 });

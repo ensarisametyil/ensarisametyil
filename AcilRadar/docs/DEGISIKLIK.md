@@ -2,6 +2,12 @@
 
 Biçim: en yeni üstte. Sözleşme (API) değişiklikleri ayrıca belirtilir.
 
+## 1.5.0 — Hibrit yöntem: örnek API ve arayüz
+
+- **Örnek API (motorlu):** doluluk şimdi ve +60 dk güncel doluluk, +2 saat ve akşam geçmiş ortalama; "şimdi" bekleme motordan, ileri ufuk bekleme bugünkü formülden. `modelVersion` 2.2.0, `dataSource: "simulated"`. Örnek dünya 3 haftalık geçmişle benzetilir.
+- **Arayüz:** "Bekleme tahmininin güveni", "Bekleme süresini etkileyenler" ve "Bekleme tahmini düşük güvenli" etiketi **yalnız "Şimdi" diliminde** görünür; doluluk için güven, etken ve doluluk aralığı gösterilmez. Etken cümleleri dakika cinsinden (`waitFactors`). Hedefi `greenWait` olmayan etkenler yok sayılır.
+- **Sözleşme:** alan adları değişmedi. `factors[].target` ve `confidence`'ın "şimdi" yeşil beklemeye bağlanması 1.2 ekinde yazılı (`docs/SOZLESME.md`, `docs/hospitals.schema.json`).
+
 ## 1.4.0 — Doluluk hesaplama motoru (v2) ve sözleşme 1.2
 
 - **Motor:** `motor/` klasörü. Ayrıntılar `motor/README.md` ve `motor/docs/` altında.

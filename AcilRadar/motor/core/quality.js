@@ -89,8 +89,9 @@
     const out = [];
     let dropped = 0;
     raw.forEach(function (h) {
-      const start = Number(h && h.startMs);
-      const arrivals = Number(h && h.arrivals);
+      if (!h || typeof h !== 'object') { dropped += 1; return; }   // Number(null) = 0 tuzağı
+      const start = Number(h.startMs);
+      const arrivals = Number(h.arrivals);
       if (!isFinite(start) || start + MS_PER_HOUR > nowMs + MS_PER_MINUTE || !isFinite(arrivals) || arrivals < 0) {
         dropped += 1;
         return;
@@ -100,6 +101,25 @@
     if (dropped) warnings.push({ code: 'HISTORY_ROWS_DROPPED', field: 'history', count: dropped });
     out.sort(function (a, b) { return a.startMs - b.startMs; });
     return out.slice(-config.DEMAND.MAX_HISTORY_HOURS);
+  }
+
+  /**
+   * Geçmiş doluluk gözlemleri (mevsimsel ortalama için): [{ms, percent}] — percent,
+   * o anda BİLDİRİLEN toplu sayılardan hesaplanan ham doluluk yüzdesidir (observedPercent).
+   */
+  function cleanOccupancyHistory(raw, nowMs, warnings) {
+    if (!Array.isArray(raw) || raw.length === 0) return [];
+    const out = [];
+    let dropped = 0;
+    raw.forEach(function (h) {
+      if (!h || typeof h !== 'object') { dropped += 1; return; }   // Number(null) = 0 tuzağı
+      const ms = Number(h.ms);
+      const percent = Number(h.percent);
+      if (!isFinite(ms) || ms >= nowMs || !isFinite(percent) || percent < 0) { dropped += 1; return; }
+      out.push({ ms: ms, percent: Math.min(percent, L.OCCUPANCY_PERCENT_MAX) });
+    });
+    if (dropped) warnings.push({ code: 'OCCUPANCY_HISTORY_ROWS_DROPPED', field: 'occupancyHistory', count: dropped });
+    return out.slice(-L.OCCUPANCY_HISTORY_MAX_ROWS);
   }
 
   /* ---- Güven düzeyi ------------------------------------------------------------ */
@@ -167,7 +187,8 @@
       bedCapacity: cleanCount(input.bedCapacity, 'bedCapacity', L.CAPACITY_MAX, warnings),
       arrivalsLastHour: cleanCount(input.arrivalsLastHour, 'arrivalsLastHour', L.ARRIVALS_HOUR_MAX, warnings),
       physicianSchedule: cleanSchedule(input.physicianSchedule, warnings),
-      history: cleanHistory(input.history, nowMs, warnings)
+      history: cleanHistory(input.history, nowMs, warnings),
+      occupancyHistory: cleanOccupancyHistory(input.occupancyHistory, nowMs, warnings)
     };
     if (r.bedCapacity === 0) {
       warnings.push({ code: 'ZERO_CAPACITY_IGNORED', field: 'bedCapacity' });

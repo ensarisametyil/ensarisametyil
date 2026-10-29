@@ -2,6 +2,20 @@
 
 Biçim: en yeni üstte. Model çıktısını değiştiren her değişiklik `MODEL_VERSION` artışı ve `tests/golden/golden.json` yenilemesi gerektirir.
 
+## 2.2.0 — hibrit yöntem seçimi (ürün çıktısı)
+- **Neden:** doğrulama sonucu (`MODEL_KARTI.md` §8): benzetim motoru doluluk tahmininde basit yöntemlerden tutarlı iyi değil; "şimdi" bekleme tahmininde ise bugünkü formülden iyi.
+- **`core/hybrid.js` (yeni) ve `toContract` yeniden yazıldı:**
+  - doluluk şimdi ve +60 dk: süreklilik;
+  - doluluk +2 saat ve akşam 20:00: mevsimsel ortalama;
+  - yeşil ve sarı bekleme "şimdi": motor;
+  - bekleme ileri ufuk: bugünkü ürün formülü.
+- **Güven ve etkenler yalnız "şimdi" yeşil bekleme için.** Etkenler artık dakika cinsinden ve `target: "greenWait"` taşıyor. Doluluk etkenleri yalnız `explainTarget: 'occupancy'` ile (motor incelemesi) üretilir.
+- **Doluluk için `occupancyRange` ve `overCapacityShare` artık üretilmez** (süreklilik ve mevsimsel ortalama aralık vermez).
+- **Yeni girdi:** `occupancyHistory: [{ ms, percent }]` (hastanenin geçmiş bildirimlerinden ham doluluk). `quality.js` temizler. Akşam için en az 2 örnek yoksa kayıt üretilmez; +2 saatte süreklilik ve `assumedFields` içinde `occupancyHistory`.
+- **`modelVersion` 2.2.0.** `dataSource`, girdinin kaynağını aynen yansıtır.
+- **Hata düzeltmesi:** `quality.js` `history` ve `occupancyHistory` dizilerinde `null` satırı `0` zamanlı geçerli satır sayıyordu; artık atılıyor.
+- Geriye dönük test aracı mevsimsel kıyası ürünle aynı fonksiyondan alıyor (sonuçlar değişmedi). Altın dosya yenilendi.
+
 ## 2.1.0 — kazanç getirmeyen bileşenler kapatıldı
 - Kapatma deneylerine dayanır (`DOGRULAMA_RAPORU_2.0.0.md`, tohum 1–2, rejim A–C, +120 dk). Görev kuralı: ölçülebilir kazanç getirmeyen bileşen kapalı kalır.
 - **Kapatılanlar** (kod yerinde, `config.FEATURES`):

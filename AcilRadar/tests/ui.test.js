@@ -140,6 +140,29 @@ async function stateMatrix() {
     await s.ctx.close();
   });
 
+  await check('Güven ve etkenler YALNIZ "şimdi" diliminde, yeşil bekleme için görünür; "2 saat sonra"da kaybolur', async function () {
+    const s = await open({});
+    await cardCount(s.page);
+    const openAll = async function () {
+      const buttons = s.page.locator('#results-list .card [data-action="details"]');
+      const n = await buttons.count();
+      for (let i = 0; i < n; i++) await buttons.nth(i).click();
+      return s.page.locator('#results-list').innerText();
+    };
+    let text = await openAll();
+    expect(text.split(T('details.confidence')).length - 1 === 8, 'şimdi: her kartta güven satırı olmalı');
+    expect(text.indexOf(T('details.factors')) !== -1, 'şimdi: en az bir kartta etken satırı olmalı (kuyruk olan hastaneler)');
+    expect(/bekleme yaklaşık/.test(text) && !/doluluk yaklaşık/.test(text), 'etken cümleleri bekleme için olmalı');
+    expect(text.indexOf(T('details.occupancyRange')) === -1, 'doluluk aralığı satırı olmamalı');
+    await s.page.locator('#time-group .segment__item').nth(1).locator('label').click();
+    await s.page.waitForFunction(function () { return document.getElementById('results-list').getAttribute('aria-busy') === 'false'; });
+    await s.page.waitForTimeout(600);
+    text = await openAll();
+    expect(text.indexOf(T('details.confidence')) === -1 && text.indexOf(T('details.factors')) === -1, '+2 saatte güven/etken görünmemeli');
+    expect(s.log.errors.length === 0 && s.log.warnings.length === 0, 'konsol: ' + s.log.errors.concat(s.log.warnings).join(' | '));
+    await s.ctx.close();
+  });
+
   await check('Yükleniyor: iskelet görünür, liste aria-busy; sonra zaman aşımı hatası (3 deneme)', async function () {
     const s = await open({ scenario: 'slow', timeoutMs: 1500 });
     await s.page.waitForSelector('.skeleton');

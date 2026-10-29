@@ -4,7 +4,10 @@
  *   computeHospital(input, options) → tek hastane: şimdi, ufuklar, akşam 20:00
  *   computeRegion(inputs, options)  → ≤ 200 hastane; önbellek + zaman sınırı
  *   toContract(result, slot)         → EK-1 sözleşme alanları (+ 1.2 isteğe bağlı alanlar)
- * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: sözleşme eşlemesi → toContract(); sürüm → config.MODEL_VERSION.
+ *   HİBRİT: toContract yöntemi ufka göre seçer (core/hybrid.js): doluluk ≤ +60 dk süreklilik,
+ *   sonrası ve akşam mevsimsel ortalama; bekleme "şimdi" motor, ileri ufuk bugünkü formül.
+ * NEYİ DEĞİŞTİRMEK İÇİN BURAYA BAK: sözleşme eşlemesi → toContract(); sürüm → config.MODEL_VERSION;
+ *   yöntem seçimi → config.HYBRID.
  * KURALLAR: Her sayı TAHMİNDİR. Bayat veride sayı üretilmez. Örnek (simulated) veride
  *           isForecast:true ve simulated:true yazılır. Hasta bazlı alan yoktur.
  * ========================================================================== */
@@ -12,18 +15,18 @@
   'use strict';
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(require('./config.js'), require('./time.js'), require('./quality.js'), require('./demand.js'),
-      require('./occupancy.js'), require('./forecast.js'), require('./calibrate.js'), require('./explain.js'), require('./fallback.js'));
+      require('./occupancy.js'), require('./forecast.js'), require('./calibrate.js'), require('./explain.js'), require('./fallback.js'),
+      require('./hybrid.js'), require('./service.js'));
   } else {
     const ns = root.AcilRadarMotor = root.AcilRadarMotor || {};
-    ns.engine = factory(ns.config, ns.time, ns.quality, ns.demand, ns.occupancy, ns.forecast, ns.calibrate, ns.explain, ns.fallback);
+    ns.engine = factory(ns.config, ns.time, ns.quality, ns.demand, ns.occupancy, ns.forecast, ns.calibrate, ns.explain, ns.fallback, ns.hybrid, ns.service);
   }
-})(typeof self !== 'undefined' ? self : this, function (config, time, quality, demand, occupancy, forecast, calibrate, explainLib, fallback) {
+})(typeof self !== 'undefined' ? self : this, function (config, time, quality, demand, occupancy, forecast, calibrate, explainLib, fallback, hybrid, service) {
   'use strict';
 
   const MS_PER_MINUTE = 60000;
   const SLOT_OFFSET = { now: 0, '2h': 120 };
   const MAX_WAIT_MINUTES = 1440;     // sözleşme sınırı
-  const SHARE_DECIMALS = 100;
 
   function now() {
     return typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
@@ -84,6 +87,8 @@
    * @param {number} [options.maxRuns]
    * @param {number} [options.minRuns]
    * @param {boolean} [options.explain=true]
+   * @param {'waitGreen'|'occupancy'} [options.explainTarget='waitGreen']  etkenler neyi açıklar:
+   *   'waitGreen' (ürün): yalnız "şimdi" yeşil bekleme; 'occupancy': doluluk, tüm ufuklar (yalnız motor incelemesi)
    * @param {Object} [options.calibration]   calibrate.fit() çıktısı
    * @param {string} [options.recentAccuracy] 'good'|'fair'|'poor'
    * @param {boolean} [options.waits=true]
@@ -145,13 +150,29 @@
 
     const factors = {};
     if (o.explain !== false && tier !== 'seasonal') {
-      const slots = [['now', 0], ['2h', SLOT_OFFSET['2h']]];
-      if (eveningInline) slots.push(['evening', evening.leadMinutes]);
+      const target = o.explainTarget === 'occupancy' ? 'occupancy' : 'waitGreen';
+      const slots = [['now', 0]];
+      if (target === 'occupancy') {
+        slots.push(['2h', SLOT_OFFSET['2h']]);
+        if (eveningInline) slots.push(['evening', evening.leadMinutes]);
+      }
       slots.forEach(function (s) {
-        factors[s[0]] = explainLib.explain(record, model, { startMs: nowMs, offset: s[1], seed: seed, dayInfo: time.dayInfo,
+        factors[s[0]] = explainLib.explain(record, model, { startMs: nowMs, offset: s[1], seed: seed, dayInfo: time.dayInfo, target: target,
           baseNeutral: ablateNeutral, fixedParams: runOptions.fixedParams, noBedBlocking: runOptions.noBedBlocking });
       });
     }
+
+    // ---- Hibrit yöntem için girdiler: bildirilen güncel doluluk, mevsimsel ortalama, ufuktaki hekim sayısı ----
+    const observedRaw = occupancy.rawPercent(record.greenWaiting + record.yellowWaiting + record.redWaiting + Math.min(record.inService, record.activePhysicians) + record.boarding,
+      occupancy.capacity(record.bedCapacity, record.activePhysicians));
+    const plan = { occupancy: {}, physicians: {} };
+    const planPoints = offsets.map(function (v) { return [String(v), v, nowMs + v * MS_PER_MINUTE, false]; });
+    if (evening.available) planPoints.push(['evening', evening.leadMinutes, evening.ms, true]);
+    planPoints.forEach(function (p) {
+      plan.occupancy[p[0]] = hybrid.occupancyFor(p[1], observedRaw, record.occupancyHistory, p[2], nowMs, p[3]);
+      const scheduled = p[1] > 0 && record.physicianSchedule ? service.scheduleCount(record.physicianSchedule, time.parts(p[2]).minuteOfDay) : null;
+      plan.physicians[p[0]] = scheduled === null ? record.activePhysicians : scheduled;
+    });
 
     return {
       ok: true,
@@ -163,6 +184,8 @@
       confidenceDetail: conf,
       eveningConfidence: eveningConfidence,
       assumedFields: assessment.assumedFields,
+      observed: { greenWaiting: record.greenWaiting, yellowWaiting: record.yellowWaiting, activePhysicians: record.activePhysicians, occupancyRaw: observedRaw },
+      hybrid: plan,
       warnings: assessment.warnings,
       dataSource: record.dataSource,
       simulated: record.dataSource === 'simulated',
@@ -185,38 +208,85 @@
   /* ---- Sözleşme eşlemesi ------------------------------------------------------------ */
 
   /**
-   * EK-1 alanlarını AYNEN üretir; 1.2 isteğe bağlı alanları ekler.
+   * Hangi yöntem hangi çıktıyı üretti? (inceleme, test ve günlük için; sözleşmeye yazılmaz)
+   * @returns {{occupancy:string, greenWait:string, yellowWait:string}}
+   */
+  function methodsFor(result, slot) {
+    if (!result || !result.ok || result.level === 'unknown') return null;
+    if (result.tier === 'seasonal') return { occupancy: 'engine', greenWait: 'engine', yellowWait: 'engine' };
+    const key = slot === 'evening' ? 'evening' : String(SLOT_OFFSET[slot]);
+    const plan = result.hybrid.occupancy[key];
+    if (!plan || plan.method === 'none') return null;
+    const offset = slot === 'evening' ? result.evening.leadMinutes : SLOT_OFFSET[slot];
+    const engineWait = offset <= config.HYBRID.ENGINE_WAIT_HORIZON_MINUTES;
+    return { occupancy: plan.method, greenWait: engineWait ? 'engine' : 'formula', yellowWait: engineWait && config.HYBRID.YELLOW_NOW_ENGINE ? 'engine' : 'formula' };
+  }
+
+  /**
+   * EK-1 alanlarını AYNEN üretir; 1.2 isteğe bağlı alanlarını yalnız ilgili yöntem üretiyorsa ekler.
+   * HİBRİT (core/hybrid.js):
+   *   - doluluk: şimdi ve +60 dk'ya kadar bildirilen güncel doluluk; sonrası ve akşam mevsimsel ortalama
+   *     (örnek yetersizse +120 dk: süreklilik + 'occupancyHistory' varsayıldı; akşam: sayı üretilmez → null)
+   *   - bekleme: "şimdi" motor; ileri ufuklar bugünkü formül
+   *   - confidence + factors: YALNIZ "şimdi" (motorun kanıtlı olduğu yeşil bekleme) için; factors[].target = "greenWait"
+   *   - occupancyRange / overCapacityShare: üretilmez (süreklilik ve mevsimsel ortalama aralık vermez)
+   * Kuyruk bilgisi yoksa (düşüş basamağı 'seasonal') eski motor çıktısı kullanılır, confidence/factors yazılmaz.
    * @param {Object} result computeHospital() çıktısı
    * @param {'now'|'2h'|'evening'} slot
    * @returns {?Object} sayı yoksa (bilinmiyor / akşam geçti) null
    */
   function toContract(result, slot) {
     if (!result || !result.ok || result.level === 'unknown') return null;
+    if (slot === 'evening' && result.evening.mode === 'passed') return null;
     const key = slot === 'evening' ? 'evening' : String(SLOT_OFFSET[slot]);
     const h = result.horizons[key];
-    if (!h) return null;
-    const occ = Math.round(h.occupancy.point);
     const simulated = result.simulated;
-    const out = {
-      occupancyPercent: occ,
-      crowdingLevel: occupancy.level(occ),
-      greenWaiting: Math.round(h.greenWaiting.p50 || 0),
-      yellowWaiting: Math.round(h.yellowWaiting.p50 || 0),
-      activePhysicians: Math.round(h.physicians.p50 || 0),
-      estimatedGreenWaitMinutes: roundRange(h.waitGreen.lo, h.waitGreen.hi, MAX_WAIT_MINUTES, config.CONTRACT.MIN_WAIT_SPREAD_MINUTES),
-      estimatedYellowWaitMinutes: roundRange(h.waitYellow.lo, h.waitYellow.hi, MAX_WAIT_MINUTES, config.CONTRACT.MIN_WAIT_SPREAD_MINUTES),
+    const common = {
       updatedAt: toIso(result.updatedAtMs),
       isForecast: slot !== 'now' || simulated,
       dataSource: result.dataSource,
-      // ---- 1.2 isteğe bağlı alanlar ----
-      occupancyRange: roundRange(h.occupancy.lo, h.occupancy.hi, 100),
-      overCapacityShare: Math.round(h.occupancy.overCapacityShare * SHARE_DECIMALS) / SHARE_DECIMALS,
-      confidence: slot === 'evening' ? result.eveningConfidence : result.confidence,
-      factors: (result.factors[slot] || []).map(function (f) { return { key: f.key, text: f.text, points: f.points }; }),
       modelVersion: result.modelVersion,
-      definition: 'capacity',
-      assumedFields: result.assumedFields.slice()
+      definition: 'capacity'
     };
+    const minSpread = config.CONTRACT.MIN_WAIT_SPREAD_MINUTES;
+    let out;
+    if (result.tier === 'seasonal') {
+      if (!h) return null;
+      const occ = Math.round(h.occupancy.point);
+      out = Object.assign({
+        occupancyPercent: occ,
+        crowdingLevel: occupancy.level(occ),
+        greenWaiting: Math.round(h.greenWaiting.p50 || 0),
+        yellowWaiting: Math.round(h.yellowWaiting.p50 || 0),
+        activePhysicians: Math.round(h.physicians.p50 || 0),
+        estimatedGreenWaitMinutes: roundRange(h.waitGreen.lo, h.waitGreen.hi, MAX_WAIT_MINUTES, minSpread),
+        estimatedYellowWaitMinutes: roundRange(h.waitYellow.lo, h.waitYellow.hi, MAX_WAIT_MINUTES, minSpread)
+      }, common, { assumedFields: result.assumedFields.slice() });
+    } else {
+      const plan = result.hybrid.occupancy[key];
+      if (!plan || plan.method === 'none') return null;
+      const methods = methodsFor(result, slot);
+      const occ = Math.round(Math.min(100, Math.max(0, plan.percent)));
+      const physicians = result.hybrid.physicians[key];
+      const formula = hybrid.formulaWait(result.observed.greenWaiting, physicians);
+      const engineGreen = methods.greenWait === 'engine' && h;
+      const engineYellow = methods.yellowWait === 'engine' && h;
+      const assumed = result.assumedFields.slice();
+      if (plan.fellBack && assumed.indexOf('occupancyHistory') === -1) assumed.push('occupancyHistory');
+      out = Object.assign({
+        occupancyPercent: occ,
+        crowdingLevel: occupancy.level(occ),
+        greenWaiting: result.observed.greenWaiting,
+        yellowWaiting: result.observed.yellowWaiting,
+        activePhysicians: slot === 'now' ? result.observed.activePhysicians : physicians,
+        estimatedGreenWaitMinutes: engineGreen ? roundRange(h.waitGreen.lo, h.waitGreen.hi, MAX_WAIT_MINUTES, minSpread) : roundRange(formula.green[0], formula.green[1], MAX_WAIT_MINUTES, minSpread),
+        estimatedYellowWaitMinutes: engineYellow ? roundRange(h.waitYellow.lo, h.waitYellow.hi, MAX_WAIT_MINUTES, minSpread) : roundRange(formula.yellow[0], formula.yellow[1], MAX_WAIT_MINUTES, minSpread)
+      }, common, { assumedFields: assumed });
+      if (engineGreen) {
+        out.confidence = result.confidence;
+        out.factors = (result.factors[slot] || []).map(function (f) { return { key: f.key, text: f.text, points: f.points, target: 'greenWait' }; });
+      }
+    }
     if (simulated) out.simulated = true;
     return out;
   }
@@ -285,6 +355,6 @@
     cache.clear();
   }
 
-  return { computeHospital: computeHospital, computeRegion: computeRegion, toContract: toContract, toIso: toIso,
+  return { computeHospital: computeHospital, computeRegion: computeRegion, toContract: toContract, methodsFor: methodsFor, toIso: toIso,
     digest: digest, clearCache: clearCache, MODEL_VERSION: config.MODEL_VERSION };
 });

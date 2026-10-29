@@ -172,7 +172,7 @@
       travelMeta: '{range} yol',
       childER: 'Çocuk acili var',
       sample: 'Örnek veri',
-      lowConfidence: 'Düşük güvenli tahmin',
+      lowConfidence: 'Bekleme tahmini düşük güvenli',
       forecast: 'Öngörü',
       shortest: 'En kısa toplam süre',
       occupancy: 'Doluluk {value}',
@@ -206,26 +206,27 @@
       kindForecast: 'İleri saat öngörüsü',
       source: 'Veri kaynağı',
       people: '{count} kişi',
-      confidence: 'Tahmin güveni',
+      confidence: 'Bekleme tahmininin güveni',
       occupancyRange: 'Doluluk aralığı (tahmini)',
       occupancyRangeValue: '%{low}–%{high}',
-      factors: 'Öne çıkan etkenler'
+      factors: 'Bekleme süresini etkileyenler'
     },
 
-    // Sözleşme 1.2: tahmin güveni ve etken cümleleri (motor/core/explain.js şablonlarıyla aynı)
+    // Sözleşme 1.2: "şimdi" yeşil bekleme tahmininin güveni ve etken cümleleri
     confidence: {
       low: 'Düşük',
       medium: 'Orta',
       high: 'Yüksek'
     },
 
-    factors: {
-      queue: { up: 'Şu an bekleyen hasta sayısı nedeniyle doluluk yaklaşık +{n} puan.', down: 'Bekleyen hasta az olduğu için doluluk yaklaşık −{n} puan.' },
-      seasonal: { up: 'Günün bu saatlerindeki başvuru yoğunluğu nedeniyle doluluk yaklaşık +{n} puan.', down: 'Günün bu saatlerinde başvurular azaldığı için doluluk yaklaşık −{n} puan.' },
-      holiday: { up: 'Tatil/bayram dönemi nedeniyle doluluk yaklaşık +{n} puan.', down: 'Tatil/bayram dönemi nedeniyle doluluk yaklaşık −{n} puan.' },
-      surge: { up: 'Son saatlerde başvurular beklenenden fazla olduğu için doluluk yaklaşık +{n} puan.', down: 'Son saatlerdeki başvuru değişimi doluluğu yaklaşık −{n} puan etkiliyor.' },
-      shift: { up: 'Hekim vardiyası değişimi nedeniyle doluluk yaklaşık +{n} puan.', down: 'Vardiyada hekim sayısı arttığı için doluluk yaklaşık −{n} puan.' },
-      boarding: { up: 'Yatış bekleyen hastalar nedeniyle doluluk yaklaşık +{n} puan.', down: 'Yatış bekleyen hasta etkisi yaklaşık −{n} puan.' }
+    // Etkenler yalnız "şimdi" yeşil bekleme içindir (motor/core/explain.js › WAIT_TEMPLATES ile aynı); {n} = dakika.
+    waitFactors: {
+      queue: { up: 'Şu an bekleyen hasta sayısı nedeniyle bekleme yaklaşık +{n} dk.', down: 'Bekleyen hasta az olduğu için bekleme yaklaşık −{n} dk.' },
+      seasonal: { up: 'Günün bu saatlerindeki başvuru yoğunluğu nedeniyle bekleme yaklaşık +{n} dk.', down: 'Günün bu saatlerinde başvurular azaldığı için bekleme yaklaşık −{n} dk.' },
+      holiday: { up: 'Tatil/bayram dönemi nedeniyle bekleme yaklaşık +{n} dk.', down: 'Tatil/bayram dönemi nedeniyle bekleme yaklaşık −{n} dk.' },
+      surge: { up: 'Son saatlerde başvurular beklenenden fazla olduğu için bekleme yaklaşık +{n} dk.', down: 'Son saatlerdeki başvuru değişimi beklemeyi yaklaşık −{n} dk etkiliyor.' },
+      shift: { up: 'Hekim vardiyası değişimi nedeniyle bekleme yaklaşık +{n} dk.', down: 'Vardiyada hekim sayısı arttığı için bekleme yaklaşık −{n} dk.' },
+      boarding: { up: 'Yatış bekleyen hastalar nedeniyle bekleme yaklaşık +{n} dk.', down: 'Yatış bekleyen hasta etkisi bekleme için yaklaşık −{n} dk.' }
     },
 
     source: {
